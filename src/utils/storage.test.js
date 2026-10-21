@@ -39,3 +39,18 @@ test("progresso inválido é descartado", () => {
   assert.equal(loaded.progress.coins, 0);
   assert.equal(loaded.source, "error");
 });
+
+test("migra crescimento existente a partir das fases já concluídas", () => {
+  const legacy = {
+    ...createDefaultProgress(),
+    unlockedPlanetIds: ["earth", "mars"],
+    completedStageIds: ["earth-1", "earth-2", "mars-1"],
+    rescuedPlantIds: ["victoria-amazonica"],
+    plantGrowthStages: { "victoria-amazonica": 1 },
+  };
+  const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
+  const loaded = loadProgress(storage);
+  assert.deepEqual(loaded.progress.rescuedPlantIds.sort(), ["mars-lichen", "victoria-amazonica"]);
+  assert.equal(loaded.progress.plantGrowthStages["victoria-amazonica"], 1);
+  assert.equal(loaded.progress.plantGrowthStages["mars-lichen"], 0);
+});

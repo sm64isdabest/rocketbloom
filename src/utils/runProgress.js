@@ -63,29 +63,29 @@ export function applyRunOutcome(progress, snapshot, outcome) {
   rewards.stageCompleted = true;
   rewards.money += stage.rewards?.money ?? REWARDS.stageClearMoney;
 
-  for (const rescuedId of next.rescuedPlantIds) {
-    const rescuedPlant = getPlantById(rescuedId);
-    const maxStage = Math.max(0, (rescuedPlant?.growthStages?.length ?? 1) - 1);
-    next.plantGrowthStages[rescuedId] = Math.min(maxStage, (next.plantGrowthStages[rescuedId] ?? 0) + 1);
+  const nextStage = planet.stages[stageIndex + 1];
+  const plant = getPlantById(planet.plantId);
+  if (plant) {
+    const firstRescue = !next.rescuedPlantIds.includes(plant.id);
+    next.rescuedPlantIds = unique([...next.rescuedPlantIds, plant.id]);
+    next.plantGrowthStages[plant.id] = Math.max(
+      next.plantGrowthStages[plant.id] ?? 0,
+      Math.min(plant.growthStages.length - 1, stageIndex),
+    );
+    if (firstRescue) {
+      rewards.money += plant.moneyReward;
+      rewards.plantMoney += plant.moneyReward;
+      rewards.sustainabilityPoints += plant.sustainabilityPoints;
+      next.sustainabilityPoints += plant.sustainabilityPoints;
+      rewards.plantName = plant.id;
+    }
   }
 
-  const nextStage = planet.stages[stageIndex + 1];
   if (!nextStage) {
     const planetIndex = PLANETS.findIndex((candidate) => candidate.id === planet.id);
     const nextPlanet = PLANETS[planetIndex + 1];
     if (nextPlanet) next.unlockedPlanetIds = unique([...next.unlockedPlanetIds, nextPlanet.id]);
 
-    if (!next.rescuedPlantIds.includes(planet.plantId)) {
-      next.rescuedPlantIds = unique([...next.rescuedPlantIds, planet.plantId]);
-      const plantReward = getPlantById(planet.plantId)?.moneyReward ?? 0;
-      const rescuedPlant = getPlantById(planet.plantId);
-      rewards.money += plantReward;
-      rewards.plantMoney += plantReward;
-      rewards.sustainabilityPoints += rescuedPlant?.sustainabilityPoints ?? 0;
-      next.sustainabilityPoints += rescuedPlant?.sustainabilityPoints ?? 0;
-      next.plantGrowthStages[planet.plantId] = Math.min(1, (rescuedPlant?.growthStages?.length ?? 1) - 1);
-      rewards.plantName = planet.plantId;
-    }
   }
 
   next.money += rewards.money;

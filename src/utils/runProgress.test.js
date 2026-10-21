@@ -15,26 +15,29 @@ test("uma conclusão duplicada não reaplica moedas, créditos ou resgate", () =
   assert.equal(duplicate.progress.completedStageIds.length, 1);
 });
 
-test("concluir a última fase da Terra desbloqueia Marte e registra a planta uma vez", () => {
+test("concluir as cinco fases da Terra desbloqueia Marte", () => {
   let progress = applyRunOutcome(createDefaultProgress(), {
     runId: "run-b", planetId: "earth", stageId: "earth-1", coins: 0, diamonds: 0,
   }, "victory").progress;
-  const finalStage = { runId: "run-c", planetId: "earth", stageId: "earth-2", coins: 0, diamonds: 0 };
-  const result = applyRunOutcome(progress, finalStage, "victory");
-  progress = result.progress;
+  assert.deepEqual(progress.rescuedPlantIds, ["victoria-amazonica"]);
+  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 0);
+  for (let phase = 2; phase <= 5; phase += 1) {
+    progress = applyRunOutcome(progress, { runId: `earth-${phase}`, planetId: "earth", stageId: `earth-${phase}`, coins: 0, diamonds: 0 }, "victory").progress;
+  }
   assert.ok(progress.unlockedPlanetIds.includes("mars"));
   assert.deepEqual(progress.rescuedPlantIds, ["victoria-amazonica"]);
-  assert.equal(result.rewards.plantName, "victoria-amazonica");
-  assert.equal(applyRunOutcome(progress, finalStage, "victory").progress.money, progress.money);
+  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 4);
+  const replay = applyRunOutcome(progress, { runId: "earth-replay", planetId: "earth", stageId: "earth-5" }, "victory");
+  assert.equal(replay.progress.plantGrowthStages["victoria-amazonica"], 4);
+  assert.equal(replay.progress.money, progress.money);
 });
 
-test("concluir uma missão seguinte avança o estágio da planta já resgatada", () => {
+test("uma fase avança apenas a planta do planeta correspondente", () => {
   let progress = createDefaultProgress();
   progress = applyRunOutcome(progress, { runId: "growth-earth-1", planetId: "earth", stageId: "earth-1" }, "victory").progress;
   progress = applyRunOutcome(progress, { runId: "growth-earth-2", planetId: "earth", stageId: "earth-2" }, "victory").progress;
   assert.equal(progress.plantGrowthStages["victoria-amazonica"], 1);
-  progress = applyRunOutcome(progress, { runId: "growth-mars-1", planetId: "mars", stageId: "mars-1" }, "victory").progress;
-  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 2);
+  assert.equal(progress.plantGrowthStages["mars-lichen"], undefined);
 });
 
 test("itens coletados durante uma derrota são salvos sem marcar a fase como concluída", () => {

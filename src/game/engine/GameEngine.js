@@ -236,7 +236,7 @@ export class GameEngine {
     } else {
       this.incorrectAnswers += 1;
       this.score = Math.max(0, this.score + SCORE.incorrectAnswer);
-      this.speed = clamp(this.speed - SPEED.wrongAnswerPenalty, SPEED.min, SPEED.max);
+      this.speed = clamp(this.speed - SPEED.wrongAnswerPenalty * (this.session.stage.speedLossMultiplier ?? 1), SPEED.min, SPEED.max);
       this.questionFeedback = result.unanswered ? "Alternativas perdidas" : "Resposta incorreta";
       playGameSound("incorrect");
     }
@@ -278,7 +278,7 @@ export class GameEngine {
       obstacle.update(dt);
       if (aabbOverlaps(this.rocket, obstacle.collisionBox)) {
         obstacle.alive = false;
-        this.speed = clamp(this.speed - SPEED.obstaclePenalty, SPEED.min, SPEED.max);
+        this.speed = clamp(this.speed - SPEED.obstaclePenalty * (this.session.stage.speedLossMultiplier ?? 1), SPEED.min, SPEED.max);
         this.questionFeedback = "Impacto! Velocidade reduzida";
         this.feedbackTimerMs = 900;
         playGameSound("collision");

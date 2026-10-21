@@ -7,7 +7,7 @@ export const PLANTS = [
     sustainabilityPoints: 25,
     form: "water-lily",
     palette: { leaf: "#77c77c", flower: "#f5f1df", accent: "#e7c878" },
-    growthStages: ["Semente", "Broto", "Folhas jovens", "Floração"],
+    growthStages: ["Muda recém-resgatada", "Broto jovem", "Folhas em desenvolvimento", "Quase adulta", "Vitória-régia adulta"],
   },
   {
     id: "mars-lichen",
@@ -17,7 +17,7 @@ export const PLANTS = [
     sustainabilityPoints: 35,
     form: "lichen",
     palette: { leaf: "#a8bd79", flower: "#d5d88b", accent: "#d08b59" },
-    growthStages: ["Esporos", "Crosta inicial", "Colônia", "Tapete maduro"],
+    growthStages: ["Esporos recém-resgatados", "Crosta inicial", "Colônia em expansão", "Tapete quase maduro", "Tapete maduro"],
   },
   {
     id: "ring-fern",
@@ -27,7 +27,7 @@ export const PLANTS = [
     sustainabilityPoints: 45,
     form: "fern",
     palette: { leaf: "#69ce9a", flower: "#a4efbd", accent: "#d6c27a" },
-    growthStages: ["Esporo", "Fronde jovem", "Frondes abertas", "Samambaia adulta"],
+    growthStages: ["Esporo recém-resgatado", "Fronde jovem", "Frondes em desenvolvimento", "Samambaia quase adulta", "Samambaia adulta"],
   },
   {
     id: "ice-orchid",
@@ -37,7 +37,7 @@ export const PLANTS = [
     sustainabilityPoints: 60,
     form: "orchid",
     palette: { leaf: "#67d9c3", flower: "#a8e8ff", accent: "#c5a8ff" },
-    growthStages: ["Semente", "Broto de gelo", "Haste jovem", "Floração ártica"],
+    growthStages: ["Semente recém-resgatada", "Broto de gelo", "Haste em desenvolvimento", "Quase em floração", "Orquídea ártica adulta"],
   },
 ];
 

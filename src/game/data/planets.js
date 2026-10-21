@@ -2,9 +2,9 @@ import { REWARDS } from "../config/gameConfig.js";
 
 // Edit this value to rebalance campaign length without changing planet content.
 export const CAMPAIGN_CONFIG = {
-  stagesPerPlanet: 2,
+  stagesPerPlanet: 5,
   baseStageDurationMs: 58_000,
-  durationIncreasePerStageMs: 14_000,
+  durationIncreasePerStageMs: 8_000,
   stageClearMoney: REWARDS.stageClearMoney,
 };
 
@@ -58,9 +58,10 @@ function buildStages(planet) {
       name: `Fase ${stageNumber}`,
       difficulty,
       durationMs: CAMPAIGN_CONFIG.baseStageDurationMs + index * CAMPAIGN_CONFIG.durationIncreasePerStageMs,
-      speedMultiplier: planet.speedMultiplier * (1 + progression * 0.08),
-      obstacleIntervalMs: planet.obstacleIntervalMs * (1 - progression * 0.12),
-      obstacleSpeedMultiplier: planet.obstacleSpeedMultiplier * (1 + progression * 0.12),
+      speedMultiplier: planet.speedMultiplier * (1 + progression * 0.06),
+      speedLossMultiplier: 1 + progression * 0.12,
+      obstacleIntervalMs: planet.obstacleIntervalMs * (1 - progression * 0.14),
+      obstacleSpeedMultiplier: planet.obstacleSpeedMultiplier * (1 + progression * 0.08),
       questionCategories: [...planet.questionCategories],
       questionLimits: { ...planet.questionLimits },
       rewards: { money: CAMPAIGN_CONFIG.stageClearMoney },

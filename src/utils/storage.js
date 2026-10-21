@@ -1,4 +1,6 @@
 import { PROGRESS_VERSION, STORAGE_KEY } from "../game/config/gameConfig.js";
+import { PLANETS } from "../game/data/planets.js";
+import { PLANTS } from "../game/data/plants.js";
 
 export function createDefaultProgress() {
   return {
@@ -68,7 +70,8 @@ export function loadProgress(storage = globalThis.localStorage) {
         ...createDefaultProgress(),
         ...parsed,
         stageProgress: sanitizeProgressMap(parsed.stageProgress),
-        plantGrowthStages: sanitizeProgressMap(parsed.plantGrowthStages, 999),
+        plantGrowthStages: migratePlantGrowth(parsed),
+        rescuedPlantIds: migrateRescuedPlants(parsed),
         sustainabilityPoints: Number.isFinite(parsed.sustainabilityPoints) && parsed.sustainabilityPoints >= 0
           ? parsed.sustainabilityPoints : 0,
         settings: {
@@ -91,6 +94,29 @@ export function loadProgress(storage = globalThis.localStorage) {
       cause: error,
     };
   }
+}
+
+// Saves from earlier versions could only record a rescued plant at a planet's
+// final phase. Reconstruct the highest earned growth from the completed stages.
+function migrateRescuedPlants(progress) {
+  const rescued = new Set(Array.isArray(progress.rescuedPlantIds) ? progress.rescuedPlantIds : []);
+  for (const planet of PLANETS) {
+    const completed = planet.stages.filter((stage) => progress.completedStageIds.includes(stage.id));
+    if (completed.length) rescued.add(planet.plantId);
+  }
+  return [...rescued].filter((id) => PLANTS.some((plant) => plant.id === id));
+}
+
+function migratePlantGrowth(progress) {
+  const stored = sanitizeProgressMap(progress.plantGrowthStages, 4);
+  for (const planet of PLANETS) {
+    const plant = PLANTS.find((entry) => entry.id === planet.plantId);
+    const completed = planet.stages.filter((stage) => progress.completedStageIds.includes(stage.id));
+    if (!plant || !completed.length) continue;
+    const earnedStage = Math.min(plant.growthStages.length - 1, completed.length - 1);
+    stored[plant.id] = Math.max(stored[plant.id] ?? 0, earnedStage);
+  }
+  return stored;
 }
 
 export function saveProgress(progress, storage = globalThis.localStorage) {
