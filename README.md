@@ -199,3 +199,12 @@ npm run preview
 ```
 
 O servidor de desenvolvimento imprime a URL local (em geral `http://localhost:5173`).
+
+## Jogar pela web
+
+O GitHub Pages publica o jogo automaticamente a cada envio para a branch `main`.
+Na primeira publicação, habilite o GitHub Pages em **Settings → Pages** e selecione
+**GitHub Actions** como origem de build e deploy. Depois que a ação **Deploy to GitHub
+Pages** terminar, o jogo ficará disponível em:
+
+https://sm64isdabest.github.io/rocketbloom/
