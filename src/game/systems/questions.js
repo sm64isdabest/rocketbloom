@@ -72,25 +72,40 @@ function createDistractors(answer, rng) {
   return [...candidates];
 }
 
-export function generateQuestion({ difficulty = 1, category, categories, limits, rng = Math.random, id = "question" } = {}) {
+export function generateQuestion({ difficulty = 1, category, categories, limits, rng = Math.random, id = "question", previousPrompt } = {}) {
   const tier = Math.max(1, Math.min(4, Math.round(difficulty)));
   const availableCategories = categories?.filter((value) => MATH_CATEGORIES.includes(value)) ?? MATH_CATEGORIES;
   const categoryPool = availableCategories.length ? availableCategories : MATH_CATEGORIES;
-  const selectedCategory = categoryPool.includes(category)
-    ? category
-    : categoryPool[randomIndex(categoryPool.length, rng)];
-  const operands = createOperands(selectedCategory, { ...QUESTION_DIFFICULTY[tier], ...limits }, rng);
-  const incorrectAnswers = createDistractors(operands.answer, rng);
-
-  return {
-    id,
-    prompt: operands.prompt,
-    correctAnswer: operands.answer,
-    incorrectAnswers,
-    choices: shuffled([operands.answer, ...incorrectAnswers], rng),
-    correct: operands.answer,
-    difficulty: tier,
-    category: selectedCategory,
-    categoryLabel: CATEGORY_LABELS[selectedCategory],
+  const build = (random) => {
+    const selectedCategory = categoryPool.includes(category)
+      ? category
+      : categoryPool[randomIndex(categoryPool.length, random)];
+    const operands = createOperands(selectedCategory, { ...QUESTION_DIFFICULTY[tier], ...limits }, random);
+    const incorrectAnswers = createDistractors(operands.answer, random);
+    return {
+      id,
+      prompt: operands.prompt,
+      correctAnswer: operands.answer,
+      incorrectAnswers,
+      choices: shuffled([operands.answer, ...incorrectAnswers], random),
+      correct: operands.answer,
+      difficulty: tier,
+      category: selectedCategory,
+      categoryLabel: CATEGORY_LABELS[selectedCategory],
+    };
   };
+
+  let question = build(rng);
+  if (question.prompt === previousPrompt) {
+    for (let attempt = 1; attempt <= 12 && question.prompt === previousPrompt; attempt += 1) {
+      question = build(rng);
+    }
+    // Degenerate deterministic RNGs (for example, test fixtures) still get a
+    // different valid question whenever the configured range allows one.
+    for (let attempt = 1; attempt <= 24 && question.prompt === previousPrompt; attempt += 1) {
+      const alternateRandom = () => (attempt * 0.173 + 0.071) % 1;
+      question = build(alternateRandom);
+    }
+  }
+  return question;
 }

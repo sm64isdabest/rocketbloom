@@ -8,33 +8,33 @@ export const QUESTION_POOLS = {
     },
     {
       id: "earth-q2",
-      prompt: "Quanto é 9 − 4?",
-      choices: [5, 6, 4, 3],
-      correct: 5,
+      prompt: "Quanto é 8 + 5?",
+      choices: [13, 12, 14, 11],
+      correct: 13,
     },
   ],
   mars: [
     {
       id: "mars-q1",
-      prompt: "Quanto é 8 × 3?",
-      choices: [24, 21, 26, 18],
-      correct: 24,
+      prompt: "Quanto é 15 − 8?",
+      choices: [7, 6, 8, 5],
+      correct: 7,
     },
   ],
   saturn: [
     {
       id: "saturn-q1",
-      prompt: "Quanto é 48 ÷ 6?",
-      choices: [8, 6, 9, 7],
-      correct: 8,
+      prompt: "Quanto é 4 × 6?",
+      choices: [24, 20, 18, 28],
+      correct: 24,
     },
   ],
   neptune: [
     {
       id: "neptune-q1",
-      prompt: "Quanto é 15 × 4 − 20?",
-      choices: [40, 35, 45, 30],
-      correct: 40,
+      prompt: "Quanto é 24 ÷ 6?",
+      choices: [4, 3, 5, 6],
+      correct: 4,
     },
   ],
 };

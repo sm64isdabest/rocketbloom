@@ -59,6 +59,7 @@ export class GameEngine {
     this.collectibleAcc = 0;
     this.nextQuestionInMs = 0;
     this.roundNumber = 0;
+    this.lastQuestionPrompt = null;
     this.currentRound = null;
     this.questionFeedback = "";
     this.feedbackTimerMs = 0;
@@ -138,9 +139,11 @@ export class GameEngine {
       difficulty: this.session.difficulty.mathTier,
       categories: this.session.stage.questionCategories,
       limits: this.session.stage.questionLimits,
+      previousPrompt: this.lastQuestionPrompt,
       rng: this.rng,
       id: `${this.session.stage.id}-q${this.roundNumber}`,
     });
+    this.lastQuestionPrompt = question.prompt;
     this.currentRound = createAnswerRound(question, {
       width: this.view.width,
       id: `${this.runId}-round-${this.roundNumber}`,
