@@ -184,12 +184,9 @@ export class GameEngine {
     if (!frameSeconds) return;
     const frameMs = frameSeconds * 1000;
     this.elapsedMs += frameMs;
-    const resolvingAnswer = this.isQuestionResolving();
-    if (!resolvingAnswer) {
-      this.input.apply(this.rocket, this.canvas, frameSeconds);
-      this.rocket.clamp(this.view.width);
-      this.rocket.update(frameSeconds);
-    }
+    this.input.apply(this.rocket, this.canvas, frameSeconds);
+    this.rocket.clamp(this.view.width);
+    this.rocket.update(frameSeconds);
 
     const progressMultiplier = clamp(
       this.speed / SPEED.start,
@@ -201,7 +198,7 @@ export class GameEngine {
 
     this.updateQuestions(frameSeconds, frameMs);
     if (this.ended) return;
-    if (!this.isQuestionResolving()) this.updatePickupsAndHazards(frameSeconds, frameMs);
+    this.updatePickupsAndHazards(frameSeconds, frameMs);
     if (this.ended) return;
 
     if (this.speed <= SPEED.defeatAtOrBelow && !this.isQuestionResolving()) {
@@ -372,7 +369,7 @@ export class GameEngine {
       this.feedbackTimerMs -= frameMs;
       if (this.feedbackTimerMs <= 0) this.questionFeedback = "";
     }
-    if (this.speed <= SPEED.defeatAtOrBelow) this.finish("defeat");
+    if (this.speed <= SPEED.defeatAtOrBelow && !this.isQuestionResolving()) this.finish("defeat");
   }
 
   getEntitySpeed(baseSpeed) {
@@ -487,14 +484,13 @@ export class GameEngine {
     renderStarfield(ctx, this.stars);
     renderPlanetScenery(ctx, view, session.planet, this.progressMs);
     const flashAlpha = this.columnFlashRemainingMs > 0
-      ? 0.35 + Math.max(0, Math.sin(this.elapsedMs * 0.025)) * 0.45
+      ? 0.3 + Math.max(0, Math.sin(this.elapsedMs * 0.025)) * 0.15
       : 0;
     renderLaneColumns(ctx, view.width, view.height, {
+      visible: this.currentRound?.status === "awaiting-resolution",
       flashLane: this.columnFlashLane,
       flashColor: this.columnFlashColor,
       flashAlpha,
-      activeLane: this.currentRound?.status === "awaiting-resolution"
-        ? getLaneFromCenter(this.rocket.x + this.rocket.width / 2, view.width) : -1,
     });
     for (const obstacle of this.obstacles) obstacle.render(ctx);
     for (const collectible of this.collectibles) collectible.render(ctx);

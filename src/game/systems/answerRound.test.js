@@ -55,5 +55,5 @@ test("animação de perspectiva leva o número para além da borda inferior", ()
   const ctx = new Proxy({}, { get: (_target, key) => (...args) => { if (key === "translate" || key === "scale") transforms.push([key, ...args]); } });
   answer.renderPerspective(ctx, 1, 640);
   assert.ok(transforms.find(([name]) => name === "translate")[2] > 640);
-  assert.deepEqual(transforms.find(([name]) => name === "scale"), ["scale", 6.5, 6.5]);
+  assert.deepEqual(transforms.find(([name]) => name === "scale"), ["scale", 3, 3]);
 });

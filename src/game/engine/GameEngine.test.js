@@ -123,6 +123,74 @@ test("a seleção pelo centro do foguete registra acerto uma vez e recompensa ap
   });
 });
 
+test("controles, obstáculos e progresso continuam ativos durante animação de resposta", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const correct = engine.answers.find((answer) => answer.correct);
+    moveRocketToLane(engine, correct.lane);
+    engine.resolveCurrentAnswer(correct);
+    const initialX = engine.rocket.x;
+    let inputUpdates = 0;
+    engine.input.apply = (rocket) => {
+      inputUpdates += 1;
+      rocket.targetX = Math.min(rocket.x + 30, engine.view.width - rocket.width);
+    };
+    const obstacleX = engine.rocket.x < engine.view.width / 2 ? 270 : 0;
+    const obstacle = new Obstacle({ id: "asteroid", x: obstacleX, y: 0, width: 30, height: 30 });
+    engine.obstacles.push(obstacle);
+    const initialObstacleY = obstacle.y;
+    const initialProgress = engine.progressMs;
+
+    engine.tick(0.05);
+
+    assert.equal(inputUpdates, 1);
+    assert.ok(engine.rocket.x > initialX);
+    assert.ok(obstacle.y > initialObstacleY);
+    assert.ok(engine.progressMs > initialProgress);
+    assert.equal(engine.currentRound.status, "animating-correct");
+    assert.equal(engine.correctAnswers, 1);
+    engine.stop();
+  });
+});
+
+test("acerto e erro consecutivos resolvem uma vez e limpam o feedback entre questões", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas, {}, { runId: "consecutive-answers-test", rng: () => 0.43 }));
+    const firstRound = engine.currentRound;
+    const firstCorrect = firstRound.answers.find((answer) => answer.correct);
+    assert.equal(engine.resolveCurrentAnswer(firstCorrect), true);
+    assert.equal(engine.resolveCurrentAnswer(firstCorrect), false);
+    tickFor(engine, 2150);
+    assert.equal(firstRound.status, "waiting-next-question");
+    assert.deepEqual(engine.answers, []);
+
+    engine.interQuestionRemainingMs = 1;
+    engine.tick(0.05);
+    assert.equal(engine.roundNumber, 2);
+    assert.notEqual(engine.currentRound.id, firstRound.id);
+    assert.equal(engine.columnFlashRemainingMs, 0);
+
+    const secondWrong = engine.currentRound.answers.find((answer) => !answer.correct);
+    assert.equal(engine.resolveCurrentAnswer(secondWrong), true);
+    let movementUpdates = 0;
+    engine.input.apply = (rocket) => {
+      movementUpdates += 1;
+      rocket.targetX = Math.min(rocket.x + 24, engine.view.width - rocket.width);
+    };
+    const xBeforeErrorFeedback = engine.rocket.x;
+    tickFor(engine, 700);
+
+    assert.equal(movementUpdates, 14);
+    assert.ok(engine.rocket.x > xBeforeErrorFeedback);
+    assert.equal(engine.correctAnswers, 1);
+    assert.equal(engine.incorrectAnswers, 1);
+    assert.equal(engine.resolveCurrentAnswer(secondWrong), false);
+    assert.equal(engine.currentRound.status, "waiting-next-question");
+    assert.deepEqual(engine.answers, []);
+    engine.stop();
+  });
+});
+
 test("resposta incorreta pisca vermelho sem recompensa e acerto respeita o limite de velocidade", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
