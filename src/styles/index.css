@@ -174,3 +174,70 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 .motion-reduced *, .motion-reduced *::before, .motion-reduced *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+
+/* Planet-first level selector */
+.planet-selector { max-width: 1120px; }
+.planet-grid--select { grid-template-columns: minmax(0, 1fr); gap: 12px; max-width: 960px; margin: 0 auto; }
+.planet-grid--select .planet-card { display: block; min-height: 0; overflow: hidden; border-radius: 16px; transition: border-color .2s ease, background .2s ease; }
+.planet-grid--select .planet-card.is-expanded { border-color: color-mix(in srgb, var(--planet-accent) 42%, var(--line)); }
+.planet-card__toggle { display: grid; width: 100%; grid-template-columns: 112px minmax(0, 1fr); align-items: stretch; padding: 0; border: 0; color: inherit; background: transparent; text-align: left; cursor: pointer; }
+.planet-card__toggle:focus-visible { outline: 2px solid var(--planet-accent); outline-offset: -3px; }
+.planet-grid--select .planet-card__visual { min-height: 142px; border-right: 1px solid rgba(255,255,255,.06); }
+.planet-grid--select .planet-orb { width: 72px; }
+.planet-grid--select .planet-orbit { width: 96px; height: 34px; }
+.planet-grid--select .planet-card--saturn .planet-orbit { width: 104px; height: 31px; }
+.planet-grid--select .planet-card__body { display: grid; min-width: 0; align-content: center; gap: 9px; padding: 16px 20px; }
+.planet-grid--select .planet-card__title { align-items: center; }
+.planet-grid--select .planet-card__title .eyebrow { display: block; margin-bottom: 3px; }
+.planet-card__name { display: block; color: var(--ink); font-size: 1.45rem; font-weight: 700; line-height: 1.15; }
+.planet-card__progress { display: block; }
+.planet-card__progress .progress-track { display: block; width: 100%; }
+.planet-card__progress-label { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 6px; color: var(--muted); font-size: .69rem; }
+.planet-card__continue { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--muted); font-size: .72rem; }
+.planet-card__chevron { display: grid; width: 24px; height: 24px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--planet-accent); font-size: 1rem; line-height: 1; }
+.planet-card.is-locked .planet-orb { opacity: .62; }
+.planet-card__details { padding: 0 20px 18px 132px; animation: planet-details-in .18s ease-out; }
+.planet-card__blurb { margin: 0 0 12px; color: var(--muted); font-size: .78rem; line-height: 1.5; }
+.planet-grid--select .stage-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.planet-grid--select .stage-button { display: grid; min-width: 0; min-height: 78px; grid-template-columns: auto 1fr; align-content: center; gap: 3px 8px; padding: 9px 10px; border-radius: 10px; }
+.planet-grid--select .stage-button__number { grid-row: 1 / 3; font-size: .84rem; }
+.planet-grid--select .stage-button__name { color: var(--ink); font-size: .71rem; font-weight: 600; }
+.planet-grid--select .stage-button__status { overflow: hidden; color: var(--muted); font-size: .59rem; text-overflow: ellipsis; white-space: nowrap; }
+.planet-grid--select .stage-button--completed { border-color: rgba(131,219,154,.18); }
+.planet-grid--select .stage-button--completed .stage-button__number,
+.planet-grid--select .stage-button--completed .stage-button__status { color: var(--green); }
+.planet-grid--select .stage-button--available { border-color: color-mix(in srgb, var(--planet-accent) 50%, var(--line)); color: var(--ink); }
+.planet-grid--select .stage-button--available .stage-button__status { color: var(--planet-accent); }
+.planet-grid--select .stage-button--in-progress .stage-button__status { color: var(--amber); }
+.planet-grid--select .stage-button:disabled { cursor: not-allowed; opacity: .45; }
+@keyframes planet-details-in { from { opacity: .4; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 680px) {
+  .planet-grid--select { gap: 10px; }
+  .planet-grid--select .planet-card { min-height: 0; }
+  .planet-card__toggle { grid-template-columns: 78px minmax(0, 1fr); }
+  .planet-grid--select .planet-card__visual { min-height: 128px; }
+  .planet-grid--select .planet-orb { width: 56px; }
+  .planet-grid--select .planet-orbit { width: 76px; height: 29px; }
+  .planet-grid--select .planet-card--saturn .planet-orbit { width: 80px; height: 26px; border-width: 5px; }
+  .planet-grid--select .planet-card__body { gap: 7px; padding: 13px 12px; }
+  .planet-card__name { font-size: 1.22rem; }
+  .planet-grid--select .planet-card__title { gap: 6px; }
+  .planet-grid--select .planet-card__title .eyebrow { font-size: .52rem; }
+  .planet-grid--select .status-badge { padding: 5px 6px; font-size: .53rem; }
+  .planet-card__progress-label { font-size: .61rem; }
+  .planet-card__continue { font-size: .63rem; }
+  .planet-card__details { padding: 0 12px 13px; }
+  .planet-card__blurb { font-size: .7rem; }
+  .planet-grid--select .stage-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .planet-grid--select .stage-button { min-height: 58px; padding: 7px 8px; }
+  .planet-grid--select .stage-button__name { font-size: .67rem; }
+}
+@media (max-width: 360px) {
+  .planet-card__toggle { grid-template-columns: 62px minmax(0, 1fr); }
+  .planet-grid--select .planet-card__visual { min-height: 120px; }
+  .planet-grid--select .planet-orb { width: 48px; }
+  .planet-grid--select .planet-orbit { width: 67px; }
+  .planet-grid--select .planet-card__body { padding-right: 8px; padding-left: 9px; }
+  .planet-grid--select .planet-card__title .eyebrow { font-size: .47rem; }
+  .planet-grid--select .status-badge { font-size: .48rem; }
+}

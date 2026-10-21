@@ -1,37 +1,70 @@
+import { useState } from "react";
 import { PLANETS } from "../game/data/planets.js";
+import { getInitialExpandedPlanetId, getPlanetSelectorModel } from "./planetSelectorModel.js";
 
 export function PlanetsScreen({ progress, onBack, onPlay }) {
+  const [expandedPlanetId, setExpandedPlanetId] = useState(() => getInitialExpandedPlanetId(progress));
+
   return (
-    <main className="screen screen--section">
+    <main className="screen screen--section planet-selector">
       <header className="section-head">
         <button type="button" className="btn btn--back" onClick={onBack}>← Base</button>
-        <div><p className="eyebrow">Mapa de exploração</p><h1>Escolha seu destino</h1><p className="muted">Cada mundo guarda um ecossistema único para estudar.</p></div>
+        <div><p className="eyebrow">Mapa de exploração</p><h1>Escolha seu destino</h1><p className="muted">Selecione um planeta para ver suas fases.</p></div>
         <span className="section-head__count">{progress.unlockedPlanetIds.length} / {PLANETS.length} desbloqueados</span>
       </header>
       <div className="planet-grid planet-grid--select">
         {PLANETS.map((planet, index) => {
-          const unlocked = progress.unlockedPlanetIds.includes(planet.id);
-          const complete = planet.stages.filter((stage) => progress.completedStageIds.includes(stage.id)).length;
-          const accumulated = planet.stages.reduce((total, stage) => total + (progress.completedStageIds.includes(stage.id)
-            ? 1 : Math.min(1, progress.stageProgress?.[stage.id] ?? 0)), 0);
-          const pct = Math.round((accumulated / planet.stages.length) * 100);
+          const model = getPlanetSelectorModel(planet, progress);
+          const expanded = expandedPlanetId === planet.id;
+          const nextStage = model.stages.find((stage) => stage.available && !stage.completed);
+          const detailsId = `planet-stages-${planet.id}`;
+
           return (
-            <article key={planet.id} className={`planet-card planet-card--${planet.id} ${unlocked ? "is-unlocked" : "is-locked"}`} style={{ "--planet-accent": planet.theme.accent }}>
-              <div className="planet-card__visual"><span className="planet-orb" /><span className="planet-orbit" /><span className="planet-card__index">0{index + 1}</span></div>
-              <div className="planet-card__body">
-                <div className="planet-card__title"><div><span className="eyebrow">{unlocked ? "Rota disponível" : "Sinal não identificado"}</span><h2>{planet.name}</h2></div><span className={`status-badge ${unlocked ? "status-badge--open" : "status-badge--locked"}`}>{unlocked ? "● Aberto" : "⌑ Bloqueado"}</span></div>
-                <p>{unlocked ? planet.blurb : "Complete as fases anteriores para revelar este destino."}</p>
-                <div className="planet-card__progress"><div><span>Progresso</span><b>{complete}/{planet.stages.length} fases</b></div><div className="progress-track"><span style={{ width: `${pct}%` }} /></div></div>
-                <div className="stage-list" aria-label={`Fases de ${planet.name}`}>
-                  {planet.stages.map((stage, stageIndex) => {
-                    const stageComplete = progress.completedStageIds.includes(stage.id);
-                    const stagePct = stageComplete ? 100 : Math.round((progress.stageProgress?.[stage.id] ?? 0) * 100);
-                    const stageUnlocked = unlocked && (stageIndex === 0 || progress.completedStageIds.includes(planet.stages[stageIndex - 1].id));
-                    const progressLabel = stageComplete ? "concluída" : stagePct > 0 ? `${stagePct}%` : stageUnlocked ? "disponível" : "bloqueada";
-                    return <button key={stage.id} type="button" className="stage-button" disabled={!stageUnlocked} aria-label={`${stage.name}, ${progressLabel}`} onClick={() => onPlay(planet.id, stage.id)}><span className="stage-button__number">{stageComplete ? "✓" : `0${stageIndex + 1}`}</span><span>{stage.name}</span><span>{stagePct > 0 && !stageComplete ? `${stagePct}%` : stageUnlocked ? "↗" : "⌑"}</span></button>;
-                  })}
+            <article key={planet.id} className={`planet-card planet-card--${planet.id} ${model.unlocked ? "is-unlocked" : "is-locked"} ${expanded ? "is-expanded" : ""}`} style={{ "--planet-accent": planet.theme.accent }}>
+              <button
+                type="button"
+                className="planet-card__toggle"
+                aria-expanded={expanded}
+                aria-controls={detailsId}
+                onClick={() => setExpandedPlanetId(expanded ? null : planet.id)}
+              >
+                <span className="planet-card__visual" aria-hidden="true"><span className="planet-orb" /><span className="planet-orbit" /><span className="planet-card__index">0{index + 1}</span></span>
+                <div className="planet-card__body">
+                  <span className="planet-card__title">
+                    <span><span className="eyebrow">{model.unlocked ? "Rota disponível" : "Destino bloqueado"}</span><span className="planet-card__name">{planet.name}</span></span>
+                    <span className={`status-badge ${model.unlocked ? "status-badge--open" : "status-badge--locked"}`}>{model.unlocked ? "● Aberto" : "⌑ Bloqueado"}</span>
+                  </span>
+                  <span className="planet-card__progress">
+                    <span className="planet-card__progress-label"><span>{model.progressLabel}</span><span>{model.progressPercent}%</span></span>
+                    <span className="progress-track"><span style={{ width: `${model.progressPercent}%` }} /></span>
+                  </span>
+                  <span className="planet-card__continue">{model.unlocked ? (nextStage ? `Continuar · ${nextStage.name}` : "Todas as fases concluídas") : "Complete as fases anteriores"}<span className="planet-card__chevron" aria-hidden="true">{expanded ? "−" : "+"}</span></span>
                 </div>
-              </div>
+              </button>
+              {expanded && (
+                <div className="planet-card__details" id={detailsId}>
+                  <p className="planet-card__blurb">{planet.blurb}</p>
+                  <div className="stage-list" aria-label={`Fases de ${planet.name}`}>
+                    {model.stages.map((stage, stageIndex) => {
+                      const progressLabel = stage.completed ? "concluída" : stage.progressPercent > 0 ? `${stage.progressPercent}% concluída` : stage.available ? "disponível" : "bloqueada";
+                      return (
+                        <button
+                          key={stage.id}
+                          type="button"
+                          className={`stage-button stage-button--${stage.status}`}
+                          disabled={!stage.available}
+                          aria-label={`${stage.name}, ${progressLabel}`}
+                          onClick={() => onPlay(planet.id, stage.id)}
+                        >
+                          <span className="stage-button__number">{stage.completed ? "✓" : `0${stageIndex + 1}`}</span>
+                          <span className="stage-button__name">{stage.name}</span>
+                          <span className="stage-button__status">{stage.completed ? "Concluída" : stage.progressPercent > 0 ? `${stage.progressPercent}%` : stage.available ? "Iniciar" : "Bloqueada"}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </article>
           );
         })}
