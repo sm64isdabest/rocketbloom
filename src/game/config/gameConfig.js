@@ -48,22 +48,25 @@ export const REWARDS = {
 export const SPAWN = {
   answerFallSpeed: 142,
   answerTop: 148,
-  answerChoiceTimeMs: 2800,
-  answerPerspectiveMs: 1450,
-  answerFeedbackMs: 700,
-  nextQuestionDelayMs: 850,
   collectibleFallSpeed: 118,
   obstacleFallSpeed: 138,
   obstacleIntervalMs: 4200,
   obstacleMinIntervalMs: 2450,
   obstacleDifficultyIntervalFactor: 0.72,
   obstacleDifficultySpeedFactor: 0.55,
-  obstacleMaxActive: 4,
   obstaclePairAfterProgress: 0.62,
   obstacleSafeGap: 30,
   obstacleMinLaneDistance: 104,
   collectibleIntervalMs: 3800,
   maxParticles: 72,
+};
+
+export const QUESTION_TIMING = {
+  choiceWindowMs: 2800,
+  perspectiveAnimationMs: 1450,
+  resolutionFeedbackMs: 700,
+  interQuestionMinMs: 3000,
+  interQuestionMaxMs: 10000,
 };
 
 export const QUESTION_DIFFICULTY = {

@@ -6,6 +6,14 @@ export const CAMPAIGN_CONFIG = {
   baseStageDurationMs: 58_000,
   durationIncreasePerStageMs: 8_000,
   stageClearMoney: REWARDS.stageClearMoney,
+  difficulty: {
+    speedMultiplier: { start: 1, end: 1.46 },
+    speedLossMultiplier: { start: 1, end: 1.18 },
+    obstaclePenaltyMultiplier: { start: 1, end: 0.72 },
+    obstacleIntervalMs: { start: 4600, end: 2750 },
+    obstacleMinIntervalMs: { start: 2450, end: 1550 },
+    obstacleSpeedMultiplier: { start: 1, end: 1.3 },
+  },
 };
 
 export const MATH_OPERATIONS_BY_PLANET = {
@@ -22,7 +30,7 @@ const PLANET_CONFIG = [
     biome: "amazon",
     theme: { skyTop: "#071a12", skyBottom: "#1c5a38", accent: "#3dcc7a", starAlpha: 0.22 },
     obstacleIds: ["plane", "helicopter", "balloon"], questionPoolId: "earth", plantId: "victoria-amazonica",
-    difficulty: 1, speedMultiplier: 1, obstacleIntervalMs: 4600, obstacleSpeedMultiplier: 1,
+    difficulty: 1,
     questionLimits: { operandMax: 10, multiplierMax: 5, divisorMax: 6 },
   },
   {
@@ -31,7 +39,7 @@ const PLANET_CONFIG = [
     biome: "mars",
     theme: { skyTop: "#140806", skyBottom: "#8a3a22", accent: "#e07a4a", starAlpha: 0.5 },
     obstacleIds: ["asteroid"], questionPoolId: "mars", plantId: "mars-lichen",
-    difficulty: 2, speedMultiplier: 1.12, obstacleIntervalMs: 4050, obstacleSpeedMultiplier: 1.08,
+    difficulty: 2,
     questionLimits: { operandMax: 16, multiplierMax: 8, divisorMax: 9 },
   },
   {
@@ -40,7 +48,7 @@ const PLANET_CONFIG = [
     biome: "saturn",
     theme: { skyTop: "#0b0a18", skyBottom: "#3a2f6b", accent: "#d6c27a", starAlpha: 0.76 },
     obstacleIds: ["asteroid", "comet"], questionPoolId: "saturn", plantId: "ring-fern",
-    difficulty: 3, speedMultiplier: 1.25, obstacleIntervalMs: 3600, obstacleSpeedMultiplier: 1.16,
+    difficulty: 3,
     questionLimits: { operandMax: 24, multiplierMax: 10, divisorMax: 12 },
   },
   {
@@ -49,7 +57,7 @@ const PLANET_CONFIG = [
     biome: "neptune",
     theme: { skyTop: "#030716", skyBottom: "#123a7a", accent: "#7ad4ff", starAlpha: 0.94 },
     obstacleIds: ["comet", "diamond-shard"], questionPoolId: "neptune", plantId: "ice-orchid",
-    difficulty: 4, speedMultiplier: 1.38, obstacleIntervalMs: 3200, obstacleSpeedMultiplier: 1.24,
+    difficulty: 4,
     questionLimits: { operandMax: 40, multiplierMax: 12, divisorMax: 15 },
   },
 ];
@@ -57,18 +65,24 @@ const PLANET_CONFIG = [
 function buildStages(planet) {
   return Array.from({ length: CAMPAIGN_CONFIG.stagesPerPlanet }, (_, index) => {
     const stageNumber = index + 1;
-    const difficulty = Math.min(4, planet.difficulty + index);
-    const progression = index / Math.max(1, CAMPAIGN_CONFIG.stagesPerPlanet - 1);
+    const mathDifficulty = Math.min(4, planet.difficulty + index);
+    const campaignIndex = (planet.order - 1) * CAMPAIGN_CONFIG.stagesPerPlanet + index;
+    const campaignProgress = campaignIndex / (PLANET_CONFIG.length * CAMPAIGN_CONFIG.stagesPerPlanet - 1);
+    const difficulty = CAMPAIGN_CONFIG.difficulty;
+    const interpolate = ({ start, end }) => start + (end - start) * campaignProgress;
     return {
       id: `${planet.id}-${stageNumber}`,
       planetId: planet.id,
       name: `Fase ${stageNumber}`,
-      difficulty,
+      difficulty: mathDifficulty,
       durationMs: CAMPAIGN_CONFIG.baseStageDurationMs + index * CAMPAIGN_CONFIG.durationIncreasePerStageMs,
-      speedMultiplier: planet.speedMultiplier * (1 + progression * 0.06),
-      speedLossMultiplier: 1 + progression * 0.12,
-      obstacleIntervalMs: planet.obstacleIntervalMs * (1 - progression * 0.14),
-      obstacleSpeedMultiplier: planet.obstacleSpeedMultiplier * (1 + progression * 0.08),
+      speedMultiplier: interpolate(difficulty.speedMultiplier),
+      speedLossMultiplier: interpolate(difficulty.speedLossMultiplier),
+      obstaclePenaltyMultiplier: interpolate(difficulty.obstaclePenaltyMultiplier),
+      obstacleIntervalMs: interpolate(difficulty.obstacleIntervalMs),
+      obstacleMinIntervalMs: interpolate(difficulty.obstacleMinIntervalMs),
+      obstacleSpeedMultiplier: interpolate(difficulty.obstacleSpeedMultiplier),
+      maxActiveObstacles: Math.min(4, 2 + Math.floor(campaignProgress * 2.4)),
       questionCategories: [...(MATH_OPERATIONS_BY_PLANET[planet.id]?.[index] ?? [])],
       questionLimits: {
         operandMax: planet.questionLimits.operandMax + index * 2,

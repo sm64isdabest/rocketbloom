@@ -59,7 +59,7 @@ export function resolveAnswerRound(round, answer = null) {
 
 export function completeAnswerRound(round) {
   if (!round || !["animating-correct", "animating-incorrect", "feedback"].includes(round.status)) return false;
-  round.status = "resolved";
+  round.status = "waiting-next-question";
   for (const option of round.answers) option.alive = false;
   return true;
 }

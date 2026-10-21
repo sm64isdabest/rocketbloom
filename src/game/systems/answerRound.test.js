@@ -30,7 +30,7 @@ test("uma resolução inicia uma única animação e só então encerra a rodada
   assert.equal(round.status, "animating-correct");
   assert.equal(round.answers.filter((answer) => answer.alive).length, 4);
   assert.equal(completeAnswerRound(round), true);
-  assert.equal(round.status, "resolved");
+  assert.equal(round.status, "waiting-next-question");
   assert.equal(round.answers.filter((answer) => answer.alive).length, 0);
   assert.equal(completeAnswerRound(round), false);
 });

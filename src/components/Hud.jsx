@@ -2,7 +2,7 @@ export function Hud({ snapshot, durationMs, question, onPause }) {
   const progress = snapshot
     ? Math.min(100, Math.round(((snapshot.progressMs ?? snapshot.elapsedMs) / durationMs) * 100))
     : 0;
-  const activeQuestion = snapshot?.question ?? question;
+  const activeQuestion = snapshot ? snapshot.question : question;
 
   return (
     <div className="hud">

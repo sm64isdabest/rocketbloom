@@ -1,5 +1,5 @@
 import { COLLECTIBLES } from "../data/items.js";
-import { SPEED, SCORE, SPAWN } from "../config/gameConfig.js";
+import { SPEED, SCORE, SPAWN, QUESTION_TIMING } from "../config/gameConfig.js";
 import { Answer } from "../entities/Answer.js";
 import { Collectible } from "../entities/Collectible.js";
 import { Obstacle } from "../entities/Obstacle.js";
@@ -8,6 +8,7 @@ import { cullOffscreen } from "../systems/spawn.js";
 import { completeAnswerRound, createAnswerRound, resolveAnswerRound } from "../systems/answerRound.js";
 import { getLaneFromCenter, renderLaneColumns } from "../systems/lanes.js";
 import { generateQuestion } from "../systems/questions.js";
+import { sampleInterQuestionDelayMs } from "../systems/questionTiming.js";
 import { aabbOverlaps } from "./collision.js";
 import { createStarfield, renderStarfield, updateStarfield } from "../systems/stars.js";
 import { renderPlanetScenery } from "../systems/scenery.js";
@@ -58,10 +59,10 @@ export class GameEngine {
     this.hudAcc = 0;
     this.obstacleAcc = 0;
     this.collectibleAcc = 0;
-    this.nextQuestionInMs = 0;
+    this.interQuestionRemainingMs = 0;
     this.roundNumber = 0;
     this.lastQuestionPrompt = null;
-    this.answerChoiceRemainingMs = SPAWN.answerChoiceTimeMs;
+    this.answerChoiceRemainingMs = QUESTION_TIMING.choiceWindowMs;
     this.answerAnimationElapsedMs = 0;
     this.answerFeedbackRemainingMs = 0;
     this.columnFlashLane = -1;
@@ -141,6 +142,8 @@ export class GameEngine {
 
   startNextQuestion() {
     if (this.ended || this.disposed) return;
+    if (this.currentRound && this.currentRound.status !== "waiting-next-question") return;
+    if (this.currentRound && this.interQuestionRemainingMs > 0) return;
     this.roundNumber += 1;
     const question = generateQuestion({
       difficulty: this.session.difficulty.mathTier,
@@ -158,10 +161,10 @@ export class GameEngine {
       fallSpeed: this.getEntitySpeed(SPAWN.answerFallSpeed),
     });
     this.answers = this.currentRound.answers;
-    this.answerChoiceRemainingMs = SPAWN.answerChoiceTimeMs;
+    this.answerChoiceRemainingMs = QUESTION_TIMING.choiceWindowMs;
     this.answerAnimationElapsedMs = 0;
     this.answerFeedbackRemainingMs = 0;
-    this.nextQuestionInMs = 0;
+    this.interQuestionRemainingMs = 0;
     this.columnFlashLane = -1;
     this.columnFlashColor = null;
     this.columnFlashRemainingMs = 0;
@@ -233,12 +236,12 @@ export class GameEngine {
 
     if (this.currentRound.status === "animating-correct") {
       this.answerAnimationElapsedMs += frameMs;
-      if (this.answerAnimationElapsedMs >= SPAWN.answerPerspectiveMs) {
+      if (this.answerAnimationElapsedMs >= QUESTION_TIMING.perspectiveAnimationMs) {
         this.currentRound.status = "feedback";
-        this.answerFeedbackRemainingMs = SPAWN.answerFeedbackMs;
+        this.answerFeedbackRemainingMs = QUESTION_TIMING.resolutionFeedbackMs;
         this.columnFlashLane = this.currentRound.result.lane;
         this.columnFlashColor = "#00FF00";
-        this.columnFlashRemainingMs = SPAWN.answerFeedbackMs;
+        this.columnFlashRemainingMs = QUESTION_TIMING.resolutionFeedbackMs;
         this.speed = clamp(this.speed + SPEED.correctAnswerBonus, SPEED.min, SPEED.max);
         this.questionFeedback = "Resposta correta!";
         playGameSound("correct");
@@ -260,9 +263,9 @@ export class GameEngine {
       return;
     }
 
-    if (this.currentRound.status === "resolved") {
-      this.nextQuestionInMs -= frameMs;
-      if (this.nextQuestionInMs <= 0) this.startNextQuestion();
+    if (this.currentRound.status === "waiting-next-question") {
+      this.interQuestionRemainingMs -= frameMs;
+      if (this.interQuestionRemainingMs <= 0) this.startNextQuestion();
     }
   }
 
@@ -274,7 +277,7 @@ export class GameEngine {
     if (!completeAnswerRound(this.currentRound)) return;
     this.answers = [];
     this.columnFlashRemainingMs = 0;
-    this.nextQuestionInMs = SPAWN.nextQuestionDelayMs;
+    this.interQuestionRemainingMs = sampleInterQuestionDelayMs(this.rng);
     this.questionFeedback = "";
     if (this.speed <= SPEED.defeatAtOrBelow) this.finish("defeat");
   }
@@ -291,10 +294,10 @@ export class GameEngine {
       this.incorrectAnswers += 1;
       this.score = Math.max(0, this.score + SCORE.incorrectAnswer);
       this.speed = clamp(this.speed - SPEED.wrongAnswerPenalty * (this.session.stage.speedLossMultiplier ?? 1), SPEED.min, SPEED.max);
-      this.answerFeedbackRemainingMs = SPAWN.answerFeedbackMs;
+      this.answerFeedbackRemainingMs = QUESTION_TIMING.resolutionFeedbackMs;
       this.columnFlashLane = result.lane;
       this.columnFlashColor = "#FF3030";
-      this.columnFlashRemainingMs = SPAWN.answerFeedbackMs;
+      this.columnFlashRemainingMs = QUESTION_TIMING.resolutionFeedbackMs;
       this.questionFeedback = result.unanswered ? "Alternativas perdidas" : "Resposta incorreta";
       playGameSound("incorrect");
     }
@@ -306,17 +309,19 @@ export class GameEngine {
     const stageProgress = clamp(this.progressMs / this.session.stage.durationMs, 0, 1);
     const spawnRate = this.session.difficulty.spawnRateMultiplier;
     const baseInterval = this.session.stage.obstacleIntervalMs ?? SPAWN.obstacleIntervalMs / spawnRate;
-    const interval = Math.max(SPAWN.obstacleMinIntervalMs / spawnRate,
+    const minInterval = this.session.stage.obstacleMinIntervalMs ?? SPAWN.obstacleMinIntervalMs;
+    const interval = Math.max(minInterval,
       baseInterval * (1 - stageProgress * SPAWN.obstacleDifficultyIntervalFactor));
     this.obstacleAcc += frameMs;
     this.collectibleAcc += frameMs;
+    const maxActiveObstacles = this.session.stage.maxActiveObstacles ?? 4;
     const activeObstacles = this.obstacles.filter((obstacle) => obstacle.alive).length;
-    if (this.session.obstacles.length && activeObstacles < SPAWN.obstacleMaxActive && this.obstacleAcc >= interval) {
+    if (this.session.obstacles.length && activeObstacles < maxActiveObstacles && this.obstacleAcc >= interval) {
       this.obstacleAcc = 0;
       this.spawnObstacle();
       if (stageProgress >= SPAWN.obstaclePairAfterProgress
         && this.rng() < (stageProgress - SPAWN.obstaclePairAfterProgress) * 0.45
-        && this.obstacles.filter((obstacle) => obstacle.alive).length < SPAWN.obstacleMaxActive) this.spawnObstacle();
+        && this.obstacles.filter((obstacle) => obstacle.alive).length < maxActiveObstacles) this.spawnObstacle();
     }
     if (this.collectibleAcc >= SPAWN.collectibleIntervalMs / spawnRate) {
       this.collectibleAcc = 0;
@@ -333,7 +338,9 @@ export class GameEngine {
       obstacle.update(dt);
       if (aabbOverlaps(this.rocket, obstacle.collisionBox)) {
         obstacle.alive = false;
-        this.speed = clamp(this.speed - SPEED.obstaclePenalty * (this.session.stage.speedLossMultiplier ?? 1), SPEED.min, SPEED.max);
+        this.speed = clamp(this.speed - SPEED.obstaclePenalty
+          * (this.session.stage.speedLossMultiplier ?? 1)
+          * (this.session.stage.obstaclePenaltyMultiplier ?? 1), SPEED.min, SPEED.max);
         this.questionFeedback = "Impacto! Velocidade reduzida";
         this.feedbackTimerMs = 900;
         playGameSound("collision");
@@ -437,6 +444,8 @@ export class GameEngine {
     this.answers = [];
     this.particles = [];
     this.currentRound && (this.currentRound.status = "resolved");
+    this.interQuestionRemainingMs = 0;
+    this.answerChoiceRemainingMs = 0;
     this.onOutcome?.(outcome, this.getSnapshot());
   }
 
@@ -458,7 +467,7 @@ export class GameEngine {
       stageProgress: clamp(this.progressMs / this.session.stage.durationMs, 0, 1),
       planetId: this.session.planet.id,
       stageId: this.session.stage.id,
-      question: this.currentRound?.question ?? null,
+      question: this.currentRound?.status === "waiting-next-question" ? null : this.currentRound?.question ?? null,
       answerState: this.currentRound?.status ?? "preparing",
       selectedLane: this.currentRound?.result?.lane ?? getLaneFromCenter(this.rocket.x + this.rocket.width / 2, this.view.width),
       feedback: this.questionFeedback,
@@ -490,7 +499,7 @@ export class GameEngine {
     for (const obstacle of this.obstacles) obstacle.render(ctx);
     for (const collectible of this.collectibles) collectible.render(ctx);
     if (this.currentRound?.status === "animating-correct") {
-      this.currentRound.selectedAnswer?.renderPerspective(ctx, this.answerAnimationElapsedMs / SPAWN.answerPerspectiveMs, view.height);
+      this.currentRound.selectedAnswer?.renderPerspective(ctx, this.answerAnimationElapsedMs / QUESTION_TIMING.perspectiveAnimationMs, view.height);
     } else if (this.currentRound?.status === "awaiting-resolution") {
       for (const answer of this.answers) if (answer.alive) answer.render(ctx);
     }
