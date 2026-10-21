@@ -180,3 +180,22 @@ Não houve dificuldades identificadas.
 ### Recompensas
 
 - **Planta:** conquistada durante as fases, oferece dinheiro e progresso ao jogador.
+
+## Desenvolvimento
+
+Aplicação web com React, Vite, JavaScript e HTML5 Canvas.
+
+```bash
+npm install
+npm run dev
+```
+
+Outros comandos:
+
+```bash
+npm test
+npm run build
+npm run preview
+```
+
+O servidor de desenvolvimento imprime a URL local (em geral `http://localhost:5173`).

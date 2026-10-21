@@ -1,0 +1,3 @@
+export function PauseOverlay({ onResume, onRestart, onQuit }) {
+  return <div className="overlay"><section className="panel pause-panel" role="dialog" aria-modal="true" aria-labelledby="pause-title"><span className="pause-emblem">Ⅱ</span><p className="eyebrow">Pausa de voo</p><h2 id="pause-title">Missão suspensa</h2><p className="muted">A rota está em espera. Quando estiver pronto, retome a exploração.</p><div className="row"><button type="button" className="btn btn--launch" onClick={onResume}>Continuar missão</button><button type="button" className="btn btn--ghost" onClick={onRestart}>Reiniciar fase</button><button type="button" className="btn btn--text" onClick={onQuit}>Sair para a base</button></div></section></div>;
+}

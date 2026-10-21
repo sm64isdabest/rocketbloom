@@ -1,0 +1,176 @@
+:root {
+  color-scheme: dark;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --space: #07121a;
+  --space-deep: #040b12;
+  --panel: rgba(14, 29, 37, .82);
+  --panel-solid: #10212a;
+  --ink: #f0f7f2;
+  --muted: #9db2b7;
+  --faint: #6d858d;
+  --line: rgba(190, 222, 218, .15);
+  --green: #83db9a;
+  --green-dark: #163b2c;
+  --cyan: #8ee2df;
+  --amber: #f3c875;
+  --danger: #ef8b72;
+  --shadow: 0 24px 70px rgba(0, 0, 0, .4);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; min-width: 280px; min-height: 100%; background: var(--space-deep); color: var(--ink); }
+body { min-height: 100vh; background-image: radial-gradient(1px 1px at 8% 18%, #d8fbef 45%, transparent 55%), radial-gradient(1px 1px at 76% 11%, #d8fbef 45%, transparent 55%), radial-gradient(1px 1px at 41% 38%, #b5d7d2 45%, transparent 55%), radial-gradient(1px 1px at 91% 58%, #b5d7d2 45%, transparent 55%), radial-gradient(1px 1px at 24% 79%, #d8fbef 45%, transparent 55%), radial-gradient(1px 1px at 65% 87%, #d8fbef 45%, transparent 55%), radial-gradient(ellipse at 50% -22%, #183344 0%, #0a1821 48%, var(--space-deep) 100%); background-size: 370px 310px, 520px 430px, 670px 480px, 440px 570px, 590px 390px, 730px 620px, auto; }
+button { color: inherit; font: inherit; }
+button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+button:disabled { cursor: not-allowed; }
+::selection { background: #386755; color: white; }
+h1, h2, h3, p { margin-top: 0; }
+h1, h2, h3 { letter-spacing: -.045em; line-height: 1.08; }
+h1 { margin-bottom: .3em; font-size: clamp(2.3rem, 6vw, 4.45rem); }
+h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
+.app-shell, .screen { min-height: 100dvh; }
+.screen { position: relative; isolation: isolate; padding: clamp(22px, 4vw, 58px) clamp(18px, 7vw, 108px); overflow: hidden; }
+.screen::before { position: absolute; z-index: -1; inset: 0; content: ""; pointer-events: none; background: linear-gradient(120deg, rgba(5, 15, 21, .24), transparent 45%, rgba(11, 35, 41, .1)); }
+.screen--center { display: grid; place-content: center; justify-items: center; gap: 12px; text-align: center; }
+.eyebrow { margin: 0 0 9px; color: var(--cyan); font: 500 .68rem/1.4 "DM Mono", monospace; letter-spacing: .15em; text-transform: uppercase; }
+.muted, .lede { color: var(--muted); }
+.muted { max-width: 620px; line-height: 1.7; }
+.lede { max-width: 490px; font-size: clamp(1rem, 2vw, 1.16rem); line-height: 1.75; }
+.btn { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; gap: 10px; padding: 11px 19px; border: 1px solid transparent; border-radius: 999px; background: var(--green); color: #10251a; font-size: .9rem; font-weight: 800; cursor: pointer; transition: transform .18s ease, filter .18s ease, border-color .18s ease, background .18s ease; }
+.btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.08); }
+.btn:active:not(:disabled) { transform: translateY(1px) scale(.985); filter: brightness(.94); }
+.btn:disabled { opacity: .42; }
+.btn--launch { box-shadow: 0 0 28px rgba(131, 219, 154, .18); }
+.btn--launch span { font-size: 1.15rem; }
+.btn--ghost, .btn--back { border-color: var(--line); background: rgba(11, 25, 32, .52); color: var(--ink); }
+.btn--ghost:hover, .btn--back:hover { border-color: rgba(142, 226, 223, .55); background: rgba(28, 56, 62, .72); }
+.btn--back { align-self: start; flex-shrink: 0; }
+.btn--text { border-color: transparent; background: transparent; color: var(--muted); }
+.banner { max-width: 530px; padding: 11px 14px; border: 1px solid rgba(239, 139, 114, .4); border-radius: 12px; color: #ffd5ca; background: rgba(79, 36, 31, .28); }
+.row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+
+/* Main menu */
+.screen--home { display: flex; flex-direction: column; justify-content: space-between; min-height: 100dvh; padding-top: 26px; }
+.menu__topline, .menu__footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; color: var(--faint); font: 500 .65rem "DM Mono", monospace; letter-spacing: .11em; text-transform: uppercase; }
+.menu__topline { justify-content: flex-start; }
+.signal-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); animation: beacon 2.2s ease-in-out infinite; }
+.menu__hero { display: grid; grid-template-columns: minmax(300px, 1.02fr) minmax(290px, .98fr); align-items: center; gap: clamp(10px, 5vw, 80px); width: min(1130px, 100%); margin: 0 auto; padding: 25px 0; }
+.menu__copy { position: relative; z-index: 1; }
+.wordmark { margin: 12px 0 18px; font-size: clamp(3.35rem, 8vw, 6rem); letter-spacing: -.085em; }
+.wordmark span { color: var(--green); }
+.menu__actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 26px 0 17px; }
+.menu__hint { color: var(--faint); font-size: .78rem; }
+.keycap { display: inline-grid; width: 23px; height: 23px; place-items: center; margin-right: 3px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); font: 500 .75rem "DM Mono", monospace; }
+.solar-art { position: relative; width: min(430px, 100%); aspect-ratio: 1; justify-self: center; filter: drop-shadow(0 28px 56px rgba(0, 0, 0, .22)); }
+.solar-art::before { position: absolute; inset: 7%; border-radius: 50%; content: ""; background: radial-gradient(circle, rgba(78, 164, 144, .12), transparent 69%); }
+.solar-art__orbit { position: absolute; top: 50%; left: 50%; border: 1px solid rgba(166, 216, 206, .2); border-radius: 50%; transform: translate(-50%, -50%) rotate(-25deg); }
+.solar-art__orbit--one { width: 85%; height: 45%; }
+.solar-art__orbit--two { width: 102%; height: 67%; transform: translate(-50%, -50%) rotate(32deg); border-color: rgba(166, 216, 206, .12); }
+.solar-art__planet { position: absolute; top: 50%; left: 50%; border-radius: 50%; transform: translate(-50%, -50%); }
+.solar-art__planet--main { width: 43%; aspect-ratio: 1; background: radial-gradient(circle at 33% 25%, #c9efbf, #6bb788 30%, #235b53 66%, #102d39 100%); box-shadow: inset -18px -12px 26px rgba(4, 13, 20, .64), 0 0 58px rgba(93, 195, 157, .2); overflow: hidden; }
+.solar-art__planet--main::before, .solar-art__planet--main::after { position: absolute; left: -10%; width: 120%; height: 27%; border-radius: 50%; content: ""; background: rgba(15, 67, 52, .42); transform: rotate(-23deg); }
+.solar-art__planet--main::before { top: 29%; }.solar-art__planet--main::after { top: 58%; left: 15%; width: 72%; height: 17%; background: rgba(191, 221, 152, .25); }
+.solar-art__planet--moon { top: 22%; left: 78%; width: 12%; aspect-ratio: 1; background: radial-gradient(circle at 32% 25%, #fff2cd, #d7a35f 52%, #513942); box-shadow: 0 0 22px rgba(242, 186, 113, .35); }
+.solar-art__rocket { position: absolute; top: 31%; left: 13%; display: grid; width: 36px; height: 56px; place-items: center; border-radius: 60% 60% 38% 38%; color: #1c604d; background: linear-gradient(90deg, #e3f1de, #f8f4d9 55%, #9cdec2); box-shadow: 0 0 28px rgba(128, 233, 197, .36); transform: rotate(-35deg); }
+.solar-art__leaf { position: absolute; top: 74%; left: 76%; color: var(--green); font-size: 2.1rem; text-shadow: 0 0 22px rgba(131, 219, 154, .65); }
+.mission-strip { display: grid; grid-template-columns: .7fr .7fr 1fr 1.45fr; width: min(1130px, 100%); margin: 0 auto 24px; border: 1px solid var(--line); border-radius: 17px; background: rgba(10, 24, 31, .58); backdrop-filter: blur(12px); }
+.mission-strip > div { display: grid; align-content: center; gap: 5px; min-height: 95px; padding: 16px 22px; border-right: 1px solid var(--line); }
+.mission-strip > div:last-child { border-right: 0; }
+.mission-strip strong { font-size: 1.35rem; letter-spacing: -.04em; }.mission-strip strong small { color: var(--faint); font-size: .8rem; }.mission-strip > div > span:last-child { color: var(--muted); font-size: .73rem; }
+.mission-strip__plant { grid-template-columns: 33px 1fr !important; align-items: center; gap: 12px !important; }.mission-strip__plant > span { color: var(--green); font-size: 1.8rem; }.mission-strip__plant p { margin: 0; color: var(--muted); font-size: .73rem; line-height: 1.6; }.mission-strip__plant b { color: var(--ink); font-size: .8rem; }
+.resource-coin { color: var(--amber); font-style: normal; }.resource-diamond { color: var(--cyan); font-style: normal; }
+.menu__footer { border-top: 1px solid rgba(190, 222, 218, .1); padding-top: 17px; }.menu__footer i { color: var(--green); font-style: normal; }.menu__footer nav { display: flex; gap: 20px; }.text-button { padding: 4px 0; border: 0; color: var(--muted); background: transparent; font: inherit; letter-spacing: .04em; text-transform: none; cursor: pointer; }.text-button:hover { color: var(--green); }
+
+/* Planet selection */
+.screen--section { width: min(1360px, 100%); min-height: 100dvh; margin: 0 auto; overflow: visible; }
+.section-head { display: flex; align-items: center; gap: clamp(15px, 3vw, 35px); margin-bottom: 34px; }.section-head h1 { margin-bottom: 8px; font-size: clamp(2rem, 4.5vw, 3.3rem); }.section-head .muted { margin: 0; }.section-head__count { margin-left: auto; padding: 9px 13px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); white-space: nowrap; font: .72rem "DM Mono", monospace; }
+.planet-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.planet-card { --planet-accent: var(--green); position: relative; display: grid; grid-template-columns: 150px minmax(0, 1fr); min-height: 270px; overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(135deg, rgba(17, 35, 42, .84), rgba(9, 19, 26, .82)); box-shadow: 0 12px 32px rgba(0, 0, 0, .14); }
+.planet-card.is-locked { filter: saturate(.45); }.planet-card__visual { position: relative; display: grid; place-items: center; overflow: hidden; border-right: 1px solid rgba(255,255,255,.06); background: radial-gradient(ellipse at 45% 45%, color-mix(in srgb, var(--planet-accent) 23%, transparent), transparent 70%); }
+.planet-orb { position: relative; z-index: 1; width: 92px; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 31% 24%, #fff, var(--planet-accent) 14%, color-mix(in srgb, var(--planet-accent) 65%, #17232b) 62%, #08121a 100%); box-shadow: inset -12px -10px 16px rgba(0,0,0,.55), 0 0 33px color-mix(in srgb, var(--planet-accent) 33%, transparent); }
+.planet-card--earth .planet-orb { background: radial-gradient(circle at 31% 23%, #c5ffd4 0, #4bb891 20%, #1b6981 61%, #0a1a28); }.planet-card--earth .planet-orb::after { position: absolute; top: 38%; left: 13%; width: 38%; height: 23%; border-radius: 48% 30% 50% 40%; background: #a2d77e; content: ""; transform: rotate(-24deg); }
+.planet-card--mars .planet-orb { background: radial-gradient(circle at 31% 23%, #ffd9a2 0, #df8059 24%, #a44734 61%, #321c25); }.planet-card--saturn .planet-orb { background: radial-gradient(circle at 33% 26%, #fff2ce, #d2b578 38%, #795c64 74%, #181926); }.planet-card--saturn .planet-orbit { position: absolute; z-index: 2; width: 127px; height: 38px; border: 7px solid rgba(229, 199, 137, .68); border-left-color: rgba(229, 199, 137, .32); border-radius: 50%; transform: rotate(-24deg); }.planet-card--neptune .planet-orb { background: radial-gradient(circle at 31% 23%, #c5f5ff 0, #5bafe7 26%, #3151a1 68%, #101b3d); }
+.planet-orbit { position: absolute; width: 117px; height: 42px; border: 1px solid color-mix(in srgb, var(--planet-accent) 55%, transparent); border-radius: 50%; transform: rotate(-22deg); }.planet-card__index { position: absolute; right: 13px; bottom: 10px; color: rgba(213, 237, 231, .35); font: .7rem "DM Mono", monospace; }
+.planet-card__body { padding: 20px 20px 16px; }.planet-card__title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }.planet-card__title .eyebrow { color: var(--planet-accent); }.planet-card__title h2 { margin: 0; }.planet-card__body > p { min-height: 42px; margin: 10px 0 15px; color: var(--muted); font-size: .8rem; line-height: 1.55; }.status-badge { flex: 0 0 auto; padding: 6px 9px; border: 1px solid var(--line); border-radius: 999px; font-size: .64rem; }.status-badge--open { color: var(--green); border-color: rgba(131, 219, 154, .24); background: rgba(31, 80, 55, .25); }.status-badge--locked { color: var(--faint); }.planet-card__progress > div:first-child { display: flex; justify-content: space-between; margin-bottom: 7px; color: var(--muted); font-size: .67rem; }.planet-card__progress b { color: var(--ink); font-weight: 600; }.progress-track { height: 4px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.1); }.progress-track span { display: block; height: 100%; border-radius: inherit; background: var(--planet-accent); transition: width .4s ease; }
+.stage-list { display: flex; gap: 8px; margin-top: 13px; }.stage-button { display: flex; min-height: 36px; flex: 1; align-items: center; gap: 7px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 9px; color: var(--muted); background: rgba(4, 14, 20, .5); text-align: left; font-size: .68rem; cursor: pointer; }.stage-button:hover:not(:disabled) { border-color: var(--planet-accent); color: var(--ink); background: color-mix(in srgb, var(--planet-accent) 11%, transparent); }.stage-button:disabled { opacity: .38; }.stage-button__number { color: var(--planet-accent); font: .65rem "DM Mono", monospace; }.stage-button > span:last-child { margin-left: auto; }
+
+/* Settings and command room */
+.settings-layout { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.4fr); gap: 18px; max-width: 1030px; }.panel { border: 1px solid var(--line); border-radius: 19px; background: var(--panel); box-shadow: var(--shadow); backdrop-filter: blur(16px); }.settings-panel { display: grid; grid-template-columns: 48px 1fr; align-items: start; gap: 18px; padding: 25px; }.settings-panel h2 { font-size: 1.35rem; }.settings-panel .muted { margin-bottom: 0; font-size: .8rem; }.panel-icon { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(142, 226, 223, .2); border-radius: 13px; color: var(--cyan); background: rgba(39, 100, 100, .16); font-size: 1.2rem; }.settings-panel > .toggle { grid-column: 2; justify-self: start; }.toggle { display: inline-flex; align-items: center; gap: 9px; padding: 7px 12px 7px 8px; border: 1px solid var(--line); border-radius: 99px; color: var(--muted); background: rgba(4, 14, 20, .54); font-size: .75rem; cursor: pointer; }.toggle > span { width: 29px; height: 17px; padding: 2px; border-radius: 99px; background: #31434a; transition: background .2s; }.toggle > span::after { display: block; width: 13px; height: 13px; border-radius: 50%; background: #c1d0ca; content: ""; transition: transform .2s; }.toggle.is-on { color: var(--green); }.toggle.is-on > span { background: #39774e; }.toggle.is-on > span::after { background: #e8ffe9; transform: translateX(12px); }.settings-panel--controls { grid-template-columns: 48px 1fr; }.settings-panel__intro { grid-column: 2; }.control-options { display: grid; grid-column: 2; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }.control-option { display: grid; gap: 6px; min-height: 118px; padding: 14px; border: 1px solid var(--line); border-radius: 13px; color: var(--muted); background: rgba(4, 14, 20, .43); text-align: left; cursor: pointer; }.control-option > span { color: var(--cyan); font-size: 1.2rem; }.control-option b { color: var(--ink); font-size: .8rem; }.control-option small { font-size: .66rem; line-height: 1.5; }.control-option:hover { border-color: rgba(142, 226, 223, .4); }.control-option.is-selected { border-color: var(--green); background: rgba(36, 86, 57, .2); box-shadow: inset 0 0 0 1px rgba(131,219,154,.12); }.settings-note { grid-column: 2; margin: -4px 0 0; color: var(--faint); font-size: .69rem; }
+.command-summary { display: grid; grid-template-columns: repeat(3, 1fr); max-width: 1030px; margin-bottom: 22px; border: 1px solid var(--line); border-radius: 15px; background: rgba(10,24,31,.6); }.command-summary > div { display: grid; gap: 6px; padding: 17px 20px; border-right: 1px solid var(--line); }.command-summary > div:last-child { border: 0; }.command-summary strong { font-size: 1.45rem; }.command-summary > div > span:last-child { color: var(--muted); font-size: .72rem; }.command-log { max-width: 1030px; padding: 23px; border: 1px solid var(--line); border-radius: 18px; background: rgba(10,24,31,.54); }.command-log__head { display: flex; align-items: end; justify-content: space-between; margin-bottom: 15px; }.command-log__head h2 { margin: 0; font-size: 1.35rem; }.command-log__head > span { color: var(--muted); font-size: .72rem; }.plant-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }.plant-entry { display: flex; min-height: 68px; align-items: center; gap: 13px; padding: 11px; border: 1px solid rgba(190,222,218,.1); border-radius: 12px; background: rgba(4,14,20,.4); }.plant-entry__art { display: grid; width: 40px; height: 40px; flex: 0 0 auto; place-items: center; border-radius: 11px; color: var(--faint); background: rgba(255,255,255,.04); font-size: 1.35rem; }.plant-entry.is-rescued .plant-entry__art { color: var(--green); background: rgba(72,140,83,.2); }.plant-entry .eyebrow { margin-bottom: 3px; color: var(--faint); font-size: .57rem; }.plant-entry h3 { margin: 0; font-size: .83rem; letter-spacing: -.02em; }.plant-entry__status { margin-left: auto; color: var(--faint); font-size: .63rem; white-space: nowrap; }.plant-entry.is-rescued .plant-entry__status { color: var(--green); }
+
+/* Flight interface */
+.play { position: relative; min-height: 100dvh; height: 100dvh; overflow: hidden; background: #07131c; }.play__stage { position: absolute; inset: 0; }.game-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.hud { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(240px, 1fr) auto; align-items: start; gap: 16px; padding: max(18px, env(safe-area-inset-top)) clamp(14px, 3vw, 38px) 0; pointer-events: none; }.hud__question { display: grid; gap: 6px; width: min(360px, 100%); padding: 12px 16px; border: 1px solid rgba(190,222,218,.2); border-radius: 13px; background: rgba(5,16,23,.78); box-shadow: 0 10px 28px rgba(0,0,0,.2); backdrop-filter: blur(10px); }.hud__question .eyebrow { margin: 0; font-size: .58rem; }.hud__question strong { font-size: .95rem; }.hud__cluster { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; padding-right: 91px; }.hud__stat { display: grid; gap: 3px; min-width: 89px; padding: 8px 11px; border: 1px solid rgba(190,222,218,.18); border-radius: 11px; background: rgba(5,16,23,.78); backdrop-filter: blur(10px); }.hud__stat small { color: var(--muted); font: .53rem "DM Mono", monospace; letter-spacing: .1em; }.hud__stat b { font-size: .87rem; }.hud__stat i { color: var(--muted); font-size: .62rem; font-style: normal; }.hud__pause { position: absolute; top: max(18px, env(safe-area-inset-top)); right: clamp(14px, 3vw, 38px); z-index: 3; min-height: 40px; padding: 8px 13px; pointer-events: auto; }.hud__progress { position: absolute; top: 101px; right: clamp(14px, 3vw, 38px); left: clamp(14px, 3vw, 38px); height: 4px; overflow: hidden; border-radius: 99px; background: rgba(231,248,243,.15); }.hud__progress-bar { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--green), var(--cyan)); box-shadow: 0 0 12px rgba(142,226,223,.55); transition: width .2s linear; }
+.overlay { position: fixed; z-index: 5; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(3, 9, 14, .76); backdrop-filter: blur(7px); }.pause-panel { display: grid; justify-items: center; gap: 10px; width: min(440px, 100%); padding: 32px; text-align: center; }.pause-panel h2 { margin: 0; }.pause-panel .muted { font-size: .86rem; }.pause-emblem { display: grid; width: 56px; height: 56px; margin-bottom: 6px; place-items: center; border: 1px solid rgba(142,226,223,.32); border-radius: 50%; color: var(--cyan); background: rgba(39,100,100,.2); font-size: 1.5rem; }.pause-panel .row { display: grid; width: 100%; margin-top: 8px; }.pause-panel .btn { width: 100%; }
+.outcome-screen { align-content: center; padding-top: 30px; padding-bottom: 30px; }.outcome-screen h1 { font-size: clamp(2.5rem, 6vw, 4rem); }.outcome-screen .muted { max-width: 540px; }.outcome-orbit { display: grid; width: 100px; height: 100px; margin-bottom: 13px; place-items: center; border: 1px solid rgba(131,219,154,.33); border-radius: 50%; color: var(--green); background: radial-gradient(circle, rgba(72,154,101,.25), transparent 68%); box-shadow: 0 0 45px rgba(72,154,101,.12); font-size: 2rem; }.outcome-screen--loss .outcome-orbit { color: var(--danger); border-color: rgba(239,139,114,.32); background: radial-gradient(circle, rgba(154,72,58,.22), transparent 68%); }.outcome-rewards { display: flex; flex-wrap: wrap; justify-content: center; gap: 11px; margin: 18px 0 14px; }.outcome-rewards > span { display: grid; min-width: 118px; gap: 4px; padding: 14px 17px; border: 1px solid var(--line); border-radius: 13px; background: rgba(13,30,37,.7); font-size: 1.1rem; }.outcome-rewards small { color: var(--muted); font-size: .62rem; }
+
+.hud__feedback { color: var(--green); font-size: .75rem; font-weight: 700; }
+.mission-complete-note { margin: 0 0 12px; color: var(--green); font-size: .83rem; }
+@keyframes beacon { 50% { opacity: .48; box-shadow: 0 0 5px var(--green); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+@media (max-width: 920px) { .screen { padding-right: 28px; padding-left: 28px; }.menu__hero { gap: 0; }.solar-art { width: min(360px, 100%); }.mission-strip { grid-template-columns: repeat(3, 1fr); }.mission-strip__plant { display: none !important; }.planet-card { grid-template-columns: 120px minmax(0, 1fr); }.planet-orb { width: 78px; }.planet-card--saturn .planet-orbit { width: 108px; }.settings-layout { grid-template-columns: 1fr; } }
+@media (max-width: 680px) { .screen--home { min-height: 100svh; padding: 19px 18px max(18px, env(safe-area-inset-bottom)); }.menu__topline { font-size: .56rem; }.menu__hero { grid-template-columns: 1fr; gap: 0; padding: 15px 0 0; }.menu__copy { order: 1; }.solar-art { grid-row: 1; width: min(265px, 67vw); margin: -12px auto -8px; }.wordmark { margin: 7px 0 12px; font-size: clamp(3.2rem, 15vw, 4.4rem); }.menu__hero .lede { margin-bottom: 0; font-size: .92rem; }.menu__actions { margin: 18px 0 10px; }.menu__actions .btn { flex: 1; }.menu__hint { font-size: .68rem; }.mission-strip { grid-template-columns: repeat(3, 1fr); margin-bottom: 17px; }.mission-strip > div { min-height: 75px; padding: 11px 9px; }.mission-strip .eyebrow { font-size: .53rem; letter-spacing: .08em; }.mission-strip strong { font-size: 1.08rem; }.mission-strip > div > span:last-child { font-size: .57rem; }.menu__footer { align-items: flex-start; font-size: .52rem; }.menu__footer nav { gap: 13px; flex-direction: column; align-items: flex-end; }.menu__footer .text-button { font-size: .67rem; }
+  .screen--section { padding: 20px 16px 30px; }.section-head { align-items: flex-start; gap: 12px; margin-bottom: 23px; }.section-head h1 { font-size: 2rem; }.section-head .muted { font-size: .77rem; }.section-head .btn { min-height: 39px; padding: 8px 12px; font-size: .74rem; }.section-head__count { display: none; }.planet-grid { grid-template-columns: 1fr; gap: 12px; }.planet-card { grid-template-columns: 105px minmax(0, 1fr); min-height: 234px; border-radius: 16px; }.planet-card__body { padding: 15px 12px 12px; }.planet-orb { width: 69px; }.planet-orbit { width: 94px; }.planet-card--saturn .planet-orbit { width: 96px; height: 33px; }.planet-card__title { align-items: flex-start; }.planet-card__title h2 { font-size: 1.35rem; }.planet-card__title .eyebrow { font-size: .52rem; }.status-badge { padding: 5px 6px; font-size: .54rem; }.planet-card__body > p { min-height: 33px; margin: 7px 0 10px; font-size: .69rem; }.stage-list { gap: 5px; margin-top: 10px; }.stage-button { min-height: 32px; gap: 5px; padding: 5px 6px; font-size: .58rem; }.settings-panel { grid-template-columns: 38px 1fr; gap: 12px; padding: 18px; }.panel-icon { width: 36px; height: 36px; }.control-options { gap: 7px; }.control-option { min-height: 106px; padding: 10px; }.control-option b { font-size: .7rem; }.control-option small { font-size: .59rem; }.settings-note { font-size: .61rem; }.command-summary > div { padding: 12px 9px; }.command-summary .eyebrow { font-size: .48rem; letter-spacing: .04em; }.command-summary strong { font-size: 1.1rem; }.command-summary > div > span:last-child { font-size: .59rem; }.command-log { padding: 15px; }.plant-list { grid-template-columns: 1fr; }.plant-entry { min-height: 60px; }.plant-entry__status { font-size: .58rem; }
+  .play { min-height: 100svh; height: 100svh; }.hud { grid-template-columns: 1fr; gap: 8px; padding: max(12px, env(safe-area-inset-top)) 12px 0; }.hud__question { width: calc(100% - 89px); padding: 9px 11px; }.hud__question strong { font-size: .78rem; }.hud__cluster { justify-content: flex-start; padding: 0; padding-right: 0; gap: 6px; }.hud__stat { min-width: 76px; padding: 6px 8px; }.hud__stat small { font-size: .46rem; }.hud__stat b { font-size: .74rem; }.hud__pause { top: max(12px, env(safe-area-inset-top)); right: 12px; min-height: 37px; padding: 7px 10px; font-size: .72rem; }.hud__progress { top: 117px; right: 12px; left: 12px; }.pause-panel { padding: 25px 20px; }.outcome-rewards { gap: 7px; }.outcome-rewards > span { min-width: 100px; padding: 12px; font-size: .94rem; } }
+@media (max-width: 360px) { .screen--home { padding-right: 13px; padding-left: 13px; }.menu__actions { gap: 7px; }.menu__actions .btn { padding: 10px 12px; font-size: .75rem; }.mission-strip > div { padding-right: 6px; padding-left: 6px; }.mission-strip .eyebrow { letter-spacing: .02em; }.mission-strip > div > span:last-child { font-size: .51rem; }.planet-card { grid-template-columns: 83px minmax(0, 1fr); }.planet-orb { width: 58px; }.planet-orbit { width: 82px; }.planet-card--saturn .planet-orbit { width: 80px; height: 28px; border-width: 5px; }.planet-card__body { padding-right: 9px; padding-left: 9px; }.status-badge { font-size: .49rem; }.stage-button { font-size: .53rem; } }
+
+/* Living collection and sustainable impact panels */
+.laboratory-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.laboratory-summary > div { min-width: 0; }
+.plant-specimen { display: grid; grid-template-columns: 108px minmax(0, 1fr) auto; align-items: center; gap: 15px; min-height: 142px; padding: 13px 16px; }
+.plant-specimen .plant-entry__art { width: 100px; height: 108px; border: 1px solid color-mix(in srgb, var(--plant-leaf) 25%, transparent); background: radial-gradient(ellipse at 50% 72%, color-mix(in srgb, var(--plant-leaf) 17%, transparent), rgba(4,14,20,.3) 72%); }
+.plant-growth-art { width: 100%; height: 100%; overflow: visible; }
+.plant-growth-art.is-unknown { opacity: .4; filter: saturate(.45); }
+.plant-specimen__details { min-width: 0; }
+.plant-specimen__details h3 { margin: 2px 0 4px; color: var(--ink); font-size: 1rem; }
+.plant-specimen__details p { margin: 0 0 9px; color: var(--muted); font-size: .69rem; line-height: 1.45; }
+.growth-track { display: grid; grid-template-columns: repeat(4, minmax(18px, 1fr)); gap: 4px; max-width: 270px; }
+.growth-track span { height: 4px; border-radius: 9px; background: rgba(205,225,223,.12); }
+.growth-track span.is-grown { background: var(--plant-leaf); box-shadow: 0 0 9px color-mix(in srgb, var(--plant-leaf) 40%, transparent); }
+.growth-caption { display: block; margin-top: 5px; color: var(--faint); font-size: .58rem; }
+.plant-specimen .plant-entry__status { align-self: start; margin-top: 8px; }
+.plant-specimen .plant-entry__status--pending { color: var(--faint); }
+.plant-specimen.is-undiscovered { border-style: dashed; }
+.plant-specimen.is-rescued { border-color: color-mix(in srgb, var(--plant-leaf) 35%, transparent); background: color-mix(in srgb, var(--plant-leaf) 5%, rgba(4,14,20,.4)); }
+.plant-specimen.is-rescued .plant-entry__status { color: var(--plant-leaf); }
+
+@media (max-width: 760px) {
+  .laboratory-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .plant-specimen { grid-template-columns: 76px minmax(0, 1fr); gap: 10px; min-height: 118px; padding: 10px; }
+  .plant-specimen .plant-entry__art { width: 72px; height: 84px; }
+  .plant-specimen .plant-entry__status { grid-column: 2; grid-row: 2; margin: -4px 0 0; }
+  .plant-specimen__details h3 { font-size: .84rem; }
+  .plant-specimen__details p { font-size: .62rem; }
+}
+
+.sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
+.screen, .play { animation: screen-arrive .24s ease-out both; }
+@keyframes screen-arrive { from { opacity: .72; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.settings-panel--audio { grid-template-columns: 48px 1fr; }
+.audio-options { display: flex; grid-column: 2; flex-wrap: wrap; gap: 9px; }
+.audio-options .toggle { min-height: 42px; }
+.settings-panel--motion > .toggle { grid-column: 2; justify-self: start; }
+button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+
+@media (max-width: 680px) {
+  .hud__cluster { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
+  .hud__stat { min-width: 0; padding: 6px 5px; }
+  .hud__stat small { font-size: clamp(.38rem, 1.45vw, .46rem); letter-spacing: .04em; }
+  .hud__stat b { font-size: clamp(.65rem, 2.8vw, .74rem); }
+  .hud__progress { position: relative; top: auto; right: auto; left: auto; grid-column: 1; grid-row: 3; margin-top: 1px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .hud { grid-template-columns: minmax(190px, 1fr) auto; gap: 8px; padding-top: max(8px, env(safe-area-inset-top)); }
+  .hud__question { width: min(300px, 100%); padding: 7px 10px; }
+  .hud__question strong { font-size: .78rem; }
+  .hud__cluster { gap: 4px; padding-right: 74px; }
+  .hud__stat { min-width: 66px; padding: 5px 7px; }
+  .hud__progress { top: 75px; }
+  .hud__pause { top: max(8px, env(safe-area-inset-top)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+.motion-reduced *, .motion-reduced *::before, .motion-reduced *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
