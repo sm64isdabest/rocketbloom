@@ -73,47 +73,60 @@ function engineOptions(canvas, callbacks = {}, extras = {}) {
   };
 }
 
-test("capturar uma alternativa correta atualiza score e velocidade uma única vez", () => {
+function moveRocketToLane(engine, lane) {
+  const laneWidth = engine.view.width / 4;
+  engine.rocket.x = lane * laneWidth + laneWidth / 2 - engine.rocket.width / 2;
+  engine.rocket.targetX = engine.rocket.x;
+}
+
+function tickFor(engine, durationMs) {
+  for (let elapsed = 0; elapsed < durationMs; elapsed += 50) engine.tick(0.05);
+}
+
+test("a seleção pelo centro do foguete registra acerto uma vez e recompensa após a animação", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
     const correct = engine.answers.find((answer) => answer.correct);
-    engine.currentRound.answers = [correct];
-    engine.answers = [correct];
-    correct.x = engine.rocket.x;
-    correct.y = engine.rocket.y;
+    moveRocketToLane(engine, correct.lane);
+    engine.answerChoiceRemainingMs = 1;
     engine.tick(0.016);
     engine.tick(0.016);
     assert.equal(engine.correctAnswers, 1);
     assert.equal(engine.incorrectAnswers, 0);
     assert.equal(engine.score, 100);
+    assert.equal(engine.speed, 120);
+    assert.equal(engine.currentRound.status, "animating-correct");
+    tickFor(engine, 1450);
+    assert.equal(engine.currentRound.status, "feedback");
     assert.equal(engine.speed, 154);
+    assert.equal(engine.columnFlashColor, "#00FF00");
     engine.stop();
   });
 });
 
-test("resposta incorreta aplica uma penalidade uma vez e a velocidade respeita os limites", () => {
+test("resposta incorreta pisca vermelho sem recompensa e acerto respeita o limite de velocidade", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
     const wrong = engine.answers.find((answer) => !answer.correct);
-    engine.currentRound.answers = [wrong];
-    engine.answers = [wrong];
-    wrong.x = engine.rocket.x;
-    wrong.y = engine.rocket.y;
+    moveRocketToLane(engine, wrong.lane);
+    engine.answerChoiceRemainingMs = 1;
     engine.tick(0.016);
     engine.tick(0.016);
     assert.equal(engine.incorrectAnswers, 1);
     assert.equal(engine.speed, 82);
+    assert.equal(engine.currentRound.status, "animating-incorrect");
+    assert.equal(engine.columnFlashColor, "#FF3030");
+    tickFor(engine, 700);
     assert.equal(engine.currentRound.status, "resolved");
     engine.stop();
 
     const capped = new GameEngine(engineOptions(canvas, {}, { runId: "speed-cap-test" }));
     const correct = capped.answers.find((answer) => answer.correct);
-    capped.currentRound.answers = [correct];
-    capped.answers = [correct];
-    correct.x = capped.rocket.x;
-    correct.y = capped.rocket.y;
+    moveRocketToLane(capped, correct.lane);
+    capped.answerChoiceRemainingMs = 1;
     capped.speed = 315;
     capped.tick(0.016);
+    tickFor(capped, 1450);
     assert.equal(capped.speed, 320);
     capped.stop();
   });
@@ -124,12 +137,11 @@ test("velocidade zerada causa derrota e uma fase concluída causa vitória", () 
     const outcomes = [];
     const defeated = new GameEngine(engineOptions(canvas, { onOutcome: (outcome) => outcomes.push(outcome) }, { runId: "defeat-test" }));
     const wrong = defeated.answers.find((answer) => !answer.correct);
-    defeated.currentRound.answers = [wrong];
-    defeated.answers = [wrong];
+    moveRocketToLane(defeated, wrong.lane);
+    defeated.answerChoiceRemainingMs = 1;
     defeated.speed = 20;
-    wrong.x = defeated.rocket.x;
-    wrong.y = defeated.rocket.y;
     defeated.tick(0.016);
+    tickFor(defeated, 700);
     defeated.tick(0.016);
     assert.equal(outcomes.filter((outcome) => outcome === "defeat").length, 1);
     assert.equal(defeated.ended, true);
@@ -169,6 +181,30 @@ test("pausa, retomada e reinício não deixam frames nem estado antigos ativos",
     assert.equal(scheduled.size, 1);
     restarted.stop();
     assert.equal(scheduled.size, 0);
+  });
+});
+
+test("pausa congela a janela de resposta e a animação de perspectiva", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.answerChoiceRemainingMs = 20;
+    engine.pause();
+    engine.tick(0.05);
+    assert.equal(engine.answerChoiceRemainingMs, 20);
+    assert.equal(engine.currentRound.status, "awaiting-resolution");
+
+    const correct = engine.answers.find((answer) => answer.correct);
+    moveRocketToLane(engine, correct.lane);
+    engine.resume();
+    engine.answerChoiceRemainingMs = 1;
+    engine.tick(0.016);
+    assert.equal(engine.currentRound.status, "animating-correct");
+    const animationTime = engine.answerAnimationElapsedMs;
+    engine.pause();
+    engine.tick(0.05);
+    assert.equal(engine.answerAnimationElapsedMs, animationTime);
+    assert.equal(engine.correctAnswers, 1);
+    engine.stop();
   });
 });
 

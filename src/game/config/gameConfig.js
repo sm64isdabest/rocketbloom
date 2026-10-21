@@ -48,6 +48,9 @@ export const REWARDS = {
 export const SPAWN = {
   answerFallSpeed: 142,
   answerTop: 148,
+  answerChoiceTimeMs: 2800,
+  answerPerspectiveMs: 1450,
+  answerFeedbackMs: 700,
   nextQuestionDelayMs: 850,
   collectibleFallSpeed: 118,
   obstacleFallSpeed: 138,

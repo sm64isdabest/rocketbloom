@@ -1,5 +1,6 @@
 import { Answer } from "../entities/Answer.js";
 import { SPAWN } from "../config/gameConfig.js";
+import { getLaneBounds } from "./lanes.js";
 
 function shuffled(values, rng) {
   const result = [...values];
@@ -16,12 +17,13 @@ export function createAnswerRound(question, { width, id, rng = Math.random, fall
     throw new Error("A questão precisa ter quatro alternativas distintas e uma única resposta correta.");
   }
 
-  const cardWidth = Math.min(72, (width - 40) / 4);
+  const cardWidth = Math.min(78, Math.max(44, width / 4 - 18));
   const cardHeight = 58;
   const lanes = shuffled([0, 1, 2, 3], rng);
   const answers = choices.map((value, index) => {
     const lane = lanes[index];
-    const centerX = width * ((lane + 0.5) / 4);
+    const { left, width: laneWidth } = getLaneBounds(width, lane);
+    const centerX = left + laneWidth / 2;
     return new Answer({
       id: `${id}-answer-${index}`,
       value,
@@ -35,19 +37,29 @@ export function createAnswerRound(question, { width, id, rng = Math.random, fall
     });
   });
 
-  return { id, question, answers, status: "active" };
+  return { id, question, answers, status: "awaiting-resolution", selectedAnswer: null, result: null };
 }
 
 export function resolveAnswerRound(round, answer = null) {
-  if (!round || round.status !== "active") return null;
+  if (!round || round.status !== "awaiting-resolution") return null;
   if (answer && (!round.answers.includes(answer) || !answer.alive)) return null;
 
-  round.status = "resolved";
-  for (const option of round.answers) option.alive = false;
-  return {
+  const result = {
     correct: Boolean(answer?.correct),
     unanswered: answer === null,
     answerId: answer?.id ?? null,
     roundId: round.id,
+    lane: answer?.lane ?? null,
   };
+  round.status = result.correct ? "animating-correct" : "animating-incorrect";
+  round.selectedAnswer = answer;
+  round.result = result;
+  return result;
+}
+
+export function completeAnswerRound(round) {
+  if (!round || !["animating-correct", "animating-incorrect", "feedback"].includes(round.status)) return false;
+  round.status = "resolved";
+  for (const option of round.answers) option.alive = false;
+  return true;
 }

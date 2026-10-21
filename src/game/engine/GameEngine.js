@@ -5,7 +5,8 @@ import { Collectible } from "../entities/Collectible.js";
 import { Obstacle } from "../entities/Obstacle.js";
 import { Rocket } from "../entities/Rocket.js";
 import { cullOffscreen } from "../systems/spawn.js";
-import { createAnswerRound, resolveAnswerRound } from "../systems/answerRound.js";
+import { completeAnswerRound, createAnswerRound, resolveAnswerRound } from "../systems/answerRound.js";
+import { getLaneFromCenter, renderLaneColumns } from "../systems/lanes.js";
 import { generateQuestion } from "../systems/questions.js";
 import { aabbOverlaps } from "./collision.js";
 import { createStarfield, renderStarfield, updateStarfield } from "../systems/stars.js";
@@ -60,6 +61,12 @@ export class GameEngine {
     this.nextQuestionInMs = 0;
     this.roundNumber = 0;
     this.lastQuestionPrompt = null;
+    this.answerChoiceRemainingMs = SPAWN.answerChoiceTimeMs;
+    this.answerAnimationElapsedMs = 0;
+    this.answerFeedbackRemainingMs = 0;
+    this.columnFlashLane = -1;
+    this.columnFlashColor = null;
+    this.columnFlashRemainingMs = 0;
     this.currentRound = null;
     this.questionFeedback = "";
     this.feedbackTimerMs = 0;
@@ -151,7 +158,13 @@ export class GameEngine {
       fallSpeed: this.getEntitySpeed(SPAWN.answerFallSpeed),
     });
     this.answers = this.currentRound.answers;
+    this.answerChoiceRemainingMs = SPAWN.answerChoiceTimeMs;
+    this.answerAnimationElapsedMs = 0;
+    this.answerFeedbackRemainingMs = 0;
     this.nextQuestionInMs = 0;
+    this.columnFlashLane = -1;
+    this.columnFlashColor = null;
+    this.columnFlashRemainingMs = 0;
     this.questionFeedback = "";
     this.feedbackTimerMs = 0;
   }
@@ -168,9 +181,12 @@ export class GameEngine {
     if (!frameSeconds) return;
     const frameMs = frameSeconds * 1000;
     this.elapsedMs += frameMs;
-    this.input.apply(this.rocket, this.canvas, frameSeconds);
-    this.rocket.clamp(this.view.width);
-    this.rocket.update(frameSeconds);
+    const resolvingAnswer = this.isQuestionResolving();
+    if (!resolvingAnswer) {
+      this.input.apply(this.rocket, this.canvas, frameSeconds);
+      this.rocket.clamp(this.view.width);
+      this.rocket.update(frameSeconds);
+    }
 
     const progressMultiplier = clamp(
       this.speed / SPEED.start,
@@ -182,14 +198,14 @@ export class GameEngine {
 
     this.updateQuestions(frameSeconds, frameMs);
     if (this.ended) return;
-    this.updatePickupsAndHazards(frameSeconds, frameMs);
+    if (!this.isQuestionResolving()) this.updatePickupsAndHazards(frameSeconds, frameMs);
     if (this.ended) return;
 
-    if (this.speed <= SPEED.defeatAtOrBelow) {
+    if (this.speed <= SPEED.defeatAtOrBelow && !this.isQuestionResolving()) {
       this.finish("defeat");
       return;
     }
-    if (this.progressMs >= this.session.stage.durationMs) {
+    if (this.progressMs >= this.session.stage.durationMs && !this.isQuestionResolving()) {
       this.progressMs = this.session.stage.durationMs;
       this.finish("victory");
       return;
@@ -204,49 +220,85 @@ export class GameEngine {
   }
 
   updateQuestions(dt, frameMs) {
-    if (!this.currentRound || this.currentRound.status !== "active") {
-      this.nextQuestionInMs -= frameMs;
-      if (this.nextQuestionInMs <= 0) this.startNextQuestion();
+    if (!this.currentRound) return;
+    if (this.currentRound.status === "awaiting-resolution") {
+      this.answerChoiceRemainingMs -= frameMs;
+      if (this.answerChoiceRemainingMs <= 0) {
+        const lane = getLaneFromCenter(this.rocket.x + this.rocket.width / 2, this.view.width);
+        const selected = this.currentRound.answers.find((answer) => answer.lane === lane);
+        this.resolveCurrentAnswer(selected);
+      }
       return;
     }
 
-    for (const answer of this.answers) {
-      if (!answer.alive) continue;
-      answer.speed = this.getEntitySpeed(SPAWN.answerFallSpeed);
-      answer.update(dt);
-      if (aabbOverlaps(this.rocket, answer)) {
-        this.resolveCurrentAnswer(answer);
-        break;
+    if (this.currentRound.status === "animating-correct") {
+      this.answerAnimationElapsedMs += frameMs;
+      if (this.answerAnimationElapsedMs >= SPAWN.answerPerspectiveMs) {
+        this.currentRound.status = "feedback";
+        this.answerFeedbackRemainingMs = SPAWN.answerFeedbackMs;
+        this.columnFlashLane = this.currentRound.result.lane;
+        this.columnFlashColor = "#00FF00";
+        this.columnFlashRemainingMs = SPAWN.answerFeedbackMs;
+        this.speed = clamp(this.speed + SPEED.correctAnswerBonus, SPEED.min, SPEED.max);
+        this.questionFeedback = "Resposta correta!";
+        playGameSound("correct");
       }
+      return;
     }
 
-    this.answers = this.answers.filter((answer) => answer.alive && answer.y <= this.view.height + answer.height);
-    if (this.currentRound.status === "active" && this.answers.length === 0) {
-      this.resolveCurrentAnswer(null);
+    if (this.currentRound.status === "animating-incorrect") {
+      this.answerFeedbackRemainingMs -= frameMs;
+      this.columnFlashRemainingMs = Math.max(0, this.answerFeedbackRemainingMs);
+      if (this.answerFeedbackRemainingMs <= 0) this.finishAnswerFeedback();
+      return;
     }
+
+    if (this.currentRound.status === "feedback") {
+      this.answerFeedbackRemainingMs -= frameMs;
+      this.columnFlashRemainingMs = Math.max(0, this.answerFeedbackRemainingMs);
+      if (this.answerFeedbackRemainingMs <= 0) this.finishAnswerFeedback();
+      return;
+    }
+
+    if (this.currentRound.status === "resolved") {
+      this.nextQuestionInMs -= frameMs;
+      if (this.nextQuestionInMs <= 0) this.startNextQuestion();
+    }
+  }
+
+  isQuestionResolving() {
+    return ["animating-correct", "animating-incorrect", "feedback"].includes(this.currentRound?.status);
+  }
+
+  finishAnswerFeedback() {
+    if (!completeAnswerRound(this.currentRound)) return;
+    this.answers = [];
+    this.columnFlashRemainingMs = 0;
+    this.nextQuestionInMs = SPAWN.nextQuestionDelayMs;
+    this.questionFeedback = "";
+    if (this.speed <= SPEED.defeatAtOrBelow) this.finish("defeat");
   }
 
   resolveCurrentAnswer(answer) {
     const result = resolveAnswerRound(this.currentRound, answer);
     if (!result) return false;
-    this.answers = [];
     if (result.correct) {
       this.correctAnswers += 1;
       this.score += SCORE.correctAnswer;
-      this.speed = clamp(this.speed + SPEED.correctAnswerBonus, SPEED.min, SPEED.max);
-      this.questionFeedback = "Resposta correta!";
-      playGameSound("correct");
+      this.answerAnimationElapsedMs = 0;
+      this.questionFeedback = "";
     } else {
       this.incorrectAnswers += 1;
       this.score = Math.max(0, this.score + SCORE.incorrectAnswer);
       this.speed = clamp(this.speed - SPEED.wrongAnswerPenalty * (this.session.stage.speedLossMultiplier ?? 1), SPEED.min, SPEED.max);
+      this.answerFeedbackRemainingMs = SPAWN.answerFeedbackMs;
+      this.columnFlashLane = result.lane;
+      this.columnFlashColor = "#FF3030";
+      this.columnFlashRemainingMs = SPAWN.answerFeedbackMs;
       this.questionFeedback = result.unanswered ? "Alternativas perdidas" : "Resposta incorreta";
       playGameSound("incorrect");
     }
-    this.feedbackTimerMs = 1100;
-    this.nextQuestionInMs = SPAWN.nextQuestionDelayMs;
     this.emitHud(true);
-    if (this.speed <= SPEED.defeatAtOrBelow) this.finish("defeat");
     return true;
   }
 
@@ -407,6 +459,8 @@ export class GameEngine {
       planetId: this.session.planet.id,
       stageId: this.session.stage.id,
       question: this.currentRound?.question ?? null,
+      answerState: this.currentRound?.status ?? "preparing",
+      selectedLane: this.currentRound?.result?.lane ?? getLaneFromCenter(this.rocket.x + this.rocket.width / 2, this.view.width),
       feedback: this.questionFeedback,
       paused: this.paused,
     };
@@ -423,9 +477,23 @@ export class GameEngine {
 
     renderStarfield(ctx, this.stars);
     renderPlanetScenery(ctx, view, session.planet, this.progressMs);
+    const flashAlpha = this.columnFlashRemainingMs > 0
+      ? 0.35 + Math.max(0, Math.sin(this.elapsedMs * 0.025)) * 0.45
+      : 0;
+    renderLaneColumns(ctx, view.width, view.height, {
+      flashLane: this.columnFlashLane,
+      flashColor: this.columnFlashColor,
+      flashAlpha,
+      activeLane: this.currentRound?.status === "awaiting-resolution"
+        ? getLaneFromCenter(this.rocket.x + this.rocket.width / 2, view.width) : -1,
+    });
     for (const obstacle of this.obstacles) obstacle.render(ctx);
     for (const collectible of this.collectibles) collectible.render(ctx);
-    for (const answer of this.answers) answer.render(ctx);
+    if (this.currentRound?.status === "animating-correct") {
+      this.currentRound.selectedAnswer?.renderPerspective(ctx, this.answerAnimationElapsedMs / SPAWN.answerPerspectiveMs, view.height);
+    } else if (this.currentRound?.status === "awaiting-resolution") {
+      for (const answer of this.answers) if (answer.alive) answer.render(ctx);
+    }
     for (const particle of this.particles) {
       ctx.save(); ctx.globalAlpha = clamp(particle.life / particle.maxLife, 0, 1); ctx.fillStyle = particle.color;
       ctx.beginPath(); ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2); ctx.fill(); ctx.restore();

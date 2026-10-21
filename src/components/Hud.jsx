@@ -6,7 +6,7 @@ export function Hud({ snapshot, durationMs, question, onPause }) {
 
   return (
     <div className="hud">
-      <div className="hud__question" role="group" aria-label="Pergunta atual"><span className="eyebrow">{activeQuestion?.categoryLabel ?? "Desafio da rota"} · NÍVEL {activeQuestion?.difficulty ?? 1}</span><strong>{activeQuestion?.prompt ?? "Prepare-se para a próxima pergunta"}</strong>{snapshot?.feedback ? <span className="hud__feedback" role="status">{snapshot.feedback}</span> : null}{activeQuestion?.choices?.length ? <span className="sr-only" aria-live="polite">Alternativas: {activeQuestion.choices.join(", ")}</span> : null}</div>
+      <div className="hud__question" role="group" aria-label="Pergunta atual"><span className="eyebrow">{activeQuestion?.categoryLabel ?? "Desafio da rota"} · NÍVEL {activeQuestion?.difficulty ?? 1}</span><strong>{activeQuestion?.prompt ?? "Prepare-se para a próxima pergunta"}</strong>{snapshot?.feedback ? <span className="hud__feedback" role="status">{snapshot.feedback}</span> : null}{activeQuestion?.choices?.length ? <span className="sr-only" aria-live="polite">Alternativas: {activeQuestion.choices.join(", ")}</span> : null}{snapshot?.answerState === "awaiting-resolution" ? <span className="sr-only" aria-live="polite">Coluna selecionada: {(snapshot.selectedLane ?? 0) + 1}</span> : null}</div>
       <div className="hud__cluster">
         <span className="hud__stat"><small>VELOCIDADE</small><b>{snapshot?.speed ?? 0}<i> km/h</i></b></span>
         <span className="hud__stat"><small>PONTOS</small><b>{snapshot?.score ?? 0}</b></span>
