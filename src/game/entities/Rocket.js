@@ -1,12 +1,16 @@
 import { ROCKET } from "../config/gameConfig.js";
 
-const ROCKET_IMAGE_URL = "/assets/rocket.png";
 const ROCKET_SOURCE = { x: 292, y: 51, width: 494, height: 965 };
+
+export function getRocketImageUrl(basePath = import.meta.env?.BASE_URL ?? "/") {
+  const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;
+  return `${normalizedBase}assets/rocket.png`;
+}
 
 function createRocketImage() {
   if (typeof Image === "undefined") return null;
   const image = new Image();
-  image.src = ROCKET_IMAGE_URL;
+  image.src = getRocketImageUrl();
   return image;
 }
 

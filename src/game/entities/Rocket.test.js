@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { Rocket } from "./Rocket.js";
+import { getRocketImageUrl, Rocket } from "./Rocket.js";
+
+test("rocket image URL includes the configured application base path", () => {
+  assert.equal(getRocketImageUrl("/rocketbloom/"), "/rocketbloom/assets/rocket.png");
+});
 
 test("rocket draws the supplied sprite within its existing hitbox", () => {
   const calls = [];
