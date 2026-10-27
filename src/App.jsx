@@ -56,7 +56,12 @@ export default function App() {
 
   useEffect(() => {
     if (progress) configureAudio(progress.settings);
-  }, [progress?.settings?.music, progress?.settings?.soundEffects]);
+  }, [
+    progress?.settings?.music,
+    progress?.settings?.soundEffects,
+    progress?.settings?.musicVolume,
+    progress?.settings?.soundEffectsVolume,
+  ]);
 
   useEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -108,7 +113,7 @@ export default function App() {
 
   return (
     <div className={`app-shell ${progress.settings.reducedMotion || systemReducedMotion ? "motion-reduced" : ""}`}>
-      {screen === SCREEN.MENU && menuPage === SCREEN.MENU ? (
+      {screen === SCREEN.MENU && (menuPage === SCREEN.MENU || menuPage === SCREEN.SETTINGS) ? (
         <MenuScreen
           progress={progress}
           warning={warning}

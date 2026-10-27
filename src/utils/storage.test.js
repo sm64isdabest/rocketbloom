@@ -20,6 +20,30 @@ test("progresso inicial não inventa planetas desbloqueados", () => {
   assert.deepEqual(progress.unlockedPlanetIds, ["earth"]);
   assert.equal(progress.coins, 0);
   assert.deepEqual(progress.rescuedPlantIds, []);
+  assert.equal(progress.settings.musicVolume, 35);
+  assert.equal(progress.settings.soundEffectsVolume, 55);
+});
+
+test("volumes salvos são limitados e convertem preferências antigas", () => {
+  const storage = memoryStorage();
+  const progress = {
+    ...createDefaultProgress(),
+    settings: { music: false, soundEffects: true, musicVolume: 150, soundEffectsVolume: -8 },
+  };
+  saveProgress(progress, storage);
+
+  const loaded = loadProgress(storage).progress;
+
+  assert.equal(loaded.settings.musicVolume, 100);
+  assert.equal(loaded.settings.soundEffectsVolume, 0);
+  assert.equal(loaded.settings.music, true);
+  assert.equal(loaded.settings.soundEffects, false);
+
+  const legacyStorage = memoryStorage();
+  saveProgress({ ...createDefaultProgress(), settings: { music: false, soundEffects: true } }, legacyStorage);
+  const legacySettings = loadProgress(legacyStorage).progress.settings;
+  assert.equal(legacySettings.musicVolume, 0);
+  assert.equal(legacySettings.soundEffectsVolume, 55);
 });
 
 test("salva e recarrega progresso real", () => {

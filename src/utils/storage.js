@@ -1,4 +1,4 @@
-import { PROGRESS_VERSION, STORAGE_KEY } from "../game/config/gameConfig.js";
+import { AUDIO, PROGRESS_VERSION, STORAGE_KEY } from "../game/config/gameConfig.js";
 import { PLANETS } from "../game/data/planets.js";
 import { PLANTS } from "../game/data/plants.js";
 
@@ -18,6 +18,8 @@ export function createDefaultProgress() {
     settings: {
       music: true,
       soundEffects: true,
+      musicVolume: AUDIO.defaultMusicVolume,
+      soundEffectsVolume: AUDIO.defaultSoundEffectsVolume,
       reducedMotion: false,
       controlMode: "pointer",
     },
@@ -65,6 +67,15 @@ export function loadProgress(storage = globalThis.localStorage) {
       };
     }
 
+    const storedMusic = typeof parsed.settings?.music === "boolean" ? parsed.settings.music : parsed.settings?.sound !== false;
+    const storedEffects = typeof parsed.settings?.soundEffects === "boolean" ? parsed.settings.soundEffects : parsed.settings?.sound !== false;
+    const musicVolume = Number.isFinite(parsed.settings?.musicVolume)
+      ? Math.max(AUDIO.minVolume, Math.min(AUDIO.maxVolume, parsed.settings.musicVolume))
+      : storedMusic ? AUDIO.defaultMusicVolume : AUDIO.minVolume;
+    const soundEffectsVolume = Number.isFinite(parsed.settings?.soundEffectsVolume)
+      ? Math.max(AUDIO.minVolume, Math.min(AUDIO.maxVolume, parsed.settings.soundEffectsVolume))
+      : storedEffects ? AUDIO.defaultSoundEffectsVolume : AUDIO.minVolume;
+
     return {
       progress: {
         ...createDefaultProgress(),
@@ -77,8 +88,10 @@ export function loadProgress(storage = globalThis.localStorage) {
         settings: {
           ...createDefaultProgress().settings,
           ...(parsed.settings ?? {}),
-          music: typeof parsed.settings?.music === "boolean" ? parsed.settings.music : parsed.settings?.sound !== false,
-          soundEffects: typeof parsed.settings?.soundEffects === "boolean" ? parsed.settings.soundEffects : parsed.settings?.sound !== false,
+          music: musicVolume > AUDIO.minVolume,
+          soundEffects: soundEffectsVolume > AUDIO.minVolume,
+          musicVolume,
+          soundEffectsVolume,
           reducedMotion: parsed.settings?.reducedMotion === true,
           controlMode: parsed.settings?.controlMode === "keyboard" ? "keyboard" : "pointer",
         },

@@ -45,6 +45,13 @@ export const REWARDS = {
   stageClearMoney: 20,
 };
 
+export const AUDIO = {
+  minVolume: 0,
+  maxVolume: 100,
+  defaultMusicVolume: 35,
+  defaultSoundEffectsVolume: 55,
+};
+
 export const SPAWN = {
   answerFallSpeed: 142,
   answerTop: 148,

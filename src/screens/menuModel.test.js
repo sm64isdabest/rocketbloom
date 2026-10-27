@@ -12,7 +12,7 @@ test("menu assets respect the configured app base path", () => {
 
 test("menu artwork exists in the public directory served by the URL builder", () => {
   const publicMenuAssets = fileURLToPath(new URL("../../public/assets/menu/", import.meta.url));
-  for (const filename of ["background.png", "laboratory.png", "logo.png", "play.png", "settings.png", "shop.png"]) {
+  for (const filename of ["background.png", "close.png", "laboratory.png", "logo.png", "play.png", "settings.png", "shop.png"]) {
     assert.equal(existsSync(`${publicMenuAssets}/${filename}`), true, `${filename} must be served from public/assets/menu`);
   }
 });
