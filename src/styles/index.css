@@ -126,6 +126,150 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 .plant-specimen__details { min-width: 0; }
 .plant-specimen__details h3 { margin: 2px 0 4px; color: var(--ink); font-size: 1rem; }
 .plant-specimen__details p { margin: 0 0 9px; color: var(--muted); font-size: .69rem; line-height: 1.45; }
+
+/* RocketBloom supplied-art main menu */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+.menu.screen--home {
+  display: block;
+  min-height: 100svh;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #05091c;
+}
+.menu.screen--home::before {
+  inset: 0;
+  z-index: -1;
+  background-image: linear-gradient(180deg, rgba(3, 7, 22, .3), rgba(4, 8, 30, .3)), var(--menu-background);
+  background-position: center;
+  background-size: cover;
+}
+.menu.screen--home::after {
+  position: fixed;
+  z-index: 8;
+  inset: 2px;
+  border: 2px solid rgba(25, 131, 255, .95);
+  box-shadow: inset 0 0 7px rgba(23, 104, 255, .38), 0 0 7px rgba(23, 104, 255, .22);
+  content: "";
+  pointer-events: none;
+}
+.menu__settings {
+  position: absolute;
+  z-index: 2;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(9px, env(safe-area-inset-right));
+  display: grid;
+  width: clamp(40px, 12vw, 48px);
+  aspect-ratio: 1;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: transform .18s ease, filter .18s ease;
+}
+.menu__settings img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.menu__settings:hover { filter: brightness(1.17); transform: rotate(8deg); }
+.menu__layout {
+  display: flex;
+  width: 100%;
+  min-height: 100svh;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(100px, 13.2vh, 118px) 18px max(18px, env(safe-area-inset-bottom));
+}
+.menu__logo { display: block; width: min(76vw, 311px, 40vh); height: auto; flex: 0 0 auto; object-fit: contain; }
+.menu__buttons { display: flex; width: 100%; flex-direction: column; align-items: center; gap: 12px; margin-top: clamp(25px, 5.6vh, 49px); }
+.menu__play, .menu__option, .menu__continue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-weight: 700;
+  text-shadow: 2px 2px 0 #050606, -1px -1px 0 #050606, 1px -1px 0 #050606, -1px 1px 0 #050606;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+.menu__play, .menu__option { position: relative; left: clamp(0px, 3.4vw, 14px); }
+.menu__play:hover, .menu__option:hover { filter: brightness(1.13); transform: translateY(-2px); }
+.menu__play:active, .menu__option:active { filter: brightness(.92); transform: translateY(1px) scale(.99); }
+.menu__play {
+  width: min(64vw, 258px);
+  height: clamp(68px, 11vh, 96px);
+  gap: clamp(6px, 2vw, 12px);
+  padding: 5px 10px 5px 6px;
+  border: 2px solid #020b02;
+  border-radius: 20px;
+  background: linear-gradient(110deg, #169800, #006500 72%);
+  box-shadow: inset 0 2px 0 rgba(141, 255, 53, .46), 0 4px 0 #061305, 0 8px 20px rgba(0, 0, 0, .42);
+  font-size: clamp(2.15rem, 11vw, 3rem);
+  letter-spacing: .01em;
+  -webkit-text-stroke: 1px #050606;
+  paint-order: stroke fill;
+}
+.menu__play img { display: block; width: clamp(61px, 22vw, 88px); height: auto; flex: 0 0 auto; object-fit: contain; }
+.menu__continue {
+  position: absolute;
+  z-index: 2;
+  top: max(10px, env(safe-area-inset-top));
+  right: calc(max(9px, env(safe-area-inset-right)) + clamp(40px, 12vw, 48px) + 8px);
+  min-height: 32px;
+  gap: 8px;
+  padding: 3px 12px;
+  border: 1px solid rgba(146, 197, 255, .52);
+  border-radius: 8px;
+  background: rgba(6, 22, 56, .78);
+  font-size: .82rem;
+  letter-spacing: .01em;
+}
+.menu__option {
+  width: min(54vw, 220px);
+  gap: 9px;
+  padding: 4px 11px;
+  border: 2px solid #160d08;
+  border-radius: 15px;
+  font-size: clamp(1.06rem, 6vw, 1.38rem);
+  letter-spacing: 0;
+  -webkit-text-stroke: .45px #080808;
+  paint-order: stroke fill;
+}
+.menu__option img { width: clamp(37px, 13vw, 52px); height: clamp(37px, 13vw, 52px); flex: 0 0 auto; object-fit: contain; }
+.menu__option--laboratory { height: clamp(52px, 6.6vh, 59px); margin-top: 7px; background: linear-gradient(110deg, #682300, #3a1709); box-shadow: inset 0 2px 0 rgba(255, 162, 68, .26), 0 3px 0 #130905; }
+.menu__option--shop { height: clamp(45px, 5.7vh, 51px); margin-top: 2px; border-color: #51400e; border-radius: 14px; background: linear-gradient(110deg, #e2b83e, #75520d); box-shadow: inset 0 2px 0 rgba(255, 235, 136, .4), 0 3px 0 #2b1e07; }
+.menu__option--info { height: clamp(36px, 4.3vh, 39px); margin-top: 3px; gap: 8px; border: 1px solid rgba(230, 229, 244, .84); border-radius: 5px; background: linear-gradient(110deg, rgba(128, 128, 148, .78), rgba(72, 73, 94, .8)); box-shadow: inset 0 1px 0 rgba(255,255,255,.37), 0 2px 4px rgba(0,0,0,.25); font-size: clamp(.98rem, 5.6vw, 1.27rem); font-weight: 600; }
+.menu__info-icon { display: grid; width: 22px; height: 22px; flex: 0 0 auto; place-items: center; border: 2px solid #090c13; border-radius: 50%; color: #090c13; font: 700 15px/1 Georgia, serif; text-shadow: none; }
+.menu__warning { position: absolute; z-index: 2; top: 59px; right: 12px; width: min(310px, calc(100% - 24px)); margin: 0; padding: 10px 12px; border: 1px solid rgba(255, 208, 109, .6); border-radius: 9px; color: #fff4d4; background: rgba(41, 26, 12, .9); font-size: .76rem; line-height: 1.45; }
+.menu__notice-backdrop { position: fixed; z-index: 6; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(2, 5, 18, .72); backdrop-filter: blur(5px); }
+.menu__notice { display: grid; width: min(380px, 100%); justify-items: center; gap: 10px; padding: 25px 22px; text-align: center; }
+.menu__notice h2 { margin: 0; font-size: clamp(1.35rem, 6vw, 1.8rem); }
+.menu__notice .muted { margin: 0 0 6px; font-size: .9rem; line-height: 1.6; }
+
+@media (max-height: 740px) {
+  .menu__layout { padding-top: max(64px, 10vh); }
+  .menu__logo { width: min(72vw, 245px, 40vh); }
+  .menu__buttons { gap: 7px; margin-top: clamp(12px, 3.6vh, 24px); }
+  .menu__play { height: clamp(62px, 10vh, 78px); }
+  .menu__option--laboratory { height: 44px; margin-top: 3px; }
+  .menu__option--shop { height: 38px; margin-top: 0; }
+  .menu__option--info { height: 30px; margin-top: 0; }
+  .menu__continue { min-height: 28px; }
+}
+@media (max-width: 360px) {
+  .menu__layout { padding-right: 12px; padding-left: 12px; }
+  .menu__play { width: min(69vw, 258px); }
+  .menu__option { width: min(61vw, 220px); }
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .menu__layout { padding-top: 55px; }
+  .menu__logo { width: min(50vh, 230px); }
+  .menu__buttons { gap: 7px; margin-top: 10px; }
+  .menu__play { height: 58px; }
+  .menu__play img { width: 52px; }
+  .menu__option { height: 39px; }
+  .menu__option img { width: 33px; height: 33px; }
+  .menu__continue { min-height: 26px; font-size: .72rem; }
+}
 .growth-track { display: grid; grid-template-columns: repeat(4, minmax(18px, 1fr)); gap: 4px; max-width: 270px; }
 .growth-track span { height: 4px; border-radius: 9px; background: rgba(205,225,223,.12); }
 .growth-track span.is-grown { background: var(--plant-leaf); box-shadow: 0 0 9px color-mix(in srgb, var(--plant-leaf) 40%, transparent); }
