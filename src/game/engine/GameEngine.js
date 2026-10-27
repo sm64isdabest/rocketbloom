@@ -11,7 +11,7 @@ import { generateQuestion } from "../systems/questions.js";
 import { sampleInterQuestionDelayMs } from "../systems/questionTiming.js";
 import { aabbOverlaps } from "./collision.js";
 import { createStarfield, renderStarfield, updateStarfield } from "../systems/stars.js";
-import { renderPlanetScenery } from "../systems/scenery.js";
+import { renderPlanetBackground, renderPlanetScenery } from "../systems/scenery.js";
 import { createInputController } from "./input.js";
 import { createGameLoop } from "./loop.js";
 import { fitCanvasToContainer } from "./resize.js";
@@ -481,8 +481,10 @@ export class GameEngine {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, view.width, view.height);
 
-    renderStarfield(ctx, this.stars);
-    renderPlanetScenery(ctx, view, session.planet, this.progressMs);
+    if (!renderPlanetBackground(ctx, view, session.planet)) {
+      renderStarfield(ctx, this.stars);
+      renderPlanetScenery(ctx, view, session.planet, this.progressMs);
+    }
     const flashAlpha = this.columnFlashRemainingMs > 0
       ? 0.3 + Math.max(0, Math.sin(this.elapsedMs * 0.025)) * 0.15
       : 0;

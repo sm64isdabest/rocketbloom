@@ -1,3 +1,34 @@
+const APP_BASE = import.meta.env?.BASE_URL ?? "/";
+const BACKGROUND_FILES = {
+  earth: "terra_background.png",
+  mars: "marte_background.png",
+  saturn: "saturno_background.png",
+  neptune: "netuno_background.png",
+};
+const backgroundImages = new Map();
+
+function getBackgroundImage(planetId) {
+  const filename = BACKGROUND_FILES[planetId];
+  if (!filename || typeof Image === "undefined") return null;
+  if (!backgroundImages.has(planetId)) {
+    const image = new Image();
+    image.src = `${APP_BASE}assets/backgrounds/${filename}`;
+    backgroundImages.set(planetId, image);
+  }
+  return backgroundImages.get(planetId);
+}
+
+export function renderPlanetBackground(ctx, view, planet) {
+  const image = getBackgroundImage(planet.id);
+  if (!image?.complete || image.naturalWidth === 0) return false;
+
+  const scale = Math.max(view.width / image.naturalWidth, view.height / image.naturalHeight);
+  const width = image.naturalWidth * scale;
+  const height = image.naturalHeight * scale;
+  ctx.drawImage(image, (view.width - width) / 2, (view.height - height) / 2, width, height);
+  return true;
+}
+
 function drawAmazon(ctx, width, height) {
   const horizon = height * 0.68;
   ctx.save();
