@@ -1,12 +1,23 @@
 import { ROCKET } from "../config/gameConfig.js";
 
+const ROCKET_IMAGE_URL = "/assets/rocket.png";
+const ROCKET_SOURCE = { x: 292, y: 51, width: 494, height: 965 };
+
+function createRocketImage() {
+  if (typeof Image === "undefined") return null;
+  const image = new Image();
+  image.src = ROCKET_IMAGE_URL;
+  return image;
+}
+
 export class Rocket {
-  constructor() {
+  constructor({ image } = {}) {
     this.width = ROCKET.width;
     this.height = ROCKET.height;
     this.x = 0;
     this.y = 0;
     this.targetX = 0;
+    this.image = image ?? createRocketImage();
   }
 
   place(viewWidth, viewHeight) {
@@ -33,6 +44,23 @@ export class Rocket {
 
   render(ctx, elapsedMs = 0, reducedMotion = false) {
     const { x, y, width, height } = this;
+    if (this.image?.complete && this.image.naturalWidth > 0) {
+      const drawWidth = Math.min(width, height * ROCKET_SOURCE.width / ROCKET_SOURCE.height);
+      const drawX = x + (width - drawWidth) / 2;
+      ctx.drawImage(
+        this.image,
+        ROCKET_SOURCE.x,
+        ROCKET_SOURCE.y,
+        ROCKET_SOURCE.width,
+        ROCKET_SOURCE.height,
+        drawX,
+        y,
+        drawWidth,
+        height,
+      );
+      return;
+    }
+
     ctx.save();
     ctx.translate(x + width / 2, y + height / 2);
 
