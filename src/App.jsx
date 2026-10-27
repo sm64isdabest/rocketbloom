@@ -16,16 +16,6 @@ import { VictoryScreen } from "./screens/VictoryScreen.jsx";
 import { DefeatScreen } from "./screens/DefeatScreen.jsx";
 import { configureAudio } from "./game/audio/audioManager.js";
 
-function getContinueTarget(progress) {
-  const planet = [...PLANETS]
-    .reverse()
-    .find((candidate) => progress.unlockedPlanetIds.includes(candidate.id));
-  if (!planet) return null;
-  const stage = planet.stages.find((candidate) => !progress.completedStageIds.includes(candidate.id))
-    ?? getFirstStage(planet);
-  return stage ? { planetId: planet.id, stageId: stage.id } : null;
-}
-
 export default function App() {
   const { progress, warning, fatal, patchSettings, persist } = usePersistentProgress();
   const [screen, setScreen] = useState(SCREEN.BOOT);
@@ -107,19 +97,13 @@ export default function App() {
   if (!progress || screen === SCREEN.BOOT) return <BootScreen />;
 
   const planet = run ? getPlanetById(run.planetId) : null;
-  const continueTarget = getContinueTarget(progress);
-  const hasProgress = progress.completedStageIds.length > 0 || progress.rescuedPlantIds.length > 0
-    || progress.coins > 0 || progress.diamonds > 0;
-
   return (
     <div className={`app-shell ${progress.settings.reducedMotion || systemReducedMotion ? "motion-reduced" : ""}`}>
       {screen === SCREEN.MENU && (menuPage === SCREEN.MENU || menuPage === SCREEN.SETTINGS) ? (
         <MenuScreen
           progress={progress}
           warning={warning}
-          hasProgress={hasProgress}
           onPlay={() => setMenuPage(SCREEN.PLANETS)}
-          onContinue={() => continueTarget && startStage(continueTarget.planetId, continueTarget.stageId)}
           onSettings={() => setMenuPage(SCREEN.SETTINGS)}
           onCommandRoom={() => setMenuPage(SCREEN.COMMAND)}
         />

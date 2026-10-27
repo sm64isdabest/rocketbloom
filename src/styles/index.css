@@ -180,7 +180,7 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 }
 .menu__logo { display: block; width: min(76vw, 311px, 40vh); height: auto; flex: 0 0 auto; object-fit: contain; }
 .menu__buttons { display: flex; width: 100%; flex-direction: column; align-items: center; gap: 12px; margin-top: clamp(25px, 5.6vh, 49px); }
-.menu__play, .menu__option, .menu__continue {
+.menu__play, .menu__option {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -209,20 +209,6 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
   paint-order: stroke fill;
 }
 .menu__play img { display: block; width: clamp(61px, 22vw, 88px); height: auto; flex: 0 0 auto; object-fit: contain; }
-.menu__continue {
-  position: absolute;
-  z-index: 2;
-  top: max(10px, env(safe-area-inset-top));
-  right: calc(max(9px, env(safe-area-inset-right)) + clamp(40px, 12vw, 48px) + 8px);
-  min-height: 32px;
-  gap: 8px;
-  padding: 3px 12px;
-  border: 1px solid rgba(146, 197, 255, .52);
-  border-radius: 8px;
-  background: rgba(6, 22, 56, .78);
-  font-size: .82rem;
-  letter-spacing: .01em;
-}
 .menu__option {
   width: min(54vw, 220px);
   gap: 9px;
@@ -253,7 +239,6 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
   .menu__option--laboratory { height: 44px; margin-top: 3px; }
   .menu__option--shop { height: 38px; margin-top: 0; }
   .menu__option--info { height: 30px; margin-top: 0; }
-  .menu__continue { min-height: 28px; }
 }
 @media (max-width: 360px) {
   .menu__layout { padding-right: 12px; padding-left: 12px; }
@@ -268,7 +253,6 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
   .menu__play img { width: 52px; }
   .menu__option { height: 39px; }
   .menu__option img { width: 33px; height: 33px; }
-  .menu__continue { min-height: 26px; font-size: .72rem; }
 }
 
 /* Settings popup layered over the main menu */

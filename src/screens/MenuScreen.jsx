@@ -15,7 +15,7 @@ const NOTICE_CONTENT = {
   },
 };
 
-export function MenuScreen({ warning, hasProgress, onPlay, onContinue, onSettings, onCommandRoom }) {
+export function MenuScreen({ warning, onPlay, onSettings, onCommandRoom }) {
   const [notice, setNotice] = useState(null);
   const noticeTitleId = useId();
 
@@ -49,12 +49,6 @@ export function MenuScreen({ warning, hasProgress, onPlay, onContinue, onSetting
             <img src={menuAsset("play.png")} alt="" />
             <span>Jogar</span>
           </button>
-
-          {hasProgress ? (
-            <button type="button" className="menu__continue" onClick={onContinue}>
-              Continuar missão <span aria-hidden="true">↗</span>
-            </button>
-          ) : null}
 
           <button type="button" className="menu__option menu__option--laboratory" onClick={onCommandRoom}>
             <img src={menuAsset("laboratory.png")} alt="" />
