@@ -19,6 +19,6 @@ test("obstacle animation changes its drawing while preserving its collision box"
   obstacle.render(ctx);
 
   assert.deepEqual(obstacle.collisionBox, { ...collisionBox, y: collisionBox.y + obstacle.speed * 0.5 });
-  assert.ok(calls.some(({ method, args }) => method === "rotate" && args[0] !== 0), "the sprite should sway during rendering");
+  assert.ok(calls.some(({ method, args }) => method === "rotate" && Math.abs(args[0]) >= 0.12), "the sprite should have a clearly visible sway");
   assert.deepEqual([obstacle.x, obstacle.y, obstacle.width, obstacle.height], [100, 115, 86, 46]);
 });

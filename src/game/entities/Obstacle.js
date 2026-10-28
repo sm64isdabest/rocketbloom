@@ -44,10 +44,10 @@ export class Obstacle {
   }
 
   render(ctx) {
-    const angleAmplitude = this.id === "plane" ? 0.055 : this.id === "helicopter" ? 0.035 : 0.025;
+    const angleAmplitude = this.id === "plane" ? 0.14 : this.id === "helicopter" ? 0.11 : this.id === "balloon" ? 0.085 : 0.1;
     const phase = this.animationTime * (this.id === "balloon" ? 1.4 : 2.2);
     const angle = Math.sin(phase) * angleAmplitude;
-    const bob = Math.sin(phase * 0.7) * 1.6;
+    const bob = Math.sin(phase * 0.7) * 4.5;
 
     ctx.save();
     ctx.translate(this.x + this.width / 2, this.y + this.height / 2 + bob);
