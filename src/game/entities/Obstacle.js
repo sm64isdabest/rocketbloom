@@ -1,3 +1,18 @@
+const APP_BASE = import.meta.env?.BASE_URL ?? "/";
+const SPRITE_FILES = { plane: "plane.png", helicopter: "helicopter.png", balloon: "balloon.png" };
+const SPRITE_IMAGES = new Map();
+
+function getSprite(obstacleId) {
+  const filename = SPRITE_FILES[obstacleId];
+  if (!filename || typeof Image === "undefined") return null;
+  if (!SPRITE_IMAGES.has(obstacleId)) {
+    const image = new Image();
+    image.src = `${APP_BASE}assets/obstacles/earth/${filename}`;
+    SPRITE_IMAGES.set(obstacleId, image);
+  }
+  return SPRITE_IMAGES.get(obstacleId);
+}
+
 export class Obstacle {
   constructor({ id, x, y, width, height, speed = 130, color = "#b98562", hitbox }) {
     this.id = id;
@@ -9,6 +24,7 @@ export class Obstacle {
     this.color = color;
     this.hitbox = hitbox ?? { x: 0.08, y: 0.08, width: 0.84, height: 0.84 };
     this.alive = true;
+    this.image = getSprite(id);
   }
 
   get collisionBox() {
@@ -26,6 +42,11 @@ export class Obstacle {
   }
 
   render(ctx) {
+    if (this.image?.complete && this.image.naturalWidth > 0) {
+      ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+      return;
+    }
+
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.fillStyle = this.color;
