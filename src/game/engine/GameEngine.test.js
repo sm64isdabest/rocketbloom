@@ -374,7 +374,7 @@ test("obstáculo aplica uma penalidade por colisão e a pausa congela perigos e 
   });
 });
 
-test("impacto fatal mantém a explosão visível até o feedback de dano terminar", () => {
+test("impacto fatal espera o fade do foguete antes de exibir a derrota", () => {
   withCanvasEnvironment(({ canvas }) => {
     const outcomes = [];
     const engine = new GameEngine(engineOptions(canvas, { onOutcome: (outcome) => outcomes.push(outcome) }));

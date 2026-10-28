@@ -14,7 +14,7 @@ Dar ao jogador um retorno visual claro quando uma colisão com obstáculo reduz 
 - Usar o canvas e o ciclo de atualização/renderização existentes, sem dependências novas.
 - Erro de pergunta: foguete pisca vermelho e treme durante o feedback da resposta.
 - Colisão: o mesmo feedback, mais uma pequena explosão localizada no ponto do foguete.
-- Se a colisão for fatal, manter o foguete e a explosão visíveis até o fade terminar antes de mostrar a tela de derrota.
+- Se a colisão for fatal, manter o feedback do foguete visível até o fade terminar antes de mostrar a tela de derrota; as partículas da mini explosão seguem sua duração curta própria.
 - Limpar qualquer feedback de dano restante quando uma nova pergunta começar.
 - Respeitar a configuração de movimento reduzido e não alterar penalidades, controles ou regras do jogo.
 - A piscada vermelha e a tremida devem perder força suavemente até desaparecerem; a tremida será forte no início, sem deslocar a posição real nem afetar colisões/controles.
