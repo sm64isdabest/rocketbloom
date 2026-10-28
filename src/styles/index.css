@@ -80,7 +80,7 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 .mission-strip > div:last-child { border-right: 0; }
 .mission-strip strong { font-size: 1.35rem; letter-spacing: -.04em; }.mission-strip strong small { color: var(--faint); font-size: .8rem; }.mission-strip > div > span:last-child { color: var(--muted); font-size: .73rem; }
 .mission-strip__plant { grid-template-columns: 33px 1fr !important; align-items: center; gap: 12px !important; }.mission-strip__plant > span { color: var(--green); font-size: 1.8rem; }.mission-strip__plant p { margin: 0; color: var(--muted); font-size: .73rem; line-height: 1.6; }.mission-strip__plant b { color: var(--ink); font-size: .8rem; }
-.resource-coin { color: var(--amber); font-style: normal; }.resource-diamond { color: var(--cyan); font-style: normal; }
+.resource-coin { color: var(--amber); font-size: 1.25em; font-style: normal; }.resource-diamond { color: var(--cyan); font-size: 1.25em; font-style: normal; }
 .menu__footer { border-top: 1px solid rgba(190, 222, 218, .1); padding-top: 17px; }.menu__footer i { color: var(--green); font-style: normal; }.menu__footer nav { display: flex; gap: 20px; }.text-button { padding: 4px 0; border: 0; color: var(--muted); background: transparent; font: inherit; letter-spacing: .04em; text-transform: none; cursor: pointer; }.text-button:hover { color: var(--green); }
 
 /* Planet selection */
@@ -509,7 +509,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   z-index: 4;
   top: -61%;
   left: 49%;
-  width: 43%;
+  width: 50%;
   height: auto;
   transform: rotate(38deg);
   filter: drop-shadow(0 0 5px rgba(61, 199, 255, .9)) drop-shadow(0 1px 4px rgba(255, 171, 47, .85));
@@ -546,7 +546,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .phase-selection-wallet__coin {
   position: relative;
   display: inline-grid;
-  width: 1.9cqw;
+  width: 2.4cqw;
   min-width: 10px;
   aspect-ratio: 1;
   place-items: center;
@@ -558,7 +558,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .phase-selection-wallet__coin::after { content: ""; width: 48%; height: 48%; border: max(1px, .12cqw) solid rgba(133, 79, 8, .75); border-radius: 50%; }
 .phase-selection-wallet__diamond {
   display: inline-block;
-  width: 1.75cqw;
+  width: 2.2cqw;
   min-width: 9px;
   aspect-ratio: 1;
   transform: rotate(45deg) scale(.78);

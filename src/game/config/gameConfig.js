@@ -9,8 +9,8 @@ export const VIEW = {
 };
 
 export const ROCKET = {
-  width: 42,
-  height: 72,
+  width: 52,
+  height: 88,
   bottomOffset: 96,
   horizontalSpeed: 520,
   keyboardStep: 280,
