@@ -369,6 +369,19 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 }
 .motion-reduced *, .motion-reduced *::before, .motion-reduced *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 
+/* In-flight resource counters and top question placement */
+.hud__resource-icon { display: block; flex: 0 0 auto; object-fit: contain; }
+.hud__resource-icon--coin { width: 29px; height: 29px; }
+.hud__resource-icon--diamond { width: 32px; height: 27px; }
+.hud__stat--diamonds { min-width: 124px; justify-content: flex-start; }
+.hud__question { top: max(76px, calc(env(safe-area-inset-top) + 76px)); }
+@media (max-width: 680px) {
+  .hud__resource-icon--coin { width: 24px; height: 24px; }
+  .hud__resource-icon--diamond { width: 27px; height: 23px; }
+  .hud__stat--coins, .hud__stat--diamonds { min-width: 0; gap: 6px; }
+  .hud__question { top: max(62px, calc(env(safe-area-inset-top) + 62px)); }
+}
+
 /* Planet-first level selector */
 .planet-selector { max-width: 1120px; }
 .planet-grid--select { grid-template-columns: minmax(0, 1fr); gap: 12px; max-width: 960px; margin: 0 auto; }
