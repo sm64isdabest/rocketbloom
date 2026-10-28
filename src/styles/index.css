@@ -442,7 +442,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   .planet-grid--select .status-badge { font-size: .48rem; }
 }
 
-/* Reference-matched phase selection */
+/* Phase selection map */
 .phase-selection-screen {
   position: relative;
   display: grid;
@@ -465,40 +465,28 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   background: #020817;
   box-shadow: 0 18px 48px rgba(0, 0, 0, .45);
 }
-.phase-selection-art { display: block; width: 100%; height: 100%; object-fit: fill; user-select: none; pointer-events: none; }
-.phase-selection-wallet { position: absolute; z-index: 2; inset: 0; pointer-events: none; }
-.phase-selection-wallet__value {
+.phase-selection-panels {
   position: absolute;
-  top: 4.8%;
-  color: #fff;
-  font-family: Arial, "Segoe UI", sans-serif;
-  font-size: 1.42cqw;
-  font-weight: 800;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-  text-shadow: 0 1px 2px rgba(1, 10, 31, .9);
-  white-space: nowrap;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
 }
-.phase-selection-wallet__value--coins { left: 39.4%; width: 4.4%; transform: translate(-50%, -50%); }
-.phase-selection-wallet__value--diamonds { left: 47.35%; width: 3.8%; transform: translate(-50%, -50%); }
-.phase-selection-back {
-  position: absolute;
-  z-index: 4;
-  top: 1.3%;
-  left: 2.1%;
-  width: 7.7%;
-  height: 11.5%;
-  padding: 0;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  background: transparent;
-  cursor: pointer;
-}
-.phase-selection-back:focus-visible { border-color: #fff; background: rgba(25, 134, 244, .35); box-shadow: 0 0 14px rgba(87, 202, 255, .9); }
+.phase-selection-panel { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
+.phase-selection-panel__art { display: block; width: 100%; height: 100%; object-fit: fill; user-select: none; pointer-events: none; }
 .phase-selection-stages { position: absolute; z-index: 3; inset: 0; margin: 0; padding: 0; list-style: none; pointer-events: none; }
-.phase-selection-stages__item { position: absolute; top: var(--stage-y); left: var(--stage-x); width: 7.7%; height: 11.5%; transform: translate(-50%, -50%); }
+.phase-selection-stages__item {
+  position: absolute;
+  top: var(--stage-y);
+  left: var(--stage-x);
+  width: 16%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
 .phase-selection-stages__hit-area {
+  position: relative;
+  z-index: 2;
   display: grid;
   width: 100%;
   height: 100%;
@@ -506,14 +494,94 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   padding: 0;
   border: 2px solid transparent;
   border-radius: 50%;
+  outline: 0;
   background: transparent;
+  color: transparent;
   cursor: pointer;
   touch-action: manipulation;
   pointer-events: auto;
 }
 .phase-selection-stages__hit-area:hover:not(:disabled) { background: rgba(120, 207, 255, .07); }
-.phase-selection-stages__hit-area:focus-visible { border-color: #fff; background: rgba(25, 134, 244, .45); box-shadow: 0 0 14px rgba(87, 202, 255, .9); }
+.phase-selection-stages__hit-area:focus-visible { border-color: #fff; background: rgba(25, 134, 244, .26); box-shadow: 0 0 14px rgba(87, 202, 255, .9); }
 .phase-selection-stages__hit-area:disabled { cursor: not-allowed; }
+.phase-selection-rocket {
+  position: absolute;
+  z-index: 4;
+  top: -61%;
+  left: 49%;
+  width: 43%;
+  height: auto;
+  transform: rotate(38deg);
+  filter: drop-shadow(0 0 5px rgba(61, 199, 255, .9)) drop-shadow(0 1px 4px rgba(255, 171, 47, .85));
+  pointer-events: none;
+  user-select: none;
+}
+.phase-selection-wallet {
+  position: absolute;
+  z-index: 5;
+  top: 2.6%;
+  right: 1.8%;
+  display: flex;
+  width: 17.5%;
+  height: 8.3%;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 1.3cqw;
+  padding: 0 1.4cqw;
+  border: max(1px, .23cqw) solid rgba(67, 168, 255, .95);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(7, 30, 69, .97), rgba(1, 11, 31, .98));
+  box-shadow: inset 0 0 9px rgba(30, 134, 255, .38), 0 0 11px rgba(22, 137, 255, .4);
+  color: #fff;
+  font-family: Arial, "Segoe UI", sans-serif;
+  font-size: 1.22cqw;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(1, 10, 31, .9);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.phase-selection-wallet__currency { display: inline-flex; min-width: 0; align-items: center; gap: .55cqw; }
+.phase-selection-wallet__coin {
+  position: relative;
+  display: inline-grid;
+  width: 1.9cqw;
+  min-width: 10px;
+  aspect-ratio: 1;
+  place-items: center;
+  border: max(1px, .2cqw) solid #ffe28a;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 29%, #fff89d 0 12%, #ffc72f 35%, #e58b08 74%, #99500d 100%);
+  box-shadow: 0 0 4px rgba(255, 193, 36, .82), inset 0 0 2px #fff5ae;
+}
+.phase-selection-wallet__coin::after { content: ""; width: 48%; height: 48%; border: max(1px, .12cqw) solid rgba(133, 79, 8, .75); border-radius: 50%; }
+.phase-selection-wallet__diamond {
+  display: inline-block;
+  width: 1.75cqw;
+  min-width: 9px;
+  aspect-ratio: 1;
+  transform: rotate(45deg) scale(.78);
+  border: max(1px, .14cqw) solid #bcf8ff;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #e4ffff 0 20%, #4ce8ff 21% 49%, #1286ec 50% 78%, #83fbff 79% 100%);
+  box-shadow: 0 0 5px rgba(47, 205, 255, .9);
+}
+.phase-selection-back {
+  position: absolute;
+  z-index: 6;
+  top: 1.3%;
+  left: 1.6%;
+  width: 7.3%;
+  height: 11.2%;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: transparent;
+  cursor: pointer;
+}
+.phase-selection-back:focus-visible { border-color: #fff; background: rgba(25, 134, 244, .35); box-shadow: 0 0 14px rgba(87, 202, 255, .9); }
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -526,4 +594,16 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 }
 @media (prefers-reduced-motion: reduce) {
   .phase-selection-stages__hit-area { transition: none; }
+}
+@media (max-width: 620px) {
+  .phase-selection-wallet {
+    width: 30%;
+    height: 10.5%;
+    gap: .5cqw;
+    padding: 0 1.6cqw;
+    font-size: clamp(8px, 2.3cqw, 10px);
+  }
+  .phase-selection-wallet__currency { gap: .4cqw; }
+  .phase-selection-wallet__coin { width: 3cqw; min-width: 9px; }
+  .phase-selection-wallet__diamond { width: 2.8cqw; min-width: 9px; }
 }
