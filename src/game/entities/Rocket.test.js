@@ -108,5 +108,7 @@ test("reduced motion retains the red damage tint without shaking", () => {
   rocket.render(ctx, 20, true);
 
   assert.equal(calls.filter(({ method }) => method === "drawImage").length, 2);
+  assert.ok(calls.some(({ property, value }) => property === "filter" && value.includes("hue-rotate(358deg)")));
+  assert.ok(calls.some(({ property, value }) => property === "globalAlpha" && value > 0));
   assert.deepEqual(calls.find(({ method }) => method === "translate").args, [46, 74]);
 });

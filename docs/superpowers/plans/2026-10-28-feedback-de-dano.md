@@ -19,6 +19,7 @@
 ## Review Focus
 
 - Damage state must fade to zero and must not leak into a new run — cover in Rocket and engine tests.
+- A fatal collision must render its explosion and shake through the fade before defeat — cover in an engine outcome test.
 - Render shake must not mutate the rocket's gameplay coordinates — assert coordinates remain stable while damage feedback renders.
 - Reduced-motion mode must retain readable damage feedback without shake — cover in a render test.
 - Repeated collision detection must trigger one penalty and one explosion — existing collision test plus particle-count assertion.
@@ -57,9 +58,11 @@
 
 - [ ] **Step 1: Add failing engine assertions**
   - Extend `resposta incorreta pisca vermelho sem recompensa e acerto respeita o limite de velocidade` to assert a wrong answer starts rocket damage feedback.
-  - Extend `obstáculo aplica uma penalidade por colisão e a pausa congela perigos e efeitos` to assert collision starts feedback and creates a localized burst of at least 20 particles, with one penalty/burst after a repeated tick.
+  - Extend the consecutive-answer test to assert a new question clears prior damage feedback; assert unanswered rounds start feedback.
+  - Extend `obstáculo aplica uma penalidade por colisão e a pausa congela perigos e efeitos` to assert collision starts feedback and creates a localized burst of 24 particles, with one penalty/burst after a repeated tick.
+  - Add a fatal collision test proving the game remains visible until damage feedback expires, then reports defeat once.
 - [ ] **Step 2: Run `node --test src/game/engine/GameEngine.test.js` and confirm the new assertions fail because triggers/burst are missing.**
-- [ ] **Step 3: Trigger feedback when resolving an incorrect answer and on obstacle collision; enlarge the collision burst to 24 warm red/orange particles. Advance the Rocket feedback timer once per active tick so it expires naturally and pauses with the engine.**
+- [ ] **Step 3: Trigger feedback when resolving an incorrect answer and on obstacle collision; enlarge the collision burst to 24 warm red/orange particles. Advance the Rocket feedback timer once per active tick, clear it when a new question starts, and defer terminal defeat until the effect expires.**
 - [ ] **Step 4: Run `node --test src/game/engine/GameEngine.test.js`; expect all engine tests to pass.**
 
 ### Task 3: Full verification and delivery

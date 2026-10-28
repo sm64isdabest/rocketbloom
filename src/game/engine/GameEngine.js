@@ -56,6 +56,7 @@ export class GameEngine {
     this.incorrectAnswers = 0;
     this.paused = false;
     this.ended = false;
+    this.pendingOutcome = null;
     this.disposed = false;
     this.hudAcc = 0;
     this.obstacleAcc = 0;
@@ -146,6 +147,7 @@ export class GameEngine {
     if (this.ended || this.disposed) return;
     if (this.currentRound && this.currentRound.status !== "waiting-next-question") return;
     if (this.currentRound && this.interQuestionRemainingMs > 0) return;
+    this.rocket.clearDamageFeedback();
     this.roundNumber += 1;
     const question = generateQuestion({
       difficulty: this.session.difficulty.mathTier,
@@ -186,6 +188,12 @@ export class GameEngine {
     if (!frameSeconds) return;
     const frameMs = frameSeconds * 1000;
     this.elapsedMs += frameMs;
+    if (this.pendingOutcome) {
+      this.rocket.updateDamageFeedback(frameSeconds);
+      this.updateParticles(frameSeconds);
+      this.presentPendingOutcome();
+      return;
+    }
     this.input.apply(this.rocket, this.canvas, frameSeconds);
     this.rocket.clamp(this.view.width);
     this.rocket.update(frameSeconds);
@@ -204,11 +212,21 @@ export class GameEngine {
 
     this.updateQuestions(frameSeconds, frameMs);
     if (this.ended) return;
+    if (this.pendingOutcome) {
+      this.updateParticles(frameSeconds);
+      this.presentPendingOutcome();
+      return;
+    }
     this.updatePickupsAndHazards(frameSeconds, frameMs);
     if (this.ended) return;
+    if (this.pendingOutcome) {
+      this.presentPendingOutcome();
+      return;
+    }
 
     if (this.speed <= SPEED.defeatAtOrBelow && !this.isQuestionResolving()) {
-      this.finish("defeat");
+      this.pendingOutcome = "defeat";
+      this.presentPendingOutcome();
       return;
     }
     if (this.progressMs >= this.session.stage.durationMs && !this.isQuestionResolving()) {
@@ -282,7 +300,16 @@ export class GameEngine {
     this.columnFlashRemainingMs = 0;
     this.interQuestionRemainingMs = sampleInterQuestionDelayMs(this.rng);
     this.questionFeedback = "";
-    if (this.speed <= SPEED.defeatAtOrBelow) this.finish("defeat");
+    if (this.speed <= SPEED.defeatAtOrBelow) this.pendingOutcome = "defeat";
+  }
+
+  presentPendingOutcome() {
+    this.render();
+    if (this.rocket.damageFeedbackRemainingMs <= 0) {
+      const outcome = this.pendingOutcome;
+      this.pendingOutcome = null;
+      this.finish(outcome);
+    }
   }
 
   resolveCurrentAnswer(answer) {
@@ -377,7 +404,7 @@ export class GameEngine {
       this.feedbackTimerMs -= frameMs;
       if (this.feedbackTimerMs <= 0) this.questionFeedback = "";
     }
-    if (this.speed <= SPEED.defeatAtOrBelow && !this.isQuestionResolving()) this.finish("defeat");
+    if (this.speed <= SPEED.defeatAtOrBelow && !this.isQuestionResolving()) this.pendingOutcome = "defeat";
   }
 
   getEntitySpeed(baseSpeed) {
@@ -444,6 +471,7 @@ export class GameEngine {
     if (this.ended || this.disposed) return;
     this.ended = true;
     this.paused = false;
+    this.pendingOutcome = null;
     finishGameAudio(outcome);
     this.loop.stop();
     this.answers = [];

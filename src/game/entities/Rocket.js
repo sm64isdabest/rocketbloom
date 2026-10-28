@@ -36,6 +36,11 @@ export class Rocket {
     this.damageFeedbackRemainingMs = Math.max(0, this.damageFeedbackRemainingMs - Math.max(0, dt) * 1000);
   }
 
+  clearDamageFeedback() {
+    this.damageFeedbackDurationMs = 0;
+    this.damageFeedbackRemainingMs = 0;
+  }
+
   place(viewWidth, viewHeight) {
     this.x = viewWidth / 2 - this.width / 2;
     this.targetX = this.x;

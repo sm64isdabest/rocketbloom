@@ -165,10 +165,12 @@ test("acerto e erro consecutivos resolvem uma vez e limpam o feedback entre ques
     assert.deepEqual(engine.answers, []);
 
     engine.interQuestionRemainingMs = 1;
+    engine.rocket.triggerDamageFeedback(250);
     engine.tick(0.05);
     assert.equal(engine.roundNumber, 2);
     assert.notEqual(engine.currentRound.id, firstRound.id);
     assert.equal(engine.columnFlashRemainingMs, 0);
+    assert.equal(engine.rocket.damageFeedbackRemainingMs, 0, "the next question should not inherit previous damage feedback");
 
     const secondWrong = engine.currentRound.answers.find((answer) => !answer.correct);
     assert.equal(engine.resolveCurrentAnswer(secondWrong), true);
@@ -217,6 +219,11 @@ test("resposta incorreta pisca vermelho sem recompensa e acerto respeita o limit
     tickFor(capped, 1450);
     assert.equal(capped.speed, 320);
     capped.stop();
+
+    const unanswered = new GameEngine(engineOptions(canvas, {}, { runId: "unanswered-feedback-test" }));
+    assert.equal(unanswered.resolveCurrentAnswer(null), true);
+    assert.ok(unanswered.rocket.damageFeedbackRemainingMs > 0, "an unanswered question should damage the rocket");
+    unanswered.stop();
   });
 });
 
@@ -231,6 +238,8 @@ test("velocidade zerada causa derrota e uma fase concluída causa vitória", () 
     defeated.tick(0.016);
     tickFor(defeated, 700);
     defeated.tick(0.016);
+    assert.equal(defeated.ended, false, "a fatal wrong answer should finish after its damage animation");
+    tickFor(defeated, 250);
     assert.equal(outcomes.filter((outcome) => outcome === "defeat").length, 1);
     assert.equal(defeated.ended, true);
     defeated.stop();
@@ -361,6 +370,27 @@ test("obstáculo aplica uma penalidade por colisão e a pausa congela perigos e 
     engine.tick(0.5);
     assert.equal(pausedHazard.y, y);
     assert.equal(engine.rocket.damageFeedbackRemainingMs, damageRemaining);
+    engine.stop();
+  });
+});
+
+test("impacto fatal mantém a explosão visível até o feedback de dano terminar", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const outcomes = [];
+    const engine = new GameEngine(engineOptions(canvas, { onOutcome: (outcome) => outcomes.push(outcome) }));
+    engine.speed = 20;
+    engine.obstacles.push(new Obstacle({ id: "fatal-asteroid", x: engine.rocket.x, y: engine.rocket.y, width: 44, height: 44 }));
+
+    engine.tick(0.016);
+
+    assert.equal(engine.ended, false, "the game should present the fatal impact before switching screens");
+    assert.equal(engine.pendingOutcome, "defeat");
+    assert.equal(engine.particles.length, 24);
+    assert.ok(engine.rocket.damageFeedbackRemainingMs > 0);
+
+    tickFor(engine, 1000);
+    assert.equal(engine.ended, true);
+    assert.deepEqual(outcomes, ["defeat"]);
     engine.stop();
   });
 });
