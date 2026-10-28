@@ -144,15 +144,6 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
   background-position: center;
   background-size: cover;
 }
-.menu.screen--home::after {
-  position: fixed;
-  z-index: 8;
-  inset: 2px;
-  border: 2px solid rgba(25, 131, 255, .95);
-  box-shadow: inset 0 0 7px rgba(23, 104, 255, .38), 0 0 7px rgba(23, 104, 255, .22);
-  content: "";
-  pointer-events: none;
-}
 .menu__settings {
   position: absolute;
   z-index: 2;
