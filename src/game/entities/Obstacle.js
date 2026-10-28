@@ -25,6 +25,7 @@ export class Obstacle {
     this.hitbox = hitbox ?? { x: 0.08, y: 0.08, width: 0.84, height: 0.84 };
     this.alive = true;
     this.image = getSprite(id);
+    this.animationTime = 0;
   }
 
   get collisionBox() {
@@ -39,16 +40,26 @@ export class Obstacle {
 
   update(dt) {
     this.y += this.speed * dt;
+    this.animationTime += dt;
   }
 
   render(ctx) {
+    const angleAmplitude = this.id === "plane" ? 0.055 : this.id === "helicopter" ? 0.035 : 0.025;
+    const phase = this.animationTime * (this.id === "balloon" ? 1.4 : 2.2);
+    const angle = Math.sin(phase) * angleAmplitude;
+    const bob = Math.sin(phase * 0.7) * 1.6;
+
+    ctx.save();
+    ctx.translate(this.x + this.width / 2, this.y + this.height / 2 + bob);
+    ctx.rotate(angle);
+    ctx.translate(-this.width / 2, -this.height / 2);
+
     if (this.image?.complete && this.image.naturalWidth > 0) {
-      ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+      ctx.drawImage(this.image, 0, 0, this.width, this.height);
+      ctx.restore();
       return;
     }
 
-    ctx.save();
-    ctx.translate(this.x, this.y);
     ctx.fillStyle = this.color;
     ctx.strokeStyle = "rgba(10, 23, 35, .62)";
     ctx.lineWidth = 2;
