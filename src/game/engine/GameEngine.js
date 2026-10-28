@@ -189,6 +189,7 @@ export class GameEngine {
     this.input.apply(this.rocket, this.canvas, frameSeconds);
     this.rocket.clamp(this.view.width);
     this.rocket.update(frameSeconds);
+    this.rocket.updateDamageFeedback(frameSeconds);
 
     const progressMultiplier = clamp(
       this.speed / SPEED.start,
@@ -294,6 +295,7 @@ export class GameEngine {
       this.questionFeedback = "";
     } else {
       this.incorrectAnswers += 1;
+      this.rocket.triggerDamageFeedback();
       this.score = Math.max(0, this.score + SCORE.incorrectAnswer);
       this.speed = clamp(this.speed - SPEED.wrongAnswerPenalty * (this.session.stage.speedLossMultiplier ?? 1), SPEED.min, SPEED.max);
       this.answerFeedbackRemainingMs = QUESTION_TIMING.resolutionFeedbackMs;
@@ -340,13 +342,14 @@ export class GameEngine {
       obstacle.update(dt);
       if (aabbOverlaps(this.rocket, obstacle.collisionBox)) {
         obstacle.alive = false;
+        this.rocket.triggerDamageFeedback();
         this.speed = clamp(this.speed - SPEED.obstaclePenalty
           * (this.session.stage.speedLossMultiplier ?? 1)
           * (this.session.stage.obstaclePenaltyMultiplier ?? 1), SPEED.min, SPEED.max);
         this.questionFeedback = "Impacto! Velocidade reduzida";
         this.feedbackTimerMs = 900;
         playGameSound("collision");
-        this.spawnParticles(this.rocket.x + this.rocket.width / 2, this.rocket.y + this.rocket.height / 2, "#ff9b75", 12);
+        this.spawnParticles(this.rocket.x + this.rocket.width / 2, this.rocket.y + this.rocket.height / 2, "#ff653c", 24);
         this.emitHud(true);
       }
     }

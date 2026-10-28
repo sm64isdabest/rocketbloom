@@ -203,6 +203,7 @@ test("resposta incorreta pisca vermelho sem recompensa e acerto respeita o limit
     assert.equal(engine.speed, 82);
     assert.equal(engine.currentRound.status, "animating-incorrect");
     assert.equal(engine.columnFlashColor, "#FF3030");
+    assert.ok(engine.rocket.damageFeedbackRemainingMs > 0, "an incorrect answer should damage the rocket");
     tickFor(engine, 700);
     assert.equal(engine.currentRound.status, "waiting-next-question");
     engine.stop();
@@ -349,14 +350,17 @@ test("obstáculo aplica uma penalidade por colisão e a pausa congela perigos e 
     engine.tick(0.016);
     assert.equal(engine.speed, initialSpeed - 44);
     assert.equal(hazard.alive, false);
-    assert.ok(engine.particles.length > 0);
+    assert.ok(engine.rocket.damageFeedbackRemainingMs > 0);
+    assert.equal(engine.particles.length, 24, "a collision should create one localized burst of 24 particles");
 
     const pausedHazard = new Obstacle({ id: "asteroid", x: 20, y: 10, width: 44, height: 44 });
     engine.obstacles.push(pausedHazard);
     engine.pause();
+    const damageRemaining = engine.rocket.damageFeedbackRemainingMs;
     const y = pausedHazard.y;
     engine.tick(0.5);
     assert.equal(pausedHazard.y, y);
+    assert.equal(engine.rocket.damageFeedbackRemainingMs, damageRemaining);
     engine.stop();
   });
 });
@@ -399,7 +403,7 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
     }));
     const spawnParticles = engine.spawnParticles.bind(engine);
     engine.spawnParticles = (x, y, color, count) => {
-      if (color === "#ff9b75" && count === 12) metrics.collisions += 1;
+      if (color === "#ff653c" && count === 24) metrics.collisions += 1;
       spawnParticles(x, y, color, count);
     };
     const spawnObstacle = engine.spawnObstacle.bind(engine);

@@ -22,7 +22,18 @@ export class Rocket {
     this.y = 0;
     this.targetX = 0;
     this.rotation = 0;
+    this.damageFeedbackDurationMs = 0;
+    this.damageFeedbackRemainingMs = 0;
     this.image = image ?? createRocketImage();
+  }
+
+  triggerDamageFeedback(durationMs = 900) {
+    this.damageFeedbackDurationMs = Math.max(1, durationMs);
+    this.damageFeedbackRemainingMs = this.damageFeedbackDurationMs;
+  }
+
+  updateDamageFeedback(dt) {
+    this.damageFeedbackRemainingMs = Math.max(0, this.damageFeedbackRemainingMs - Math.max(0, dt) * 1000);
   }
 
   place(viewWidth, viewHeight) {
@@ -53,28 +64,39 @@ export class Rocket {
 
   render(ctx, elapsedMs = 0, reducedMotion = false) {
     const { x, y, width, height } = this;
+    const damageStrength = this.damageFeedbackDurationMs > 0
+      ? this.damageFeedbackRemainingMs / this.damageFeedbackDurationMs
+      : 0;
+    const blink = 0.25 + (0.75 * (0.5 + 0.5 * Math.sin(elapsedMs * 0.045)));
+    const tintAlpha = damageStrength * blink;
+    const shakeStrength = reducedMotion ? 0 : damageStrength;
+    const shakeX = Math.sin(elapsedMs * 0.08) * 8 * shakeStrength;
+    const shakeY = Math.cos(elapsedMs * 0.11) * 5 * shakeStrength;
     ctx.save();
-    ctx.translate(x + width / 2, y + height / 2);
+    ctx.translate(x + width / 2 + shakeX, y + height / 2 + shakeY);
     ctx.rotate(this.rotation);
     if (this.image?.complete && this.image.naturalWidth > 0) {
       const drawWidth = Math.min(width, height * ROCKET_SOURCE.width / ROCKET_SOURCE.height);
       const drawX = (width - drawWidth) / 2;
-      ctx.drawImage(
-        this.image,
-        ROCKET_SOURCE.x,
-        ROCKET_SOURCE.y,
-        ROCKET_SOURCE.width,
-        ROCKET_SOURCE.height,
-        drawX,
-        -height / 2,
-        drawWidth,
-        height,
+      const drawRocket = () => ctx.drawImage(
+        this.image, ROCKET_SOURCE.x, ROCKET_SOURCE.y, ROCKET_SOURCE.width, ROCKET_SOURCE.height,
+        drawX, -height / 2, drawWidth, height,
       );
+      drawRocket();
+      if (tintAlpha > 0) {
+        ctx.save();
+        ctx.globalAlpha = tintAlpha;
+        ctx.filter = "brightness(0) saturate(100%) invert(14%) sepia(100%) saturate(7462%) hue-rotate(358deg) brightness(105%) contrast(114%)";
+        drawRocket();
+        ctx.restore();
+      }
       ctx.restore();
       return;
     }
 
-    ctx.fillStyle = "#d9e7f2";
+    ctx.fillStyle = tintAlpha > 0
+      ? `rgb(${Math.round(217 + tintAlpha * 38)}, ${Math.round(231 - tintAlpha * 196)}, ${Math.round(242 - tintAlpha * 197)})`
+      : "#d9e7f2";
     ctx.beginPath();
     ctx.moveTo(0, -height / 2);
     ctx.lineTo(width / 2.2, height / 3);
