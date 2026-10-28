@@ -18,9 +18,13 @@ function withCanvasEnvironment(run) {
   const scheduled = new Map();
   let rafId = 0;
   const observers = [];
+  const strokeRects = [];
   const ctx = new Proxy({
     createLinearGradient: () => ({ addColorStop() {} }),
     setTransform() {},
+    strokeRect(x, y, width, height) {
+      strokeRects.push({ x, y, width, height, color: this.strokeStyle, lineWidth: this.lineWidth });
+    },
   }, { get(target, key) { return key in target ? target[key] : () => {}; } });
   globalThis.window = { devicePixelRatio: 1, addEventListener() {}, removeEventListener() {} };
   globalThis.ResizeObserver = class {
@@ -44,7 +48,7 @@ function withCanvasEnvironment(run) {
   };
 
   try {
-    run({ canvas, scheduled, observers });
+    run({ canvas, scheduled, observers, strokeRects });
   } finally {
     globalThis.window = original.window;
     globalThis.ResizeObserver = original.ResizeObserver;
@@ -497,6 +501,41 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
     assert.ok(metrics.obstacleSpawns > 10, JSON.stringify(metrics));
     assert.ok(metrics.intervalsMs.every((interval) => interval >= 3000 && interval <= 10000), JSON.stringify(metrics));
     assert.ok(metrics.elapsedSeconds < 600, JSON.stringify(metrics));
+    engine.stop();
+  });
+});
+
+test("visualização desenha as caixas reais de colisão das entidades vivas e pode ser desligada", () => {
+  withCanvasEnvironment(({ canvas, strokeRects }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const obstacle = new Obstacle({
+      id: "asteroid", x: 50, y: 60, width: 20, height: 40,
+      hitbox: { x: 0.25, y: 0.5, width: 0.5, height: 0.25 },
+    });
+    const inactiveObstacle = new Obstacle({ id: "asteroid", x: 5, y: 10, width: 10, height: 10 });
+    inactiveObstacle.alive = false;
+    const coin = new Collectible({ id: "coin", kind: "coin", x: 100, y: 120, width: 18, height: 18 });
+    const diamond = new Collectible({ id: "diamond", kind: "diamond", x: 145, y: 155, width: 20, height: 22 });
+    const inactiveCoin = new Collectible({ id: "coin", kind: "coin", x: 200, y: 210, width: 16, height: 16 });
+    inactiveCoin.alive = false;
+    engine.obstacles = [obstacle, inactiveObstacle];
+    engine.collectibles = [coin, diamond, inactiveCoin];
+    engine.showHitboxes = true;
+
+    engine.render();
+
+    const hitboxes = strokeRects.filter(({ color }) => ["#f97316", "#facc15", "#38bdf8", "#fb7185"].includes(color));
+    assert.deepEqual(hitboxes, [
+      { x: 55, y: 80, width: 10, height: 10, color: "#f97316", lineWidth: 2 },
+      { x: 100, y: 120, width: 18, height: 18, color: "#facc15", lineWidth: 2 },
+      { x: 145, y: 155, width: 20, height: 22, color: "#38bdf8", lineWidth: 2 },
+      { x: engine.rocket.x, y: engine.rocket.y, width: engine.rocket.width, height: engine.rocket.height, color: "#fb7185", lineWidth: 2 },
+    ]);
+
+    strokeRects.length = 0;
+    engine.showHitboxes = false;
+    engine.render();
+    assert.deepEqual(strokeRects.filter(({ color }) => ["#f97316", "#facc15", "#38bdf8", "#fb7185"].includes(color)), []);
     engine.stop();
   });
 });

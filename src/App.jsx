@@ -125,6 +125,7 @@ export default function App() {
           stageId={run.stageId}
           controlMode={progress.settings.controlMode}
           reducedMotion={progress.settings.reducedMotion || systemReducedMotion}
+          showHitboxes={progress.settings.showHitboxes}
           paused={screen === SCREEN.PAUSED}
           onPause={onPause}
           onHudRef={hudRef}

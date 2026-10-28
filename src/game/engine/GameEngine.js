@@ -26,11 +26,12 @@ function clamp(value, min, max) {
 }
 
 export class GameEngine {
-  constructor({ canvas, session, controlMode = "pointer", reducedMotion = false, onHud, onPauseRequest, onOutcome, rng = Math.random, runId = makeRunId() }) {
+  constructor({ canvas, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, rng = Math.random, runId = makeRunId() }) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.session = session;
     this.reducedMotion = reducedMotion;
+    this.showHitboxes = showHitboxes;
     this.onHud = onHud;
     this.onPauseRequest = onPauseRequest;
     this.onOutcome = onOutcome;
@@ -545,6 +546,25 @@ export class GameEngine {
       ctx.beginPath(); ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     }
     this.rocket.render(ctx, this.elapsedMs, this.reducedMotion);
+    if (this.showHitboxes) {
+      for (const obstacle of this.obstacles) {
+        if (obstacle.alive) this.renderCollisionBox(obstacle.collisionBox, "#f97316");
+      }
+      for (const collectible of this.collectibles) {
+        if (!collectible.alive) continue;
+        this.renderCollisionBox(collectible, collectible.kind === "diamond" ? "#38bdf8" : "#facc15");
+      }
+      this.renderCollisionBox(this.rocket, "#fb7185");
+    }
+  }
+
+  renderCollisionBox(box, color) {
+    const { ctx } = this;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(box.x, box.y, box.width, box.height);
+    ctx.restore();
   }
 
 }

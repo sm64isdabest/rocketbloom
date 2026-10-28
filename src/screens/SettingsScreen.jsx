@@ -16,6 +16,7 @@ export function SettingsScreen({ progress, onBack, onChange }) {
   const musicVolume = clampVolume(progress.settings.musicVolume ?? fallbackMusic);
   const soundEffectsVolume = clampVolume(progress.settings.soundEffectsVolume ?? fallbackEffects);
   const reducedMotion = progress.settings.reducedMotion === true;
+  const showHitboxes = progress.settings.showHitboxes === true;
 
   useEffect(() => {
     const closeOnEscape = (event) => {
@@ -97,6 +98,17 @@ export function SettingsScreen({ progress, onBack, onChange }) {
             </div>
             <button type="button" role="switch" aria-checked={reducedMotion} className={`toggle ${reducedMotion ? "is-on" : ""}`} onClick={() => onChange({ reducedMotion: !reducedMotion })}>
               <span />{reducedMotion ? "Ligado" : "Desligado"}
+            </button>
+          </section>
+
+          <section className="settings-popup__accessibility" aria-labelledby={`${ids}-hitboxes`}>
+            <div>
+              <p className="settings-popup__section-label">VISUALIZAÇÃO</p>
+              <h2 id={`${ids}-hitboxes`}>Áreas de colisão</h2>
+              <p className="settings-popup__description">Mostra os limites de colisão do foguete, itens e obstáculos nas fases.</p>
+            </div>
+            <button type="button" role="switch" aria-checked={showHitboxes} aria-labelledby={`${ids}-hitboxes`} className={`toggle ${showHitboxes ? "is-on" : ""}`} onClick={() => onChange({ showHitboxes: !showHitboxes })}>
+              <span />{showHitboxes ? "Ligado" : "Desligado"}
             </button>
           </section>
         </div>

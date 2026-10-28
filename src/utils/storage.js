@@ -21,6 +21,7 @@ export function createDefaultProgress() {
       musicVolume: AUDIO.defaultMusicVolume,
       soundEffectsVolume: AUDIO.defaultSoundEffectsVolume,
       reducedMotion: false,
+      showHitboxes: false,
       controlMode: "pointer",
     },
   };
@@ -93,6 +94,7 @@ export function loadProgress(storage = globalThis.localStorage) {
           musicVolume,
           soundEffectsVolume,
           reducedMotion: parsed.settings?.reducedMotion === true,
+          showHitboxes: parsed.settings?.showHitboxes === true,
           controlMode: parsed.settings?.controlMode === "keyboard" ? "keyboard" : "pointer",
         },
       },

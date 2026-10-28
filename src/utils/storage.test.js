@@ -24,6 +24,15 @@ test("progresso inicial não inventa planetas desbloqueados", () => {
   assert.equal(progress.settings.soundEffectsVolume, 55);
 });
 
+test("visualização das áreas de colisão começa desligada e continua desligada em perfis antigos", () => {
+  assert.equal(createDefaultProgress().settings.showHitboxes, false);
+
+  const legacy = { ...createDefaultProgress(), settings: { music: true, soundEffects: true } };
+  const loaded = loadProgress(memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) })).progress;
+
+  assert.equal(loaded.settings.showHitboxes, false);
+});
+
 test("volumes salvos são limitados e convertem preferências antigas", () => {
   const storage = memoryStorage();
   const progress = {
