@@ -21,6 +21,7 @@ export class Rocket {
     this.x = 0;
     this.y = 0;
     this.targetX = 0;
+    this.rotation = 0;
     this.image = image ?? createRocketImage();
   }
 
@@ -36,6 +37,7 @@ export class Rocket {
   }
 
   update(dt) {
+    const previousX = this.x;
     const delta = this.targetX - this.x;
     const maxStep = ROCKET.horizontalSpeed * dt;
     const easedStep = delta * (1 - Math.exp(-14 * dt));
@@ -44,13 +46,19 @@ export class Rocket {
     } else {
       this.x += Math.max(-maxStep, Math.min(maxStep, easedStep));
     }
+    const horizontalMovement = this.x - previousX;
+    const targetRotation = Math.abs(horizontalMovement) < 0.01 ? 0 : Math.sign(horizontalMovement) * 0.12;
+    this.rotation += (targetRotation - this.rotation) * (1 - Math.exp(-12 * dt));
   }
 
   render(ctx, elapsedMs = 0, reducedMotion = false) {
     const { x, y, width, height } = this;
+    ctx.save();
+    ctx.translate(x + width / 2, y + height / 2);
+    ctx.rotate(this.rotation);
     if (this.image?.complete && this.image.naturalWidth > 0) {
       const drawWidth = Math.min(width, height * ROCKET_SOURCE.width / ROCKET_SOURCE.height);
-      const drawX = x + (width - drawWidth) / 2;
+      const drawX = (width - drawWidth) / 2;
       ctx.drawImage(
         this.image,
         ROCKET_SOURCE.x,
@@ -58,15 +66,13 @@ export class Rocket {
         ROCKET_SOURCE.width,
         ROCKET_SOURCE.height,
         drawX,
-        y,
+        -height / 2,
         drawWidth,
         height,
       );
+      ctx.restore();
       return;
     }
-
-    ctx.save();
-    ctx.translate(x + width / 2, y + height / 2);
 
     ctx.fillStyle = "#d9e7f2";
     ctx.beginPath();
