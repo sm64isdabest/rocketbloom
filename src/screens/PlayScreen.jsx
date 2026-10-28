@@ -37,7 +37,7 @@ export function PlayScreen({ planetId, stageId, controlMode, reducedMotion, paus
           onOutcome={onOutcome}
         />
       </div>
-      <Hud snapshot={snapshot} durationMs={session.stage.durationMs} question={session.questions[0]} onPause={onPause} />
+      <Hud snapshot={snapshot} onPause={onPause} />
     </section>
   );
 }
