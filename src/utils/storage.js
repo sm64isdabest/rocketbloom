@@ -9,6 +9,7 @@ export function createDefaultProgress() {
     diamonds: 0,
     money: 0,
     unlockedPlanetIds: ["earth"],
+    seenPlanetIds: [],
     completedStageIds: [],
     stageProgress: {},
     rescuedPlantIds: [],
@@ -81,6 +82,9 @@ export function loadProgress(storage = globalThis.localStorage) {
       progress: {
         ...createDefaultProgress(),
         ...parsed,
+        seenPlanetIds: Array.isArray(parsed.seenPlanetIds)
+          ? parsed.seenPlanetIds.filter((id) => PLANETS.some((planet) => planet.id === id))
+          : [],
         stageProgress: sanitizeProgressMap(parsed.stageProgress),
         plantGrowthStages: migratePlantGrowth(parsed),
         rescuedPlantIds: migrateRescuedPlants(parsed),

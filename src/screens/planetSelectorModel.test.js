@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { PLANETS } from "../game/data/planets.js";
 import { createDefaultProgress } from "../utils/storage.js";
-import { getInitialExpandedPlanetId, getPlanetSelectorModel } from "./planetSelectorModel.js";
+import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetSelectorModel } from "./planetSelectorModel.js";
 
 test("selector keeps five phase states per planet and respects the saved unlock order", () => {
   const progress = createDefaultProgress();
@@ -42,4 +42,26 @@ test("when the campaign is complete, selector defaults to the last unlocked plan
 
   assert.equal(getInitialExpandedPlanetId(progress), "neptune");
   assert.ok(PLANETS.every((planet) => getPlanetSelectorModel(planet, progress).stages.every(({ status }) => status === "completed")));
+});
+
+test("planet navigation only permits adjacent unlocked planets and gates forward travel on completion", () => {
+  const progress = createDefaultProgress();
+  progress.unlockedPlanetIds = ["earth", "mars"];
+
+  assert.equal(canNavigateToPlanet("earth", "mars", progress), false);
+  assert.equal(canNavigateToPlanet("earth", "saturn", progress), false);
+  assert.equal(canNavigateToPlanet("mars", "earth", progress), true);
+
+  progress.completedStageIds = PLANETS[0].stages.map(({ id }) => id);
+  assert.equal(canNavigateToPlanet("earth", "mars", progress), true);
+  assert.equal(canNavigateToPlanet("mars", "saturn", progress), false);
+});
+
+test("planet navigation rejects locked sources and non-adjacent destinations", () => {
+  const progress = createDefaultProgress();
+  progress.unlockedPlanetIds = ["earth", "mars", "saturn"];
+  progress.completedStageIds = PLANETS[0].stages.map(({ id }) => id);
+
+  assert.equal(canNavigateToPlanet("earth", "saturn", progress), false);
+  assert.equal(canNavigateToPlanet("neptune", "saturn", progress), false);
 });

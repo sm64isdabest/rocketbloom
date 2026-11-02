@@ -6,6 +6,15 @@ export function getInitialExpandedPlanetId(progress, planets = PLANETS) {
   return nextPlanet?.id ?? unlocked.at(-1)?.id ?? planets[0]?.id ?? null;
 }
 
+export function canNavigateToPlanet(fromPlanetId, toPlanetId, progress, planets = PLANETS) {
+  const fromIndex = planets.findIndex((planet) => planet.id === fromPlanetId);
+  const toIndex = planets.findIndex((planet) => planet.id === toPlanetId);
+  if (fromIndex < 0 || toIndex < 0 || Math.abs(fromIndex - toIndex) !== 1) return false;
+  if (!progress.unlockedPlanetIds.includes(fromPlanetId) || !progress.unlockedPlanetIds.includes(toPlanetId)) return false;
+  if (toIndex < fromIndex) return true;
+  return planets[fromIndex].stages.every((stage) => progress.completedStageIds.includes(stage.id));
+}
+
 export function getPlanetSelectorModel(planet, progress) {
   const unlocked = progress.unlockedPlanetIds.includes(planet.id);
   const stages = planet.stages.map((stage, stageIndex) => {

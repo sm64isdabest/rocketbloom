@@ -69,6 +69,14 @@ export default function App() {
     setScreen(SCREEN.PLAYING);
   };
 
+  const markPlanetSeen = useCallback((planetId) => {
+    if (!progress || progress.seenPlanetIds?.includes(planetId)) return;
+    persist({
+      ...progress,
+      seenPlanetIds: [...(progress.seenPlanetIds ?? []), planetId],
+    });
+  }, [persist, progress]);
+
   const goMenu = () => {
     setRun(null);
     setOutcomeSnapshot(null);
@@ -109,7 +117,7 @@ export default function App() {
         />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.PLANETS ? (
-        <PlanetsScreen progress={progress} onBack={() => setMenuPage(SCREEN.MENU)} onPlay={startStage} />
+        <PlanetsScreen progress={progress} onBack={() => setMenuPage(SCREEN.MENU)} onPlay={startStage} onMarkPlanetSeen={markPlanetSeen} />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.SETTINGS ? (
         <SettingsScreen progress={progress} onBack={() => setMenuPage(SCREEN.MENU)} onChange={patchSettings} />

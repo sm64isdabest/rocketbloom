@@ -22,6 +22,21 @@ test("progresso inicial não inventa planetas desbloqueados", () => {
   assert.deepEqual(progress.rescuedPlantIds, []);
   assert.equal(progress.settings.musicVolume, 35);
   assert.equal(progress.settings.soundEffectsVolume, 55);
+  assert.deepEqual(progress.seenPlanetIds, []);
+});
+
+test("progresso antigo recebe lista de planetas vistos e perfis novos preservam IDs válidos", () => {
+  const oldProfile = createDefaultProgress();
+  delete oldProfile.seenPlanetIds;
+  const legacy = loadProgress(memoryStorage({ [STORAGE_KEY]: JSON.stringify(oldProfile) })).progress;
+  assert.deepEqual(legacy.seenPlanetIds, []);
+
+  const newProfile = {
+    ...createDefaultProgress(),
+    seenPlanetIds: ["earth", "mars", "unknown"],
+  };
+  const loaded = loadProgress(memoryStorage({ [STORAGE_KEY]: JSON.stringify(newProfile) })).progress;
+  assert.deepEqual(loaded.seenPlanetIds, ["earth", "mars"]);
 });
 
 test("visualização das áreas de colisão começa desligada e continua desligada em perfis antigos", () => {
