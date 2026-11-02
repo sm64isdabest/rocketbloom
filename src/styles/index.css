@@ -662,7 +662,10 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 }
 .phase-selection-wallet,
 .phase-selection-planet-name {
+  position: static;
   display: inline-flex;
+  width: auto;
+  height: auto;
   min-height: 7.5cqw;
   align-items: center;
   justify-content: center;
