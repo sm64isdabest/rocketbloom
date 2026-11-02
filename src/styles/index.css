@@ -373,6 +373,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .hud__resource-icon { display: block; flex: 0 0 auto; object-fit: contain; }
 .hud__resource-icon--coin { width: 29px; height: 29px; }
 .hud__resource-icon--diamond { width: 32px; height: 27px; }
+.resource-diamond-icon { display: inline-block; width: 1.25em; height: 1.25em; object-fit: contain; vertical-align: middle; }
 .hud__stat--diamonds { min-width: 124px; justify-content: flex-start; }
 .hud__question { top: max(76px, calc(env(safe-area-inset-top) + 76px)); }
 @media (max-width: 680px) {

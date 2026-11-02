@@ -2,6 +2,8 @@ import { PLANETS } from "../game/data/planets.js";
 import { PLANTS } from "../game/data/plants.js";
 import { PlantGrowthArt } from "../components/PlantGrowthArt.jsx";
 
+const APP_BASE = import.meta.env?.BASE_URL ?? "/";
+
 export function CommandRoomScreen({ progress, onBack }) {
   const rescuedCount = progress.rescuedPlantIds.length;
   return (
@@ -14,7 +16,7 @@ export function CommandRoomScreen({ progress, onBack }) {
       <section className="command-summary laboratory-summary" aria-label="Progresso sustentável e recursos">
         <div><span className="eyebrow">Impacto sustentável</span><strong>{progress.sustainabilityPoints ?? 0}</strong><span>pontos ecológicos</span></div>
         <div><span className="eyebrow">Reserva de expedição</span><strong><i className="resource-coin">●</i> {progress.coins}</strong><span>moedas</span></div>
-        <div><span className="eyebrow">Amostras raras</span><strong><i className="resource-diamond">◆</i> {progress.diamonds}</strong><span>diamantes</span></div>
+        <div><span className="eyebrow">Amostras raras</span><strong><img className="resource-diamond-icon" src={`${APP_BASE}assets/ui/diamond.png`} alt="" aria-hidden="true" /> {progress.diamonds}</strong><span>diamantes</span></div>
         <div><span className="eyebrow">Pesquisa financiada</span><strong>{progress.money}</strong><span>créditos científicos</span></div>
       </section>
 
