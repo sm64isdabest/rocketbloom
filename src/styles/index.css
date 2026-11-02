@@ -636,6 +636,17 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   user-select: none;
   pointer-events: none;
 }
+.phase-selection-route {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: rgba(244, 250, 255, .95);
+  filter: drop-shadow(0 1px 2px rgba(0, 4, 18, .85));
+  pointer-events: none;
+}
 .phase-selection-canvas.is-revealing .phase-selection-background,
 .phase-selection-canvas.is-revealing .phase-selection-stage__frame {
   animation: planet-discovery-color 1.25s ease-out both;

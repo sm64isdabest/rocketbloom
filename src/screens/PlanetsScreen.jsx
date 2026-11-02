@@ -62,6 +62,22 @@ export function PlanetsScreen({ progress, onBack, onPlay, onMarkPlanetSeen }) {
           draggable="false"
           aria-hidden="true"
         />
+        <svg
+          className="phase-selection-route"
+          viewBox={`0 0 ${PANEL_WIDTH} ${PANEL_HEIGHT}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <polyline
+            points={STAGE_POSITIONS[planet.id].map(([x, y]) => `${x},${y}`).join(" ")}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeDasharray="6 7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
 
         <button type="button" className="phase-selection-back" onClick={onBack} aria-label="Voltar ao menu">
           <span aria-hidden="true">‹</span><span>Menu</span>
