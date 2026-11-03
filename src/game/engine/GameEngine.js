@@ -38,6 +38,11 @@ export class GameEngine {
     this.onPauseRequest = onPauseRequest;
     this.onOutcome = onOutcome;
     this.rng = rng;
+    this.visualRandomState = 0x5eed1234;
+    this.visualRng = () => {
+      this.visualRandomState = (Math.imul(this.visualRandomState, 1_664_525) + 1_013_904_223) >>> 0;
+      return this.visualRandomState / 0x1_0000_0000;
+    };
     this.runId = runId;
 
     this.view = { width: 0, height: 0, dpr: 1 };
@@ -114,7 +119,9 @@ export class GameEngine {
       const lane = answer.lane ?? 1.5;
       answer.x = clamp(this.view.width * ((lane + 0.5) / 4) - answer.width / 2, 0, this.view.width - answer.width);
     }
-    for (const entity of [...this.obstacles, ...this.collectibles]) {
+    const fallingEntities = [...this.obstacles, ...this.collectibles];
+    if (this.mysteryBox) fallingEntities.push(this.mysteryBox);
+    for (const entity of fallingEntities) {
       entity.x = clamp(entity.x, 0, this.view.width - entity.width);
     }
     if (!this.disposed) this.render();
@@ -224,9 +231,11 @@ export class GameEngine {
       SPEED.maxProgressMultiplier,
     );
     this.progressMs += frameMs * progressMultiplier * this.turboSpeedFactor;
-    updateStarfield(this.stars, frameSeconds, this.view.width, this.view.height, 0.35 + progressMultiplier * 0.58, this.rng);
+    updateStarfield(this.stars, frameSeconds, this.view.width, this.view.height,
+      (0.35 + progressMultiplier * 0.58) * this.turboSpeedFactor, this.visualRng);
     if (!this.reducedMotion) {
-      updateSpeedStreaks(this.speedStreaks, frameSeconds, this.view.width, this.view.height, this.speed, this.rng);
+      updateSpeedStreaks(this.speedStreaks, frameSeconds, this.view.width, this.view.height,
+        this.speed * this.turboSpeedFactor, this.visualRng);
     }
 
     this.updateQuestions(frameSeconds, frameMs);
@@ -386,9 +395,10 @@ export class GameEngine {
 
     this.mysteryBoxAcc += frameMs;
     if (!this.mysteryBox && this.mysteryBoxAcc >= this.mysteryBoxDelayMs) {
-      this.mysteryBoxAcc = 0;
-      this.mysteryBoxDelayMs = getNextMysteryBoxDelay(this.rng);
-      this.spawnMysteryBox();
+      if (this.spawnMysteryBox()) {
+        this.mysteryBoxAcc = 0;
+        this.mysteryBoxDelayMs = getNextMysteryBoxDelay(this.rng);
+      }
     }
 
     for (const obstacle of this.obstacles) {
@@ -540,14 +550,14 @@ export class GameEngine {
     }));
   }
 
-  spawnParticles(x, y, color, count) {
+  spawnParticles(x, y, color, count, rng = this.rng) {
     if (this.reducedMotion) return;
     const available = Math.max(0, SPAWN.maxParticles - this.particles.length);
     for (let i = 0; i < Math.min(count, available); i += 1) {
-      const angle = Math.PI * 2 * i / count + this.rng() * 0.4;
-      const speed = 35 + this.rng() * 95;
+      const angle = Math.PI * 2 * i / count + rng() * 0.4;
+      const speed = 35 + rng() * 95;
       this.particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-        life: 0.42 + this.rng() * 0.22, maxLife: 0.64, size: 2 + this.rng() * 3, color });
+        life: 0.42 + rng() * 0.22, maxLife: 0.64, size: 2 + rng() * 3, color });
     }
   }
 
@@ -735,8 +745,9 @@ export class GameEngine {
         ctx.ellipse(rocket.x + rocket.width / 2, rocket.y + rocket.height / 2, rocket.width * 0.7, rocket.height * 0.65, 0, 0, Math.PI * 2);
         ctx.stroke(); ctx.restore();
       }
-      if (!this.reducedMotion && this.rng() < 0.2) {
-        this.spawnParticles(rocket.x + this.rng() * rocket.width, rocket.y + this.rng() * rocket.height, "#ffe66d", 1);
+      if (!this.reducedMotion && this.visualRng() < 0.2) {
+        this.spawnParticles(rocket.x + this.visualRng() * rocket.width, rocket.y + this.visualRng() * rocket.height,
+          "#ffe66d", 1, this.visualRng);
       }
     }
   }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getPlanetDifficulty } from "../config/gameConfig.js";
+import { getPlanetDifficulty, SPAWN } from "../config/gameConfig.js";
 import { PLANETS, getPlanetById } from "../data/planets.js";
 import { getObstaclesForPlanet } from "../data/obstacles.js";
 import { Obstacle } from "../entities/Obstacle.js";
@@ -456,14 +456,27 @@ test("caixa coletada inicia roleta enquanto o progresso continua", () => {
 
 test("turbo acelera o scroll e desacelera suavemente quando termina", () => {
   withCanvasEnvironment(({ canvas }) => {
+    const normal = new GameEngine(engineOptions(canvas));
     const engine = new GameEngine(engineOptions(canvas));
+    normal.stars = [{ x: 10, y: 100, size: 1, speed: 100, alpha: 1 }];
+    engine.stars = [{ x: 10, y: 100, size: 1, speed: 100, alpha: 1 }];
+    normal.speedStreaks = [{ x: 10, y: 100, length: 10, thickness: 1, alpha: 1, drift: 0 }];
+    engine.speedStreaks = [{ x: 10, y: 100, length: 10, thickness: 1, alpha: 1, drift: 0 }];
     engine.powerUps = activatePowerUp(createPowerUpState(), "turbo");
+    const normalStarY = normal.stars[0].y;
+    const turboStarY = engine.stars[0].y;
+    const normalStreakY = normal.speedStreaks[0].y;
+    const turboStreakY = engine.speedStreaks[0].y;
+    normal.tick(0.05);
     engine.tick(0.05);
-    assert.ok(engine.progressMs > 120 * 0.05, "turbo accelerates stage scroll");
+    assert.ok(engine.stars[0].y - turboStarY > normal.stars[0].y - normalStarY, "turbo accelerates the starfield");
+    assert.ok(engine.speedStreaks[0].y - turboStreakY > normal.speedStreaks[0].y - normalStreakY, "turbo accelerates the motion streaks");
+    assert.ok(engine.progressMs > normal.progressMs, "turbo accelerates stage scroll");
     engine.powerUps.turboMs = 1;
     engine.tick(0.05);
     assert.ok(engine.turboSpeedFactor > 1, "speed does not snap to normal at expiration");
     assert.ok(engine.turboSpeedFactor < 2.5);
+    normal.stop();
     engine.stop();
   });
 });
@@ -471,12 +484,53 @@ test("turbo acelera o scroll e desacelera suavemente quando termina", () => {
 test("raio encolhedor torna obstáculos inofensivos e pausa novos spawns por três segundos", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
+    engine.session.obstacles = [{ id: "asteroid", width: 44, height: 44, color: "#777" }];
     const obstacle = new Obstacle({ id: "asteroid", x: engine.rocket.x, y: 10, width: 44, height: 44 });
     engine.obstacles.push(obstacle);
     engine.pendingPowerUp = "shrink";
     engine.revealPendingPowerUp();
     assert.equal(obstacle.isDamaging, false);
     assert.equal(engine.hazardClearRemainingMs, 3000);
+    engine.obstacleAcc = 10_000;
+    engine.collectibleAcc = SPAWN.collectibleIntervalMs;
+    engine.tick(0.05);
+    assert.equal(engine.obstacles.length, 1, "new obstacles stay suppressed during the clear effect");
+    assert.ok(engine.collectibles.length > 0, "coins continue to spawn during the clear effect");
+    tickFor(engine, 2850);
+    assert.ok(engine.hazardClearRemainingMs > 0, "obstacle spawning remains suppressed just before three seconds");
+    assert.equal(engine.obstacles.filter((active) => !active.shrinking).length, 0);
+    tickFor(engine, 200);
+    assert.ok(engine.obstacles.some((active) => !active.shrinking), "obstacles resume spawning after three seconds");
+    engine.stop();
+  });
+});
+
+test("caixa misteriosa acompanha o limite horizontal após redimensionar a tela", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const box = new MysteryBox({ x: 270, y: 200 });
+    engine.mysteryBox = box;
+    canvas.parentElement.getBoundingClientRect = () => ({ width: 200, height: 640 });
+    engine.resize();
+    assert.equal(box.x, 156);
+    engine.stop();
+  });
+});
+
+test("caixa adia uma tentativa bloqueada e reaparece quando existe uma posição segura", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const delay = engine.mysteryBoxDelayMs;
+    engine.obstacles.push(new Obstacle({ id: "asteroid", x: 0, y: 0, width: 320, height: 60 }));
+    engine.mysteryBoxAcc = delay;
+    engine.tick(0.05);
+    assert.equal(engine.mysteryBox, null);
+    assert.ok(engine.mysteryBoxAcc >= delay, "the due spawn remains pending while all positions are blocked");
+    assert.equal(engine.mysteryBoxDelayMs, delay);
+
+    engine.obstacles = [];
+    engine.tick(0.05);
+    assert.ok(engine.mysteryBox, "the box appears as soon as a safe position is available");
     engine.stop();
   });
 });
