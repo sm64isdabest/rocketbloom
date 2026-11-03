@@ -1,7 +1,6 @@
 import { ROCKET } from "../config/gameConfig.js";
 
 const ROCKET_SOURCE = { x: 292, y: 51, width: 494, height: 965 };
-const ROCKET_IMAGE_OFFSET_X = 26;
 
 export function getRocketImageUrl(basePath = import.meta.env?.BASE_URL ?? "/") {
   const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;
@@ -83,7 +82,7 @@ export class Rocket {
     ctx.rotate(this.rotation);
     if (this.image?.complete && this.image.naturalWidth > 0) {
       const drawWidth = Math.min(width, height * ROCKET_SOURCE.width / ROCKET_SOURCE.height);
-      const drawX = (width - drawWidth) / 2 + ROCKET_IMAGE_OFFSET_X;
+      const drawX = (width - drawWidth) / 2;
       const drawRocket = () => ctx.drawImage(
         this.image, ROCKET_SOURCE.x, ROCKET_SOURCE.y, ROCKET_SOURCE.width, ROCKET_SOURCE.height,
         drawX, -height / 2, drawWidth, height,
