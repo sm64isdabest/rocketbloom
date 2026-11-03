@@ -535,7 +535,16 @@ export class GameEngine {
       * (this.session.stage.speedMultiplier ?? this.session.difficulty.speedMultiplier ?? 1)
       * (this.session.stage.obstacleSpeedMultiplier ?? 1)
       * (1 + stageProgress * SPAWN.obstacleDifficultySpeedFactor);
-    this.obstacles.push(new Obstacle({ ...obstacle, x, y: -obstacle.height, speed }));
+    const movementTypes = ["straight", "diagonal", "zigzag", "curve", "drift"];
+    const movementType = movementTypes[Math.floor(this.rng() * movementTypes.length)];
+    const movement = {
+      type: movementType,
+      direction: this.rng() < 0.5 ? -1 : 1,
+      amplitude: Math.min(68, maxX * 0.22),
+      frequency: movementType === "zigzag" ? 3.2 + this.rng() * 1.8 : 0.9 + this.rng() * 0.7,
+      phase: this.rng() * Math.PI * 2,
+    };
+    this.obstacles.push(new Obstacle({ ...obstacle, x, y: -obstacle.height, speed, movement, viewWidth: this.view.width }));
   }
 
   spawnCollectible() {

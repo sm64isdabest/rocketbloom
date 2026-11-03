@@ -14,13 +14,16 @@ function getSprite(obstacleId) {
 }
 
 export class Obstacle {
-  constructor({ id, x, y, width, height, speed = 130, color = "#b98562", hitbox }) {
+  constructor({ id, x, y, width, height, speed = 130, color = "#b98562", hitbox, movement, viewWidth = Infinity }) {
     this.id = id;
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
     this.speed = speed;
+    this.movement = movement ?? { type: "straight" };
+    this.viewWidth = viewWidth;
+    this.originX = x;
     this.color = color;
     this.hitbox = hitbox ?? { x: 0.08, y: 0.08, width: 0.84, height: 0.84 };
     this.alive = true;
@@ -62,6 +65,24 @@ export class Obstacle {
     }
     this.y += this.speed * dt;
     this.animationTime += dt;
+    const { type, amplitude = 0, frequency = 1, phase = 0, direction = 1 } = this.movement;
+    if (type === "diagonal") {
+      this.x += direction * this.speed * 0.3 * dt;
+      if (this.x < 0 || this.x + this.width > this.viewWidth) {
+        this.x = Math.max(0, Math.min(this.viewWidth - this.width, this.x));
+        this.movement.direction *= -1;
+      }
+    } else if (type === "zigzag" || type === "curve") {
+      const wave = Math.sin(this.animationTime * frequency + phase);
+      const displacement = type === "zigzag" ? wave * amplitude : (wave + this.animationTime * 0.12) * amplitude * 0.5;
+      this.x = Math.max(0, Math.min(this.viewWidth - this.width, this.originX + displacement));
+    } else if (type === "drift") {
+      this.x += direction * this.speed * 0.13 * dt;
+      if (this.x < 0 || this.x + this.width > this.viewWidth) {
+        this.x = Math.max(0, Math.min(this.viewWidth - this.width, this.x));
+        this.movement.direction *= -1;
+      }
+    }
   }
 
   render(ctx) {
