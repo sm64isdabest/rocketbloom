@@ -1,5 +1,15 @@
 import { MYSTERY_BOX } from "../config/gameConfig.js";
 
+const APP_BASE = import.meta.env?.BASE_URL ?? "/";
+let mysteryBoxImage;
+
+function getMysteryBoxImage() {
+  if (mysteryBoxImage || typeof Image === "undefined") return mysteryBoxImage ?? null;
+  mysteryBoxImage = new Image();
+  mysteryBoxImage.src = `${APP_BASE}assets/powerups/mystery-box.png`;
+  return mysteryBoxImage;
+}
+
 export class MysteryBox {
   constructor({ x, y = -MYSTERY_BOX.size, speed = MYSTERY_BOX.fallSpeed }) {
     this.x = x;
@@ -10,6 +20,7 @@ export class MysteryBox {
     this.rotation = 0;
     this.pulse = 0;
     this.alive = true;
+    this.image = getMysteryBoxImage();
   }
 
   update(dt) {
@@ -26,6 +37,11 @@ export class MysteryBox {
     ctx.rotate(Math.sin(this.rotation) * 0.12);
     ctx.shadowColor = "#ffe34d";
     ctx.shadowBlur = 15 + Math.sin(this.pulse) * 5;
+    if (this.image?.complete && this.image.naturalWidth > 0) {
+      ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
+      ctx.restore();
+      return;
+    }
     const gradient = ctx.createLinearGradient(-this.width / 2, -this.height / 2, this.width / 2, this.height / 2);
     const hue = Math.floor((this.pulse * 18) % 360);
     gradient.addColorStop(0, `hsl(${(hue + 48) % 360} 100% 78%)`);
