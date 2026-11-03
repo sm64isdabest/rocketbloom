@@ -6,7 +6,7 @@ test("rocket image URL includes the configured application base path", () => {
   assert.equal(getRocketImageUrl("/rocketbloom/"), "/rocketbloom/assets/rocket.png");
 });
 
-test("rocket draws the supplied sprite within its enlarged hitbox", () => {
+test("rocket sprite is shifted right within its hitbox", () => {
   const calls = [];
   const ctx = new Proxy({}, {
     get(_target, method) { return (...args) => calls.push({ method, args }); },
@@ -22,7 +22,7 @@ test("rocket draws the supplied sprite within its enlarged hitbox", () => {
   const drawCall = calls.find(({ method }) => method === "drawImage");
   assert.ok(drawCall, "the loaded sprite should be rendered on the canvas");
   assert.deepEqual(drawCall.args.slice(1, 5), [292, 51, 494, 965]);
-  assert.ok(Math.abs(drawCall.args[5] - 3.48) < 0.01);
+  assert.ok(Math.abs(drawCall.args[5] - 29.48) < 0.01);
   assert.equal(drawCall.args[6], -44);
   assert.ok(Math.abs(drawCall.args[7] - 45.05) < 0.01);
   assert.equal(drawCall.args[8], 88);
