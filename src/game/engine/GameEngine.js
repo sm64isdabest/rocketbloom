@@ -1,7 +1,8 @@
 import { COLLECTIBLES } from "../data/items.js";
-import { SPEED, SCORE, SPAWN, QUESTION_TIMING } from "../config/gameConfig.js";
+import { SPEED, SCORE, SPAWN, QUESTION_TIMING, MYSTERY_BOX, POWER_UPS } from "../config/gameConfig.js";
 import { Answer } from "../entities/Answer.js";
 import { Collectible } from "../entities/Collectible.js";
+import { MysteryBox } from "../entities/MysteryBox.js";
 import { Obstacle } from "../entities/Obstacle.js";
 import { Rocket } from "../entities/Rocket.js";
 import { cullOffscreen } from "../systems/spawn.js";
@@ -16,6 +17,7 @@ import { createInputController } from "./input.js";
 import { createGameLoop } from "./loop.js";
 import { fitCanvasToContainer } from "./resize.js";
 import { finishGameAudio, pauseGameAudio, playGameSound, startGameAudio } from "../audio/audioManager.js";
+import { activatePowerUp, createPowerUpState, getNextMysteryBoxDelay, getRandomPowerUp, tickPowerUps } from "../systems/powerUps.js";
 
 function makeRunId() {
   return globalThis.crypto?.randomUUID?.() ?? `run-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -45,6 +47,14 @@ export class GameEngine {
     this.answers = [];
     this.obstacles = [];
     this.collectibles = [];
+    this.mysteryBox = null;
+    this.mysteryBoxAcc = 0;
+    this.mysteryBoxDelayMs = getNextMysteryBoxDelay(this.rng);
+    this.powerUps = createPowerUpState();
+    this.turboSpeedFactor = 1;
+    this.pendingPowerUp = null;
+    this.hazardClearRemainingMs = 0;
+    this.shrinkFlashRemainingMs = 0;
     this.particles = [];
     this.entitySequence = 0;
     this.speed = SPEED.start;
@@ -189,6 +199,14 @@ export class GameEngine {
     if (!frameSeconds) return;
     const frameMs = frameSeconds * 1000;
     this.elapsedMs += frameMs;
+    // Os temporizadores avançam somente dentro do loop ativo; em pausa, tick retorna acima.
+    const rouletteWasActive = this.powerUps.rouletteMs > 0;
+    this.powerUps = tickPowerUps(this.powerUps, frameMs);
+    const turboTarget = this.powerUps.turboMs > 0 ? POWER_UPS.turbo.speedMultiplier : 1;
+    this.turboSpeedFactor += (turboTarget - this.turboSpeedFactor) * (1 - Math.exp(-frameSeconds / 0.45));
+    this.hazardClearRemainingMs = Math.max(0, this.hazardClearRemainingMs - frameMs);
+    this.shrinkFlashRemainingMs = Math.max(0, this.shrinkFlashRemainingMs - frameMs);
+    if (rouletteWasActive && this.powerUps.rouletteMs <= 0) this.revealPendingPowerUp();
     if (this.pendingOutcome) {
       this.rocket.updateDamageFeedback(frameSeconds);
       this.updateParticles(frameSeconds);
@@ -205,7 +223,7 @@ export class GameEngine {
       SPEED.minProgressMultiplier,
       SPEED.maxProgressMultiplier,
     );
-    this.progressMs += frameMs * progressMultiplier;
+    this.progressMs += frameMs * progressMultiplier * this.turboSpeedFactor;
     updateStarfield(this.stars, frameSeconds, this.view.width, this.view.height, 0.35 + progressMultiplier * 0.58, this.rng);
     if (!this.reducedMotion) {
       updateSpeedStreaks(this.speedStreaks, frameSeconds, this.view.width, this.view.height, this.speed, this.rng);
@@ -323,15 +341,21 @@ export class GameEngine {
       this.questionFeedback = "";
     } else {
       this.incorrectAnswers += 1;
-      this.rocket.triggerDamageFeedback();
-      this.score = Math.max(0, this.score + SCORE.incorrectAnswer);
-      this.speed = clamp(this.speed - SPEED.wrongAnswerPenalty * (this.session.stage.speedLossMultiplier ?? 1), SPEED.min, SPEED.max);
+      const bubbleAbsorbs = this.powerUps.starMs <= 0 && this.powerUps.bubble;
+      const protectedByPower = this.protectFromPenalty("question");
+      if (!protectedByPower) {
+        this.rocket.triggerDamageFeedback();
+        this.score = Math.max(0, this.score + SCORE.incorrectAnswer);
+        this.speed = clamp(this.speed - SPEED.wrongAnswerPenalty * (this.session.stage.speedLossMultiplier ?? 1), SPEED.min, SPEED.max);
+      }
       this.answerFeedbackRemainingMs = QUESTION_TIMING.resolutionFeedbackMs;
       this.columnFlashLane = result.lane;
-      this.columnFlashColor = "#FF3030";
+      this.columnFlashColor = protectedByPower ? "#83f4ff" : "#FF3030";
       this.columnFlashRemainingMs = QUESTION_TIMING.resolutionFeedbackMs;
-      this.questionFeedback = result.unanswered ? "Alternativas perdidas" : "Resposta incorreta";
-      playGameSound("incorrect");
+      this.questionFeedback = protectedByPower
+        ? (bubbleAbsorbs ? "Bolha estourou e absorveu a penalidade" : "Protegido pelo poder")
+        : (result.unanswered ? "Alternativas perdidas" : "Resposta incorreta");
+      playGameSound(protectedByPower ? "discovery" : "incorrect");
     }
     this.emitHud(true);
     return true;
@@ -348,7 +372,7 @@ export class GameEngine {
     this.collectibleAcc += frameMs;
     const maxActiveObstacles = this.session.stage.maxActiveObstacles ?? 4;
     const activeObstacles = this.obstacles.filter((obstacle) => obstacle.alive).length;
-    if (this.session.obstacles.length && activeObstacles < maxActiveObstacles && this.obstacleAcc >= interval) {
+    if (this.session.obstacles.length && this.hazardClearRemainingMs <= 0 && activeObstacles < maxActiveObstacles && this.obstacleAcc >= interval) {
       this.obstacleAcc = 0;
       this.spawnObstacle();
       if (stageProgress >= SPAWN.obstaclePairAfterProgress
@@ -360,6 +384,13 @@ export class GameEngine {
       this.spawnCollectible();
     }
 
+    this.mysteryBoxAcc += frameMs;
+    if (!this.mysteryBox && this.mysteryBoxAcc >= this.mysteryBoxDelayMs) {
+      this.mysteryBoxAcc = 0;
+      this.mysteryBoxDelayMs = getNextMysteryBoxDelay(this.rng);
+      this.spawnMysteryBox();
+    }
+
     for (const obstacle of this.obstacles) {
       if (!obstacle.alive) continue;
       const stageProgress = clamp(this.progressMs / this.session.stage.durationMs, 0, 1);
@@ -368,16 +399,19 @@ export class GameEngine {
         * (this.session.stage.obstacleSpeedMultiplier ?? 1)
         * (1 + stageProgress * SPAWN.obstacleDifficultySpeedFactor);
       obstacle.update(dt);
-      if (aabbOverlaps(this.rocket, obstacle.collisionBox)) {
+      if (obstacle.isDamaging && aabbOverlaps(this.rocket, obstacle.collisionBox)) {
         obstacle.alive = false;
-        this.rocket.triggerDamageFeedback();
-        this.speed = clamp(this.speed - SPEED.obstaclePenalty
-          * (this.session.stage.speedLossMultiplier ?? 1)
-          * (this.session.stage.obstaclePenaltyMultiplier ?? 1), SPEED.min, SPEED.max);
-        this.questionFeedback = "Impacto! Velocidade reduzida";
-        this.feedbackTimerMs = 900;
-        playGameSound("collision");
-        this.spawnParticles(this.rocket.x + this.rocket.width / 2, this.rocket.y + this.rocket.height / 2, "#ff653c", 24);
+        const protectedByPower = this.protectFromPenalty("obstacle");
+        if (!protectedByPower) {
+          this.rocket.triggerDamageFeedback();
+          this.speed = clamp(this.speed - SPEED.obstaclePenalty
+            * (this.session.stage.speedLossMultiplier ?? 1)
+            * (this.session.stage.obstaclePenaltyMultiplier ?? 1), SPEED.min, SPEED.max);
+          this.questionFeedback = "Impacto! Velocidade reduzida";
+          this.feedbackTimerMs = 900;
+          playGameSound("collision");
+          this.spawnParticles(this.rocket.x + this.rocket.width / 2, this.rocket.y + this.rocket.height / 2, "#ff653c", 24);
+        }
         this.emitHud(true);
       }
     }
@@ -398,8 +432,27 @@ export class GameEngine {
       }
     }
 
+    if (this.mysteryBox?.alive) {
+      this.mysteryBox.speed = this.getEntitySpeed(MYSTERY_BOX.fallSpeed);
+      this.mysteryBox.update(dt);
+      if (this.mysteryBox.y > this.view.height + this.mysteryBox.height) {
+        this.mysteryBox.alive = false;
+        this.mysteryBox = null;
+      } else if (aabbOverlaps(this.rocket, this.mysteryBox)) {
+        const { x, y, width, height } = this.mysteryBox;
+        this.mysteryBox.alive = false;
+        this.mysteryBox = null;
+        this.spawnParticles(x + width / 2, y + height / 2, "#ffe45e", 22);
+        playGameSound("discovery");
+        this.pendingPowerUp = getRandomPowerUp(this.rng);
+        this.powerUps = { ...this.powerUps, rouletteMs: MYSTERY_BOX.rouletteMs, rouletteElapsedMs: 0 };
+        this.emitHud(true);
+      }
+    }
+
     this.obstacles = cullOffscreen(this.obstacles, this.view.height);
     this.collectibles = cullOffscreen(this.collectibles, this.view.height);
+    this.obstacles = this.obstacles.filter((obstacle) => obstacle.alive);
     this.updateParticles(dt);
     if (this.feedbackTimerMs > 0) {
       this.feedbackTimerMs -= frameMs;
@@ -410,7 +463,51 @@ export class GameEngine {
 
   getEntitySpeed(baseSpeed) {
     const factor = clamp(this.speed / SPEED.start, 0.65, 1.8);
-    return baseSpeed * factor;
+    return baseSpeed * factor * this.turboSpeedFactor;
+  }
+
+  spawnMysteryBox() {
+    // Tenta posições afastadas da nave e dos obstáculos que ocupam o topo da fase.
+    const maxX = Math.max(0, this.view.width - MYSTERY_BOX.size);
+    const candidates = Array.from({ length: 9 }, (_, index) => maxX * index / 8);
+    const safe = candidates.filter((x) => Math.abs(x + MYSTERY_BOX.size / 2 - (this.rocket.x + this.rocket.width / 2)) >= MYSTERY_BOX.safeDistance
+      && this.obstacles.every((obstacle) => !obstacle.alive || obstacle.y >= MYSTERY_BOX.size + SPAWN.obstacleSafeGap
+        || x + MYSTERY_BOX.size + SPAWN.obstacleSafeGap <= obstacle.x
+        || obstacle.x + obstacle.width + SPAWN.obstacleSafeGap <= x));
+    if (!safe.length) return false;
+    const x = safe[Math.floor(this.rng() * safe.length)];
+    this.mysteryBox = new MysteryBox({ x, speed: this.getEntitySpeed(MYSTERY_BOX.fallSpeed) });
+    return true;
+  }
+
+  protectFromPenalty(source) {
+    // A estrela sempre protege primeiro; a bolha só é consumida se a estrela estiver inativa.
+    if (this.powerUps.starMs > 0) return true;
+    if (!this.powerUps.bubble) return false;
+    this.powerUps = activatePowerUp(this.powerUps, "consume-bubble");
+    this.spawnParticles(this.rocket.x + this.rocket.width / 2, this.rocket.y + this.rocket.height / 2, "#8cecff", 20);
+    this.questionFeedback = source === "question" ? "Bolha estourou e absorveu a penalidade" : "Bolha estourou e protegeu a nave";
+    this.feedbackTimerMs = 900;
+    playGameSound("discovery");
+    this.emitHud(true);
+    return true;
+  }
+
+  revealPendingPowerUp() {
+    const power = this.pendingPowerUp;
+    this.pendingPowerUp = null;
+    if (!power) return;
+    if (power === "shrink") {
+      for (const obstacle of this.obstacles) obstacle.startShrink(POWER_UPS.shrink.shrinkMs);
+      this.hazardClearRemainingMs = POWER_UPS.shrink.durationMs;
+      this.shrinkFlashRemainingMs = 180;
+    } else {
+      this.powerUps = activatePowerUp(this.powerUps, power);
+    }
+    this.questionFeedback = ({ turbo: "TURBO!", star: "ESTRELA! Invencível", bubble: "Bolha ativada" })[power] ?? "Raio encolhedor!";
+    this.feedbackTimerMs = 1200;
+    playGameSound("discovery");
+    this.emitHud(true);
   }
 
   spawnObstacle() {
@@ -477,6 +574,12 @@ export class GameEngine {
     this.loop.stop();
     this.answers = [];
     this.particles = [];
+    this.mysteryBox = null;
+    this.pendingPowerUp = null;
+    this.powerUps = createPowerUpState();
+    this.turboSpeedFactor = 1;
+    this.hazardClearRemainingMs = 0;
+    this.shrinkFlashRemainingMs = 0;
     this.currentRound && (this.currentRound.status = "resolved");
     this.interQuestionRemainingMs = 0;
     this.answerChoiceRemainingMs = 0;
@@ -506,6 +609,14 @@ export class GameEngine {
       selectedLane: this.currentRound?.result?.lane ?? getLaneFromCenter(this.rocket.x + this.rocket.width / 2, this.view.width),
       feedback: this.questionFeedback,
       paused: this.paused,
+      powerUps: [
+        ...(this.powerUps.turboMs > 0 ? [{ id: "turbo", icon: "⚡", label: "Turbo", remainingMs: this.powerUps.turboMs, durationMs: POWER_UPS.turbo.durationMs }] : []),
+        ...(this.powerUps.starMs > 0 ? [{ id: "star", icon: "★", label: "Estrela", remainingMs: this.powerUps.starMs, durationMs: POWER_UPS.star.durationMs }] : []),
+        ...(this.powerUps.bubble ? [{ id: "bubble", icon: "●", label: "Bolha" }] : []),
+        ...(this.hazardClearRemainingMs > 0 ? [{ id: "shrink", icon: "✦", label: "Raio encolhedor", remainingMs: this.hazardClearRemainingMs, durationMs: POWER_UPS.shrink.durationMs }] : []),
+      ],
+      mysteryBoxVisible: Boolean(this.mysteryBox?.alive),
+      rouletteIcon: this.powerUps.rouletteMs > 0 ? ["⚡", "★", "●", "✦"][Math.floor(this.elapsedMs / 90) % 4] : null,
     };
   }
 
@@ -523,7 +634,7 @@ export class GameEngine {
       renderPlanetScenery(ctx, view, session.planet, this.progressMs);
     }
     if (!this.reducedMotion) {
-      renderSpeedStreaks(ctx, this.speedStreaks, session.planet.theme.accent, this.speed);
+      renderSpeedStreaks(ctx, this.speedStreaks, session.planet.theme.accent, this.speed * this.turboSpeedFactor);
     }
     const flashAlpha = this.columnFlashRemainingMs > 0
       ? 0.3 + Math.max(0, Math.sin(this.elapsedMs * 0.025)) * 0.15
@@ -536,6 +647,7 @@ export class GameEngine {
     });
     for (const obstacle of this.obstacles) obstacle.render(ctx);
     for (const collectible of this.collectibles) collectible.render(ctx);
+    if (this.mysteryBox?.alive) this.mysteryBox.render(ctx);
     if (this.currentRound?.status === "animating-correct") {
       this.currentRound.selectedAnswer?.renderPerspective(ctx, this.answerAnimationElapsedMs / QUESTION_TIMING.perspectiveAnimationMs, view.height);
     } else if (this.currentRound?.status === "awaiting-resolution") {
@@ -543,9 +655,40 @@ export class GameEngine {
     }
     for (const particle of this.particles) {
       ctx.save(); ctx.globalAlpha = clamp(particle.life / particle.maxLife, 0, 1); ctx.fillStyle = particle.color;
-      ctx.beginPath(); ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      ctx.beginPath();
+      if (particle.color === "#ffe66d") {
+        for (let point = 0; point < 10; point += 1) {
+          const radius = point % 2 ? particle.size * 0.42 : particle.size;
+          const angle = -Math.PI / 2 + point * Math.PI / 5;
+          const x = particle.x + Math.cos(angle) * radius;
+          const y = particle.y + Math.sin(angle) * radius;
+          if (point === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath(); ctx.fill();
+      } else {
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
     }
+    this.renderPowerUpRocketEffects();
     this.rocket.render(ctx, this.elapsedMs, this.reducedMotion);
+    if (this.powerUps.bubble) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(116, 226, 255, .78)";
+      ctx.fillStyle = "rgba(116, 226, 255, .12)";
+      ctx.lineWidth = 3;
+      ctx.shadowColor = "#72e6ff";
+      ctx.shadowBlur = 18;
+      ctx.beginPath();
+      ctx.ellipse(this.rocket.x + this.rocket.width / 2, this.rocket.y + this.rocket.height / 2,
+        this.rocket.width * 0.72, this.rocket.height * 0.63, 0, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke(); ctx.restore();
+    }
+    if (this.powerUps.rouletteMs > 0) this.renderPowerRoulette();
+    if (this.shrinkFlashRemainingMs > 0) {
+      ctx.save(); ctx.fillStyle = `rgba(205, 240, 255, ${this.shrinkFlashRemainingMs / 360})`;
+      ctx.fillRect(0, 0, view.width, view.height); ctx.restore();
+    }
     if (this.showHitboxes) {
       for (const obstacle of this.obstacles) {
         if (obstacle.alive) this.renderCollisionBox(obstacle.collisionBox, "#f97316");
@@ -564,6 +707,49 @@ export class GameEngine {
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.strokeRect(box.x, box.y, box.width, box.height);
+    ctx.restore();
+  }
+
+  renderPowerUpRocketEffects() {
+    const { ctx, rocket } = this;
+    if (!ctx) return;
+    if (this.powerUps.turboMs > 0 || this.turboSpeedFactor > 1.03) {
+      ctx.save();
+      const flicker = this.reducedMotion ? 1 : 0.8 + Math.sin(this.elapsedMs * 0.04) * 0.2;
+      ctx.fillStyle = `rgba(255, 142, 48, ${flicker * Math.min(1, (this.turboSpeedFactor - 1) / (POWER_UPS.turbo.speedMultiplier - 1))})`;
+      ctx.shadowColor = "#ff7c2a"; ctx.shadowBlur = 18;
+      ctx.beginPath();
+      ctx.moveTo(rocket.x + rocket.width * 0.34, rocket.y + rocket.height * 0.76);
+      ctx.lineTo(rocket.x + rocket.width * 0.5, rocket.y + rocket.height * 1.5);
+      ctx.lineTo(rocket.x + rocket.width * 0.66, rocket.y + rocket.height * 0.76);
+      ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+    if (this.powerUps.starMs > 0) {
+      const fastBlink = this.powerUps.starMs <= POWER_UPS.star.warningMs;
+      const blink = fastBlink && Math.floor(this.elapsedMs / 85) % 2 === 0;
+      if (!blink) {
+        ctx.save();
+        ctx.strokeStyle = `hsl(${Math.floor(this.elapsedMs * 0.18) % 360} 100% 70%)`;
+        ctx.lineWidth = 4; ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.ellipse(rocket.x + rocket.width / 2, rocket.y + rocket.height / 2, rocket.width * 0.7, rocket.height * 0.65, 0, 0, Math.PI * 2);
+        ctx.stroke(); ctx.restore();
+      }
+      if (!this.reducedMotion && this.rng() < 0.2) {
+        this.spawnParticles(rocket.x + this.rng() * rocket.width, rocket.y + this.rng() * rocket.height, "#ffe66d", 1);
+      }
+    }
+  }
+
+  renderPowerRoulette() {
+    const { ctx, view } = this;
+    ctx.save();
+    ctx.fillStyle = "rgba(5, 23, 54, .62)";
+    ctx.fillRect(view.width * 0.25, view.height * 0.42, view.width * 0.5, 72);
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 38px sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(this.getSnapshot().rouletteIcon, view.width / 2, view.height * 0.42 + 36);
     ctx.restore();
   }
 

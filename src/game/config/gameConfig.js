@@ -68,6 +68,23 @@ export const SPAWN = {
   maxParticles: 72,
 };
 
+// Balanceamento da caixa misteriosa e dos poderes.
+export const MYSTERY_BOX = {
+  minIntervalMs: 20_000,
+  maxIntervalMs: 40_000,
+  fallSpeed: 135,
+  size: 44,
+  safeDistance: 104,
+  rouletteMs: 1000,
+};
+
+export const POWER_UPS = {
+  turbo: { durationMs: 7000, speedMultiplier: 2.5 },
+  star: { durationMs: 5000, warningMs: 1500 },
+  bubble: { durationMs: null },
+  shrink: { durationMs: 3000, shrinkMs: 600 },
+};
+
 export const QUESTION_TIMING = {
   choiceWindowMs: 2800,
   perspectiveAnimationMs: 1450,

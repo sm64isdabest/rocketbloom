@@ -26,6 +26,19 @@ export class Obstacle {
     this.alive = true;
     this.image = getSprite(id);
     this.animationTime = 0;
+    this.shrinking = false;
+    this.shrinkElapsedMs = 0;
+    this.shrinkDurationMs = 0;
+    this.scale = 1;
+  }
+
+  get isDamaging() { return this.alive && !this.shrinking; }
+
+  startShrink(durationMs) {
+    if (this.shrinking || !this.alive) return;
+    this.shrinking = true;
+    this.shrinkDurationMs = durationMs;
+    this.shrinkElapsedMs = 0;
   }
 
   get collisionBox() {
@@ -39,6 +52,14 @@ export class Obstacle {
   }
 
   update(dt) {
+    if (this.shrinking) {
+      this.shrinkElapsedMs += dt * 1000;
+      const progress = Math.min(1, this.shrinkElapsedMs / this.shrinkDurationMs);
+      const eased = progress * progress * (3 - 2 * progress);
+      this.scale = 1 - eased;
+      if (progress >= 1) this.alive = false;
+      return;
+    }
     this.y += this.speed * dt;
     this.animationTime += dt;
   }
@@ -52,6 +73,7 @@ export class Obstacle {
     ctx.save();
     ctx.translate(this.x + this.width / 2, this.y + this.height / 2 + bob);
     ctx.rotate(angle);
+    ctx.scale(this.scale, this.scale);
     ctx.translate(-this.width / 2, -this.height / 2);
 
     if (this.image?.complete && this.image.naturalWidth > 0) {

@@ -20,6 +20,13 @@ export function Hud({ snapshot, onPause }) {
           <small>VELOCIDADE</small><b>{snapshot?.speed ?? 0}<i> km/h</i></b>
         </span>
       </div>
+      {snapshot?.powerUps?.length ? <div className="hud__powerups" aria-label="Poderes ativos">
+        {snapshot.powerUps.map((power) => <div key={power.id} className={`hud__powerup hud__powerup--${power.id}`}
+          role="img" aria-label={power.remainingMs ? `${power.label}, ${Math.ceil(power.remainingMs / 1000)} segundos restantes` : `${power.label}, proteção para uma penalidade`}>
+          <b aria-hidden="true">{power.icon}</b>
+          {power.remainingMs ? <span><i style={{ width: `${Math.max(0, Math.min(100, power.remainingMs / power.durationMs * 100))}%` }} /></span> : null}
+        </div>)}
+      </div> : null}
       {activeQuestion ? <div key={activeQuestion.id ?? activeQuestion.prompt} className="hud__question" role="group" aria-label="Pergunta atual">
         <strong>{activeQuestion.prompt}</strong>
         {snapshot?.feedback ? <span className="hud__feedback" role="status">{snapshot.feedback}</span> : null}

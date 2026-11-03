@@ -22,3 +22,13 @@ test("obstacle animation changes its drawing while preserving its collision box"
   assert.ok(calls.some(({ method, args }) => method === "rotate" && Math.abs(args[0]) >= 0.12), "the sprite should have a clearly visible sway");
   assert.deepEqual([obstacle.x, obstacle.y, obstacle.width, obstacle.height], [100, 115, 86, 46]);
 });
+
+test("obstáculo em encolhimento deixa de causar dano e some com easing", () => {
+  const obstacle = new Obstacle({ id: "asteroid", x: 10, y: 20, width: 30, height: 30 });
+  obstacle.startShrink(600);
+  assert.equal(obstacle.isDamaging, false);
+  obstacle.update(0.3);
+  assert.ok(obstacle.scale < 1 && obstacle.scale > 0);
+  obstacle.update(0.3);
+  assert.equal(obstacle.alive, false);
+});

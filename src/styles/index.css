@@ -827,3 +827,13 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   .phase-selection-canvas.is-revealing .phase-selection-background,
   .phase-selection-canvas.is-revealing .phase-selection-stage__frame { animation-duration: .01ms; }
 }
+.hud__powerups { position: absolute; top: max(68px, calc(env(safe-area-inset-top) + 68px)); left: clamp(14px, 3vw, 38px); display: flex; gap: 7px; pointer-events: none; }
+.hud__powerup { display: grid; width: 42px; min-height: 42px; place-items: center; gap: 3px; padding: 4px; border: 1px solid rgba(255,255,255,.8); border-radius: 11px; color: white; background: rgba(5,38,87,.88); box-shadow: 0 0 12px rgba(88,218,255,.35); }
+.hud__powerup b { font-size: 1.2rem; line-height: 1; text-shadow: 0 0 8px currentColor; }
+.hud__powerup > span { display: block; width: 100%; height: 3px; overflow: hidden; border-radius: 3px; background: rgba(255,255,255,.25); }
+.hud__powerup > span i { display: block; height: 100%; border-radius: inherit; background: #8ef5ff; transition: width .16s linear; }
+.hud__powerup--turbo { border-color: #ffd469; color: #ffd469; }
+.hud__powerup--star { border-color: #ff91ea; color: #ffe778; }
+.hud__powerup--bubble { border-color: #83eaff; color: #83eaff; }
+.hud__powerup--shrink { border-color: #d7f4ff; color: #d7f4ff; }
+@media (max-width: 600px) { .hud__powerups { top: max(58px, calc(env(safe-area-inset-top) + 58px)); left: 12px; gap: 5px; }.hud__powerup { width: 36px; min-height: 36px; } }

@@ -5,8 +5,10 @@ import { PLANETS, getPlanetById } from "../data/planets.js";
 import { getObstaclesForPlanet } from "../data/obstacles.js";
 import { Obstacle } from "../entities/Obstacle.js";
 import { Collectible } from "../entities/Collectible.js";
+import { MysteryBox } from "../entities/MysteryBox.js";
 import { GameEngine } from "./GameEngine.js";
 import { aabbOverlaps } from "./collision.js";
+import { activatePowerUp, createPowerUpState } from "../systems/powerUps.js";
 
 function withCanvasEnvironment(run) {
   const original = {
@@ -409,6 +411,72 @@ test("moedas e diamantes coletados atualizam o HUD uma vez por item", () => {
     assert.equal(engine.getSnapshot().coins, 1);
     assert.equal(engine.getSnapshot().diamonds, 1);
     assert.equal(engine.collectibles.length, 0);
+    engine.stop();
+  });
+});
+
+test("estrela tem prioridade sobre a bolha e bolha absorve uma única penalidade", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.powerUps = activatePowerUp(activatePowerUp(createPowerUpState(), "star"), "bubble");
+    const wrong = engine.answers.find((answer) => !answer.correct);
+    assert.equal(engine.resolveCurrentAnswer(wrong), true);
+    assert.equal(engine.speed, 120, "star prevents the wrong-answer speed penalty");
+    assert.equal(engine.getSnapshot().powerUps.some((power) => power.id === "bubble"), true, "star takes priority without consuming the bubble");
+
+    engine.obstacles.push(new Obstacle({ id: "asteroid", x: engine.rocket.x, y: engine.rocket.y, width: 44, height: 44 }));
+    engine.tick(0.016);
+    assert.equal(engine.speed, 120, "star prevents obstacle damage too");
+    assert.equal(engine.powerUps.bubble, true);
+
+    engine.powerUps.starMs = 0;
+    engine.obstacles.push(new Obstacle({ id: "asteroid", x: engine.rocket.x, y: engine.rocket.y, width: 44, height: 44 }));
+    engine.tick(0.016);
+    assert.equal(engine.powerUps.bubble, false);
+    assert.equal(engine.speed, 120, "bubble absorbs exactly one collision penalty");
+    engine.stop();
+  });
+});
+
+test("caixa coletada inicia roleta enquanto o progresso continua", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.mysteryBox = new MysteryBox({ x: engine.rocket.x, y: engine.rocket.y, speed: 0 });
+    engine.tick(0.05);
+    assert.equal(engine.mysteryBox, null);
+    assert.equal(engine.powerUps.rouletteMs, 1000);
+    const progressAtPickup = engine.progressMs;
+    tickFor(engine, 1000);
+    assert.ok(engine.progressMs > progressAtPickup, "the game progresses during the roulette animation");
+    assert.equal(engine.powerUps.rouletteMs, 0);
+    assert.ok(engine.getSnapshot().powerUps.length > 0, "a power is revealed when the roulette ends");
+    engine.stop();
+  });
+});
+
+test("turbo acelera o scroll e desacelera suavemente quando termina", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.powerUps = activatePowerUp(createPowerUpState(), "turbo");
+    engine.tick(0.05);
+    assert.ok(engine.progressMs > 120 * 0.05, "turbo accelerates stage scroll");
+    engine.powerUps.turboMs = 1;
+    engine.tick(0.05);
+    assert.ok(engine.turboSpeedFactor > 1, "speed does not snap to normal at expiration");
+    assert.ok(engine.turboSpeedFactor < 2.5);
+    engine.stop();
+  });
+});
+
+test("raio encolhedor torna obstáculos inofensivos e pausa novos spawns por três segundos", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const obstacle = new Obstacle({ id: "asteroid", x: engine.rocket.x, y: 10, width: 44, height: 44 });
+    engine.obstacles.push(obstacle);
+    engine.pendingPowerUp = "shrink";
+    engine.revealPendingPowerUp();
+    assert.equal(obstacle.isDamaging, false);
+    assert.equal(engine.hazardClearRemainingMs, 3000);
     engine.stop();
   });
 });
