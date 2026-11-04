@@ -33,15 +33,15 @@ export function createSpeedStreaks(count, width, height, rng = Math.random) {
   return Array.from({ length: count }, () => ({
     x: rng() * width,
     y: rng() * height,
-    length: 12 + rng() * 30,
-    thickness: 0.6 + rng() * 1,
-    alpha: 0.08 + rng() * 0.16,
+    length: 22 + rng() * 42,
+    thickness: 1 + rng() * 1.2,
+    alpha: 0.2 + rng() * 0.2,
     drift: (rng() - 0.5) * 22,
   }));
 }
 
 export function updateSpeedStreaks(streaks, dt, width, height, speed, rng = Math.random) {
-  const flowSpeed = 150 + Math.max(0, speed) * 1.15;
+  const flowSpeed = 230 + Math.max(0, speed) * 1.5;
   for (const streak of streaks) {
     streak.y += flowSpeed * dt;
     streak.x += streak.drift * dt;
@@ -59,12 +59,12 @@ export function renderSpeedStreaks(ctx, streaks, accent, speed) {
   ctx.save();
   ctx.lineCap = "round";
   for (const streak of streaks) {
-    ctx.globalAlpha = streak.alpha * (0.55 + intensity * 0.75);
+    ctx.globalAlpha = streak.alpha * (0.8 + intensity * 0.9);
     ctx.strokeStyle = accent;
     ctx.lineWidth = streak.thickness;
     ctx.beginPath();
     ctx.moveTo(streak.x, streak.y);
-    ctx.lineTo(streak.x + streak.drift * 0.16, streak.y + streak.length * (0.7 + intensity * 0.7));
+    ctx.lineTo(streak.x + streak.drift * 0.16, streak.y + streak.length * (0.9 + intensity * 1.3));
     ctx.stroke();
   }
   ctx.restore();

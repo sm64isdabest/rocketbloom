@@ -114,7 +114,7 @@ export class GameEngine {
       this.rocket.clamp(this.view.width);
     }
     this.stars = createStarfield(70, this.view.width, this.view.height, this.session.planet.theme.starAlpha, this.rng);
-    this.speedStreaks = createSpeedStreaks(34, this.view.width, this.view.height, this.rng);
+    this.speedStreaks = createSpeedStreaks(54, this.view.width, this.view.height, this.rng);
     for (const answer of this.answers) {
       const lane = answer.lane ?? 1.5;
       answer.x = clamp(this.view.width * ((lane + 0.5) / 4) - answer.width / 2, 0, this.view.width - answer.width);
