@@ -135,7 +135,7 @@ export default function App() {
         <CommandRoomScreen progress={progress} onBack={() => setMenuPage(SCREEN.MENU)} />
       ) : null}
 
-      {run && (screen === SCREEN.PLAYING || screen === SCREEN.PAUSED) ? (
+      {run && (screen === SCREEN.PLAYING || screen === SCREEN.PAUSED || screen === SCREEN.DEFEAT) ? (
         <PlayScreen
           key={runKey}
           planetId={run.planetId}
@@ -143,7 +143,8 @@ export default function App() {
           controlMode={progress.settings.controlMode}
           reducedMotion={progress.settings.reducedMotion || systemReducedMotion}
           showHitboxes={progress.settings.showHitboxes}
-          paused={screen === SCREEN.PAUSED}
+          paused={screen !== SCREEN.PLAYING}
+          showHud={screen !== SCREEN.DEFEAT}
           onPause={onPause}
           onHudRef={hudRef}
           onOutcome={onOutcome}
@@ -182,12 +183,9 @@ export default function App() {
       ) : null}
       {screen === SCREEN.DEFEAT ? (
         <DefeatScreen
-          snapshot={outcomeSnapshot}
-          rewards={outcomeRewards}
           onRetry={() => {
             if (run) { setRunKey((value) => value + 1); startStage(run.planetId, run.stageId); }
           }}
-          onMenu={goMenu}
         />
       ) : null}
     </div>

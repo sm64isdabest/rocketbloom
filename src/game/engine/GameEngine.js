@@ -29,7 +29,7 @@ function clamp(value, min, max) {
 }
 
 export class GameEngine {
-  constructor({ canvas, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, rng = Math.random, runId = makeRunId() }) {
+  constructor({ canvas, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, rng = Math.random, runId = makeRunId(), explosionImage }) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.session = session;
@@ -48,6 +48,8 @@ export class GameEngine {
 
     this.view = { width: 0, height: 0, dpr: 1 };
     this.rocket = new Rocket();
+    this.explosionImage = explosionImage ?? this.createExplosionImage();
+    this.outcome = null;
     this.stars = [];
     this.speedStreaks = [];
     this.leaves = [];
@@ -105,6 +107,14 @@ export class GameEngine {
     this.resizeObserver.observe(canvas.parentElement ?? canvas);
     this.resize();
     this.startNextQuestion();
+  }
+
+  createExplosionImage() {
+    if (typeof Image === "undefined") return null;
+    const image = new Image();
+    const basePath = import.meta.env?.BASE_URL ?? "/";
+    image.src = `${basePath.endsWith("/") ? basePath : `${basePath}/`}assets/explosion.png`;
+    return image;
   }
 
   resize() {
@@ -593,6 +603,7 @@ export class GameEngine {
   finish(outcome) {
     if (this.ended || this.disposed) return;
     this.ended = true;
+    this.outcome = outcome;
     this.paused = false;
     this.pendingOutcome = null;
     finishGameAudio(outcome);
@@ -608,6 +619,7 @@ export class GameEngine {
     this.currentRound && (this.currentRound.status = "resolved");
     this.interQuestionRemainingMs = 0;
     this.answerChoiceRemainingMs = 0;
+    this.render();
     this.onOutcome?.(outcome, this.getSnapshot());
   }
 
@@ -699,7 +711,14 @@ export class GameEngine {
       ctx.restore();
     }
     this.renderPowerUpRocketEffects();
-    this.rocket.render(ctx, this.elapsedMs, this.reducedMotion);
+    if (this.outcome === "defeat") {
+      if (this.explosionImage?.complete && this.explosionImage.naturalWidth > 0) {
+        const size = Math.max(this.rocket.width, this.rocket.height) * 1.7;
+        ctx.drawImage(this.explosionImage, this.rocket.x + (this.rocket.width - size) / 2, this.rocket.y + (this.rocket.height - size) / 2, size, size);
+      }
+    } else {
+      this.rocket.render(ctx, this.elapsedMs, this.reducedMotion);
+    }
     if (this.powerUps.bubble) {
       ctx.save();
       ctx.strokeStyle = "rgba(116, 226, 255, .78)";

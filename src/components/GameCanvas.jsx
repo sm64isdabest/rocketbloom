@@ -5,7 +5,9 @@ export function GameCanvas({ session, controlMode, reducedMotion = false, showHi
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const runningRef = useRef(running);
+  const onOutcomeRef = useRef(onOutcome);
   runningRef.current = running;
+  onOutcomeRef.current = onOutcome;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -21,7 +23,7 @@ export function GameCanvas({ session, controlMode, reducedMotion = false, showHi
       showHitboxes,
       onHud,
       onPauseRequest,
-      onOutcome,
+      onOutcome: (...args) => onOutcomeRef.current?.(...args),
     });
     engineRef.current = engine;
     if (runningRef.current) {
@@ -32,7 +34,7 @@ export function GameCanvas({ session, controlMode, reducedMotion = false, showHi
       engine.stop();
       engineRef.current = null;
     };
-  }, [session, controlMode, onHud, onPauseRequest, onOutcome]);
+  }, [session, controlMode, onHud, onPauseRequest]);
 
   useEffect(() => {
     if (engineRef.current) engineRef.current.reducedMotion = reducedMotion;

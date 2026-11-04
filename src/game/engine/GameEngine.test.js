@@ -21,9 +21,11 @@ function withCanvasEnvironment(run) {
   let rafId = 0;
   const observers = [];
   const strokeRects = [];
+  const drawnImages = [];
   const ctx = new Proxy({
     createLinearGradient: () => ({ addColorStop() {} }),
     setTransform() {},
+    drawImage(image) { drawnImages.push(image); },
     strokeRect(x, y, width, height) {
       strokeRects.push({ x, y, width, height, color: this.strokeStyle, lineWidth: this.lineWidth });
     },
@@ -50,7 +52,7 @@ function withCanvasEnvironment(run) {
   };
 
   try {
-    run({ canvas, scheduled, observers, strokeRects });
+    run({ canvas, scheduled, observers, strokeRects, drawnImages });
   } finally {
     globalThis.window = original.window;
     globalThis.ResizeObserver = original.ResizeObserver;
@@ -78,6 +80,7 @@ function engineOptions(canvas, callbacks = {}, extras = {}) {
     onOutcome: callbacks.onOutcome,
     onHud: callbacks.onHud,
     onPauseRequest: callbacks.onPauseRequest,
+    explosionImage: extras.explosionImage,
   };
 }
 
@@ -685,6 +688,22 @@ test("visualização desenha as caixas reais de colisão das entidades vivas e p
     engine.showHitboxes = false;
     engine.render();
     assert.deepEqual(strokeRects.filter(({ color }) => ["#f97316", "#facc15", "#38bdf8", "#fb7185"].includes(color)), []);
+    engine.stop();
+  });
+});
+
+test("derrota mantém a fase no canvas e desenha a explosão no lugar do foguete", () => {
+  withCanvasEnvironment(({ canvas, drawnImages }) => {
+    const explosionImage = { complete: true, naturalWidth: 140, naturalHeight: 140 };
+    const engine = new GameEngine(engineOptions(canvas, {}, { explosionImage }));
+    let rocketRenderCount = 0;
+    engine.rocket.render = () => { rocketRenderCount += 1; };
+
+    engine.finish("defeat");
+    engine.render();
+
+    assert.equal(rocketRenderCount, 0);
+    assert.ok(drawnImages.includes(explosionImage));
     engine.stop();
   });
 });
