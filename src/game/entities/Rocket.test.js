@@ -1,9 +1,18 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import test from "node:test";
-import { getRocketImageUrl, Rocket } from "./Rocket.js";
+import { getFlameImageUrl, getRocketImageUrl, Rocket } from "./Rocket.js";
 
 test("rocket image URL includes the configured application base path", () => {
   assert.equal(getRocketImageUrl("/rocketbloom/"), "/rocketbloom/assets/rocket.png");
+});
+
+test("the eight flame assets exist and their URLs include the configured base path", () => {
+  for (let frame = 0; frame < 8; frame += 1) {
+    const filename = `chama_${String(frame + 1).padStart(2, "0")}.png`;
+    assert.equal(getFlameImageUrl(frame, "/rocketbloom"), `/rocketbloom/assets/flames/${filename}`);
+    assert.equal(existsSync(new URL(`../../../public/assets/flames/${filename}`, import.meta.url)), true, `${filename} should be publicly available`);
+  }
 });
 
 test("rocket sprite is shifted left to align with its hitbox", () => {
@@ -21,12 +30,55 @@ test("rocket sprite is shifted left to align with its hitbox", () => {
 
   const drawCall = calls.find(({ method }) => method === "drawImage");
   assert.ok(drawCall, "the loaded sprite should be rendered on the canvas");
-  assert.deepEqual(drawCall.args.slice(1, 5), [292, 51, 494, 965]);
+  assert.deepEqual(drawCall.args.slice(1, 5), [292, 51, 494, 740]);
   assert.ok(Math.abs(drawCall.args[5] + 22.52) < 0.01);
   assert.equal(drawCall.args[6], -44);
   assert.ok(Math.abs(drawCall.args[7] - 45.05) < 0.01);
-  assert.equal(drawCall.args[8], 88);
+  assert.ok(Math.abs(drawCall.args[8] - (88 * 740 / 965)) < 0.01);
   assert.deepEqual([rocket.width, rocket.height], [52, 88]);
+});
+
+test("rocket renders animated flame assets beneath the trimmed body using its tilt", () => {
+  const calls = [];
+  const ctx = new Proxy({}, {
+    get(_target, method) { return (...args) => calls.push({ method, args }); },
+    set(target, property, value) { target[property] = value; return true; },
+  });
+  const image = { complete: true, naturalWidth: 1080, naturalHeight: 1080 };
+  const flameImages = Array.from({ length: 8 }, (_, index) => ({ id: index, complete: true, naturalWidth: 194, naturalHeight: 491 }));
+  const rocket = new Rocket({ image, flameImages });
+  rocket.x = 20;
+  rocket.y = 30;
+  rocket.rotation = -0.12;
+
+  rocket.render(ctx, 0);
+
+  const drawCalls = calls.filter(({ method }) => method === "drawImage");
+  assert.equal(drawCalls.length, 2, "one flame frame and the rocket body should render");
+  assert.equal(drawCalls[0].args[0], flameImages[0], "the first animation frame should be drawn behind the rocket");
+  assert.deepEqual(drawCalls[1].args.slice(1, 5), [292, 51, 494, 740], "the rocket sprite crop should exclude its built-in exhaust");
+  assert.ok(calls.some(({ method, args }) => method === "rotate" && args[0] === -0.12), "the flame and body should share the rocket tilt transform");
+  assert.equal(calls.filter(({ method }) => method === "translate").length, 1, "the flame and body should share the rocket position transform");
+});
+
+test("rocket flame animation advances through all eight frames and freezes for reduced motion", () => {
+  const calls = [];
+  const ctx = new Proxy({}, {
+    get(_target, method) { return (...args) => calls.push({ method, args }); },
+    set(target, property, value) { target[property] = value; return true; },
+  });
+  const flameImages = Array.from({ length: 8 }, (_, index) => ({ id: index, complete: true, naturalWidth: 194, naturalHeight: 491 }));
+  const rocket = new Rocket({ image: { complete: false }, flameImages });
+
+  for (let frame = 0; frame < 8; frame += 1) {
+    calls.length = 0;
+    rocket.render(ctx, frame * 80);
+    assert.equal(calls.find(({ method }) => method === "drawImage")?.args[0], flameImages[frame]);
+  }
+
+  calls.length = 0;
+  rocket.render(ctx, 560, true);
+  assert.equal(calls.find(({ method }) => method === "drawImage")?.args[0], flameImages[0]);
 });
 
 test("rocket tilts with horizontal movement and returns upright when it stops", () => {
