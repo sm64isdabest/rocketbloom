@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { configureAudio, playGameSound, scaleAudioVolume } from "./audioManager.js";
+import { configureAudio, pauseGameAudio, playGameSound, scaleAudioVolume, startGameAudio } from "./audioManager.js";
 
 test("audio volume scales linearly and clamps the percentage", () => {
   assert.equal(scaleAudioVolume(0.8, 25), 0.2);
@@ -36,6 +36,43 @@ test("discovery plays a five-note fanfare through the configured effects volume"
     playGameSound("discovery");
     assert.deepEqual(frequencies, [523.25, 659.25, 783.99, 1046.5, 1318.51]);
   } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+  }
+});
+
+test("gameplay music loops, follows the saved volume, and pauses with the game", () => {
+  const tracks = [];
+  class FakeAudio {
+    constructor(source) {
+      this.src = source;
+      this.paused = true;
+      tracks.push(this);
+    }
+    play() { this.paused = false; return Promise.resolve(); }
+    pause() { this.paused = true; }
+  }
+
+  const priorAudio = globalThis.Audio;
+  const priorWindow = globalThis.window;
+  globalThis.Audio = FakeAudio;
+  globalThis.window = { setTimeout: () => 1, clearTimeout() {} };
+  try {
+    configureAudio({ music: true, musicVolume: 35 });
+    startGameAudio();
+
+    assert.equal(tracks.length, 1);
+    assert.equal(tracks[0].loop, true);
+    assert.equal(tracks[0].volume, 0.35);
+    assert.equal(tracks[0].paused, false);
+
+    pauseGameAudio();
+    assert.equal(tracks[0].paused, true);
+  } finally {
+    pauseGameAudio();
+    configureAudio({ music: true, musicVolume: 100 });
+    if (priorAudio === undefined) delete globalThis.Audio;
+    else globalThis.Audio = priorAudio;
     if (priorWindow === undefined) delete globalThis.window;
     else globalThis.window = priorWindow;
   }
