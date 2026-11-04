@@ -380,6 +380,28 @@ test("obstáculo aplica uma penalidade por colisão e a pausa congela perigos e 
   });
 });
 
+test("folhas caem nas fases da Terra, congelam na pausa e não aparecem em outros planetas", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const earth = new GameEngine(engineOptions(canvas));
+    assert.equal(earth.leaves.length, 16);
+    const initialY = earth.leaves[0].y;
+    earth.tick(0.05);
+    assert.notEqual(earth.leaves[0].y, initialY);
+    earth.pause();
+    const pausedY = earth.leaves[0].y;
+    earth.tick(0.5);
+    assert.equal(earth.leaves[0].y, pausedY);
+    earth.stop();
+
+    const mars = PLANETS.find(({ id }) => id === "mars");
+    const otherPlanet = new GameEngine(engineOptions(canvas, {}, {
+      session: { planet: mars, stage: mars.stages[0], difficulty: getPlanetDifficulty(mars.id), obstacles: [] },
+    }));
+    assert.deepEqual(otherPlanet.leaves, []);
+    otherPlanet.stop();
+  });
+});
+
 test("impacto fatal espera o fade do foguete antes de exibir a derrota", () => {
   withCanvasEnvironment(({ canvas }) => {
     const outcomes = [];

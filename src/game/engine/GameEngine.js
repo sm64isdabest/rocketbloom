@@ -12,7 +12,8 @@ import { generateQuestion } from "../systems/questions.js";
 import { sampleInterQuestionDelayMs } from "../systems/questionTiming.js";
 import { aabbOverlaps } from "./collision.js";
 import { createSpeedStreaks, createStarfield, renderSpeedStreaks, renderStarfield, updateSpeedStreaks, updateStarfield } from "../systems/stars.js";
-import { renderPlanetBackground, renderPlanetScenery } from "../systems/scenery.js";
+import { getLeafImage, renderPlanetBackground, renderPlanetScenery } from "../systems/scenery.js";
+import { createFallingLeaves, updateFallingLeaves, renderFallingLeaves } from "../systems/leaves.js";
 import { createInputController } from "./input.js";
 import { createGameLoop } from "./loop.js";
 import { fitCanvasToContainer } from "./resize.js";
@@ -49,6 +50,7 @@ export class GameEngine {
     this.rocket = new Rocket();
     this.stars = [];
     this.speedStreaks = [];
+    this.leaves = [];
     this.answers = [];
     this.obstacles = [];
     this.collectibles = [];
@@ -115,6 +117,9 @@ export class GameEngine {
     }
     this.stars = createStarfield(70, this.view.width, this.view.height, this.session.planet.theme.starAlpha, this.rng);
     this.speedStreaks = createSpeedStreaks(54, this.view.width, this.view.height, this.rng);
+    this.leaves = this.session.planet.id === "earth"
+      ? createFallingLeaves(this.view.width, this.view.height, this.visualRng)
+      : [];
     for (const answer of this.answers) {
       const lane = answer.lane ?? 1.5;
       answer.x = clamp(this.view.width * ((lane + 0.5) / 4) - answer.width / 2, 0, this.view.width - answer.width);
@@ -233,6 +238,7 @@ export class GameEngine {
     this.progressMs += frameMs * progressMultiplier * this.turboSpeedFactor;
     updateStarfield(this.stars, frameSeconds, this.view.width, this.view.height,
       (0.35 + progressMultiplier * 0.58) * this.turboSpeedFactor, this.visualRng);
+    updateFallingLeaves(this.leaves, frameSeconds, this.view.width, this.view.height, this.visualRng);
     if (!this.reducedMotion) {
       updateSpeedStreaks(this.speedStreaks, frameSeconds, this.view.width, this.view.height,
         this.speed * this.turboSpeedFactor, this.visualRng);
@@ -651,6 +657,9 @@ export class GameEngine {
     if (!renderPlanetBackground(ctx, view, session.planet)) {
       renderStarfield(ctx, this.stars);
       renderPlanetScenery(ctx, view, session.planet, this.progressMs);
+    }
+    if (session.planet.id === "earth") {
+      renderFallingLeaves(ctx, this.leaves, getLeafImage());
     }
     if (!this.reducedMotion) {
       renderSpeedStreaks(ctx, this.speedStreaks, session.planet.theme.accent, this.speed * this.turboSpeedFactor);

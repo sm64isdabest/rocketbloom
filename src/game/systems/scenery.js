@@ -6,6 +6,16 @@ const BACKGROUND_FILES = {
   neptune: "netuno_background.png",
 };
 const backgroundImages = new Map();
+let leafImage;
+
+export function getLeafImage() {
+  if (typeof Image === "undefined") return null;
+  if (!leafImage) {
+    leafImage = new Image();
+    leafImage.src = `${APP_BASE}assets/folha-verde-cartunesca-brilhante.png`;
+  }
+  return leafImage;
+}
 
 function getBackgroundImage(planetId) {
   const filename = BACKGROUND_FILES[planetId];
