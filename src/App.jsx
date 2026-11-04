@@ -14,7 +14,7 @@ import { PlayScreen } from "./screens/PlayScreen.jsx";
 import { PauseOverlay } from "./screens/PauseOverlay.jsx";
 import { VictoryScreen } from "./screens/VictoryScreen.jsx";
 import { DefeatScreen } from "./screens/DefeatScreen.jsx";
-import { configureAudio } from "./game/audio/audioManager.js";
+import { configureAudio, pauseMenuAudio, startMenuAudio } from "./game/audio/audioManager.js";
 
 export default function App() {
   const { progress, warning, fatal, patchSettings, persist } = usePersistentProgress();
@@ -52,6 +52,15 @@ export default function App() {
     progress?.settings?.musicVolume,
     progress?.settings?.soundEffectsVolume,
   ]);
+
+  useEffect(() => {
+    if (!progress || screen === SCREEN.BOOT || screen === SCREEN.PLAYING || screen === SCREEN.ERROR) {
+      pauseMenuAudio();
+      return undefined;
+    }
+    startMenuAudio();
+    return pauseMenuAudio;
+  }, [screen, Boolean(progress)]);
 
   useEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");

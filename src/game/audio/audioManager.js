@@ -2,7 +2,9 @@ import { AUDIO } from "../config/gameConfig.js";
 
 let audioContext = null;
 let gameAudioActive = false;
+let menuAudioActive = false;
 let gameplayMusic = null;
+let menuMusic = null;
 let preferences = {
   music: true,
   soundEffects: true,
@@ -18,6 +20,7 @@ export function scaleAudioVolume(sourceVolume, volumePercent) {
 }
 
 const GAMEPLAY_MUSIC_URL = new URL("../../assets/gameplay-space-loop.wav", import.meta.url).href;
+const MENU_MUSIC_URL = new URL("../../assets/menu-space-loop.wav", import.meta.url).href;
 const SOUND_NOTES = {
   correct: { notes: [523.25, 659.25, 783.99], duration: 0.11, wave: "sine", volume: 0.12 },
   incorrect: { notes: [293.66, 246.94], duration: 0.14, wave: "triangle", volume: 0.12 },
@@ -74,6 +77,10 @@ function stopMusic() {
   gameplayMusic?.pause();
 }
 
+function stopMenuMusic() {
+  menuMusic?.pause();
+}
+
 function startMusic() {
   if (!gameAudioActive || !preferences.music || preferences.musicVolume <= AUDIO.minVolume) return;
   if (typeof Audio === "undefined") return;
@@ -91,14 +98,36 @@ function startMusic() {
   if (playback?.catch) playback.catch(() => {});
 }
 
+function startMenuTrack() {
+  if (!menuAudioActive || !preferences.music || preferences.musicVolume <= AUDIO.minVolume) return;
+  if (typeof Audio === "undefined") return;
+  if (!menuMusic) {
+    try {
+      menuMusic = new Audio(MENU_MUSIC_URL);
+      menuMusic.loop = true;
+      menuMusic.preload = "auto";
+    } catch {
+      return;
+    }
+  }
+  menuMusic.volume = scaleAudioVolume(1, preferences.musicVolume);
+  const playback = menuMusic.play();
+  if (playback?.catch) playback.catch(() => {});
+}
+
 export function configureAudio(nextPreferences = {}) {
   preferences = { ...preferences, ...nextPreferences };
   if (gameplayMusic) gameplayMusic.volume = scaleAudioVolume(1, preferences.musicVolume);
-  if (!preferences.music || preferences.musicVolume <= AUDIO.minVolume) stopMusic();
-  else if (gameAudioActive) startMusic();
+  if (menuMusic) menuMusic.volume = scaleAudioVolume(1, preferences.musicVolume);
+  if (!preferences.music || preferences.musicVolume <= AUDIO.minVolume) {
+    stopMusic();
+    stopMenuMusic();
+  } else if (gameAudioActive) startMusic();
+  else if (menuAudioActive) startMenuTrack();
 }
 
 export function startGameAudio() {
+  pauseMenuAudio();
   gameAudioActive = true;
   startMusic();
 }
@@ -106,6 +135,17 @@ export function startGameAudio() {
 export function pauseGameAudio() {
   gameAudioActive = false;
   stopMusic();
+}
+
+export function startMenuAudio() {
+  pauseGameAudio();
+  menuAudioActive = true;
+  startMenuTrack();
+}
+
+export function pauseMenuAudio() {
+  menuAudioActive = false;
+  stopMenuMusic();
 }
 
 export function finishGameAudio(outcome) {
