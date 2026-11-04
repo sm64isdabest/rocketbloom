@@ -1,4 +1,4 @@
-import { getActiveQuestion, getHudAssetUrl } from "./hudModel.js";
+import { getActiveQuestion, getHudAssetUrl, getPowerUpAssetUrl } from "./hudModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 
@@ -23,7 +23,7 @@ export function Hud({ snapshot, onPause }) {
       {snapshot?.powerUps?.length ? <div className="hud__powerups" aria-label="Poderes ativos">
         {snapshot.powerUps.map((power) => <div key={power.id} className={`hud__powerup hud__powerup--${power.id}`}
           role="img" aria-label={power.remainingMs ? `${power.label}, ${Math.ceil(power.remainingMs / 1000)} segundos restantes` : `${power.label}, proteção para uma penalidade`}>
-          <b aria-hidden="true">{power.icon}</b>
+          <img className="hud__powerup-icon" src={getPowerUpAssetUrl(power.id, APP_BASE)} alt="" aria-hidden="true" />
           {power.remainingMs ? <span><i style={{ width: `${Math.max(0, Math.min(100, power.remainingMs / power.durationMs * 100))}%` }} /></span> : null}
         </div>)}
       </div> : null}
