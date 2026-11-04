@@ -17,6 +17,19 @@ test("recompensas numéricas ficam na configuração", () => {
   assert.ok(REWARDS.plantMoney > 0);
 });
 
+test("elementos de fase ficam maiores sem alterar o tamanho do foguete", async () => {
+  const { ROCKET, MYSTERY_BOX } = await import("./gameConfig.js");
+  const { OBSTACLES } = await import("../data/obstacles.js");
+  const { COLLECTIBLES } = await import("../data/items.js");
+
+  assert.deepEqual([ROCKET.width, ROCKET.height], [52, 88]);
+  assert.equal(MYSTERY_BOX.size, 55);
+  assert.deepEqual(COLLECTIBLES.map(({ width, height }) => [width, height]), [[38, 38], [43, 50]]);
+  assert.deepEqual(OBSTACLES.map(({ width, height }) => [width, height]), [
+    [119, 64], [88, 63], [55, 73], [60, 60], [96, 46], [44, 55],
+  ]);
+});
+
 test("dificuldade por planeta é configurável", () => {
   assert.equal(getPlanetDifficulty("earth").mathTier, 1);
   assert.ok(getPlanetDifficulty("neptune").mathTier > getPlanetDifficulty("earth").mathTier);

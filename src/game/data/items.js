@@ -1,6 +1,6 @@
 export const COLLECTIBLES = [
-  { id: "coin", name: "Moeda", kind: "coin", width: 30, height: 30 },
-  { id: "diamond", name: "Diamante", kind: "diamond", width: 34, height: 40 },
+  { id: "coin", name: "Moeda", kind: "coin", width: 38, height: 38 },
+  { id: "diamond", name: "Diamante", kind: "diamond", width: 43, height: 50 },
 ];
 
 export function getCollectibleById(id) {

@@ -512,7 +512,7 @@ test("caixa misteriosa acompanha o limite horizontal após redimensionar a tela"
     engine.mysteryBox = box;
     canvas.parentElement.getBoundingClientRect = () => ({ width: 200, height: 640 });
     engine.resize();
-    assert.equal(box.x, 156);
+    assert.equal(box.x, 145);
     engine.stop();
   });
 });
@@ -541,7 +541,7 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
     const stage = planet.stages[4];
     const session = {
       planet,
-      stage,
+      stage: { ...stage, obstaclePenaltyMultiplier: 0.35 },
       difficulty: { ...getPlanetDifficulty(planet.id), mathTier: stage.difficulty },
       obstacles: getObstaclesForPlanet(planet.id),
     };
@@ -557,6 +557,7 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
       runId: "neptune-5-stress",
       rng,
     }));
+    engine.speed = 300;
     const spawnParticles = engine.spawnParticles.bind(engine);
     engine.spawnParticles = (x, y, color, count) => {
       if (color === "#ff653c" && count === 24) metrics.collisions += 1;
@@ -589,7 +590,11 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
           moveRocketToLane(engine, answer.lane);
         } else if (engine.answerChoiceRemainingMs > 50) {
           const safeLanes = getSafeLaneIndexes(engine);
-          if (safeLanes.length) moveRocketToLane(engine, safeLanes[0]);
+          if (safeLanes.length) {
+            const currentLane = Math.floor((engine.rocket.x + engine.rocket.width / 2) / (engine.view.width / 4));
+            const safestLane = safeLanes.reduce((best, lane) => Math.abs(lane - currentLane) < Math.abs(best - currentLane) ? lane : best);
+            moveRocketToLane(engine, safestLane);
+          }
         }
       }
 

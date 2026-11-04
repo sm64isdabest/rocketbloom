@@ -73,7 +73,7 @@ export const MYSTERY_BOX = {
   minIntervalMs: 20_000,
   maxIntervalMs: 40_000,
   fallSpeed: 135,
-  size: 44,
+  size: 55,
   safeDistance: 104,
   rouletteMs: 1000,
 };
