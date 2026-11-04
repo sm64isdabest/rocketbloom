@@ -14,7 +14,7 @@ import { PlayScreen } from "./screens/PlayScreen.jsx";
 import { PauseOverlay } from "./screens/PauseOverlay.jsx";
 import { VictoryScreen } from "./screens/VictoryScreen.jsx";
 import { DefeatScreen } from "./screens/DefeatScreen.jsx";
-import { configureAudio, pauseMenuAudio, startMenuAudio } from "./game/audio/audioManager.js";
+import { configureAudio, pauseMenuAudio, playGameSound, startMenuAudio } from "./game/audio/audioManager.js";
 
 export default function App() {
   const { progress, warning, fatal, patchSettings, persist } = usePersistentProgress();
@@ -23,6 +23,7 @@ export default function App() {
   const [bootError, setBootError] = useState(null);
   const [run, setRun] = useState(null);
   const [runKey, setRunKey] = useState(0);
+  const [pauseSettingsOpen, setPauseSettingsOpen] = useState(false);
   const [outcomeSnapshot, setOutcomeSnapshot] = useState(null);
   const [outcomeRewards, setOutcomeRewards] = useState(null);
   const [systemReducedMotion, setSystemReducedMotion] = useState(false);
@@ -71,6 +72,7 @@ export default function App() {
   }, []);
 
   const startStage = (planetId, stageId) => {
+    setPauseSettingsOpen(false);
     setRun({ planetId, stageId });
     setOutcomeSnapshot(null);
     setOutcomeRewards(null);
@@ -87,6 +89,7 @@ export default function App() {
   }, [persist, progress]);
 
   const goMenu = () => {
+    setPauseSettingsOpen(false);
     setRun(null);
     setOutcomeSnapshot(null);
     setOutcomeRewards(null);
@@ -95,6 +98,7 @@ export default function App() {
   };
 
   const onPause = useCallback(() => {
+    setPauseSettingsOpen(false);
     setScreen((current) => (current === SCREEN.PLAYING ? SCREEN.PAUSED : current));
   }, []);
 
@@ -152,10 +156,16 @@ export default function App() {
       ) : null}
       {screen === SCREEN.PAUSED ? (
         <PauseOverlay
-          onResume={() => setScreen(SCREEN.PLAYING)}
-          onRestart={() => { setRunKey((value) => value + 1); startStage(run.planetId, run.stageId); }}
+          onResume={() => { setPauseSettingsOpen(false); setScreen(SCREEN.PLAYING); }}
           onQuit={goMenu}
+          onSettings={() => setPauseSettingsOpen(true)}
+          onTapRocket={() => playGameSound("angryTouch")}
+          reducedMotion={progress.settings.reducedMotion || systemReducedMotion}
+          settingsOpen={pauseSettingsOpen}
         />
+      ) : null}
+      {screen === SCREEN.PAUSED && pauseSettingsOpen ? (
+        <SettingsScreen progress={progress} onBack={() => setPauseSettingsOpen(false)} onChange={patchSettings} />
       ) : null}
       {screen === SCREEN.VICTORY ? (
         <VictoryScreen

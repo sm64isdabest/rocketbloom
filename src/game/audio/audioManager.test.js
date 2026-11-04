@@ -41,6 +41,70 @@ test("discovery plays a five-note fanfare through the configured effects volume"
   }
 });
 
+test("angry rocket touch plays a low, short effect through the configured sound volume", async () => {
+  const frequencies = [];
+  class FakeAudioContext {
+    currentTime = 1;
+    state = "running";
+    destination = {};
+    createOscillator() {
+      return {
+        type: "sine",
+        frequency: { setValueAtTime: (frequency) => frequencies.push(frequency) },
+        connect() {},
+        start() {},
+        stop() {},
+      };
+    }
+    createGain() {
+      return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} };
+    }
+  }
+
+  const priorWindow = globalThis.window;
+  globalThis.window = { AudioContext: FakeAudioContext, addEventListener() {} };
+  try {
+    const { configureAudio, playGameSound } = await import("./audioManager.js?angry-touch-enabled");
+    configureAudio({ soundEffects: true, soundEffectsVolume: 75 });
+    playGameSound("angryTouch");
+    assert.ok(frequencies.length >= 2, "the angry touch effect should contain multiple tones");
+    assert.ok(frequencies.every((frequency) => frequency < 400), "the effect should sound lower than the happy game chimes");
+  } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+  }
+});
+
+test("angry rocket touch stays silent when sound effects are disabled or muted", async () => {
+  let oscillatorCount = 0;
+  class FakeAudioContext {
+    currentTime = 1;
+    state = "running";
+    destination = {};
+    createOscillator() {
+      oscillatorCount += 1;
+      return { frequency: { setValueAtTime() {} }, connect() {}, start() {}, stop() {} };
+    }
+    createGain() {
+      return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} };
+    }
+  }
+
+  const priorWindow = globalThis.window;
+  globalThis.window = { AudioContext: FakeAudioContext, addEventListener() {} };
+  try {
+    const { configureAudio, playGameSound } = await import("./audioManager.js?angry-touch-muted");
+    configureAudio({ soundEffects: false, soundEffectsVolume: 80 });
+    playGameSound("angryTouch");
+    configureAudio({ soundEffects: true, soundEffectsVolume: 0 });
+    playGameSound("angryTouch");
+    assert.equal(oscillatorCount, 0);
+  } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+  }
+});
+
 test("gameplay music loops, follows the saved volume, and pauses with the game", () => {
   const tracks = [];
   class FakeAudio {
