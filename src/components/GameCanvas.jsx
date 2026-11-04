@@ -34,7 +34,11 @@ export function GameCanvas({ session, controlMode, reducedMotion = false, showHi
       engine.stop();
       engineRef.current = null;
     };
-  }, [session, controlMode, onHud, onPauseRequest]);
+  }, [session, onHud, onPauseRequest]);
+
+  useEffect(() => {
+    engineRef.current?.setControlMode(controlMode);
+  }, [controlMode]);
 
   useEffect(() => {
     if (engineRef.current) engineRef.current.reducedMotion = reducedMotion;

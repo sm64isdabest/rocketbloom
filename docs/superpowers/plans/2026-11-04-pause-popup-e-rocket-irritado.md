@@ -23,6 +23,8 @@
 
 - Usuário fecha as configurações por Escape: deve voltar ao popup e continuar pausado; teste no ciclo de UI/inspeção manual.
 - Usuário reduz o movimento: animação irritada não deve rodar; teste de build e inspeção manual da classe/estilo.
+- Usuário troca o modo de controle nas configurações durante a pausa: rodada e progresso devem permanecer; teste de integração do motor.
+- Usuário navega configurações com setas ou Espaço: o input pausado do jogo não deve interceptar essas teclas; teste do controlador.
 - Usuário desliga efeitos ou volume: o novo som não deve tocar; teste unitário do `audioManager`.
 - Asset base usa caminho com ou sem barra final: URL deve manter um único separador; teste unitário do helper de pausa.
 - Clique repetido no foguete durante a animação: cada toque deve reiniciar a reação; inspeção manual e verificação do contador/key no componente.
@@ -40,6 +42,11 @@
 - Create: `src/screens/pauseModel.test.js`
 - Modify: `src/screens/PauseOverlay.jsx`
 - Modify: `src/App.jsx`
+- Modify: `src/components/GameCanvas.jsx`
+- Modify: `src/game/engine/GameEngine.js`
+- Modify: `src/game/engine/input.js`
+- Test: `src/game/engine/GameEngine.test.js`
+- Test: `src/game/engine/input.test.js`
 - Modify: `src/styles/index.css`
 
 **Interfaces:**
@@ -62,6 +69,8 @@ Criar `getPauseAssetUrl` e trocar os botões textuais por botões acessíveis co
 
 Em `App.jsx`, manter a tela pausada enquanto `SettingsScreen` aparece como camada superior. A engrenagem abre essa camada e o fechar/Escape volta ao popup. A porta usa `goMenu`; a seta chama o resume existente. Remover `onRestart`, pois a referência não inclui essa ação.
 
+Atualizar o `controlMode` no controlador de input existente para evitar recriar o motor e perder o estado da rodada. Suspender a captura de teclado do jogo enquanto pausado, liberando setas e Espaço para os controles da interface.
+
 - [x] **Step 4: Rodar os testes do helper e buildar**
 
 Run: `node --test src/screens/pauseModel.test.js`
@@ -76,6 +85,11 @@ Expected: build Vite concluído sem erros.
 - Modify: `src/game/audio/audioManager.js`
 - Modify: `src/game/audio/audioManager.test.js`
 - Modify: `src/screens/PauseOverlay.jsx`
+- Modify: `src/game/engine/input.js`
+- Modify: `src/game/engine/GameEngine.js`
+- Modify: `src/components/GameCanvas.jsx`
+- Test: `src/game/engine/input.test.js`
+- Test: `src/game/engine/GameEngine.test.js`
 - Modify: `docs/superpowers/specs/2026-11-04-pause-popup-e-rocket-irritado-design.md`
 
 **Interfaces:**
@@ -95,6 +109,8 @@ Expected: FAIL porque `angryTouch` não está configurado.
 
 Adicionar uma sequência curta e dissonante de tons graves em `SOUND_NOTES.angryTouch`; chamar `playGameSound("angryTouch")` pelo callback do foguete. Manter a reação visual breve e respeitar movimento reduzido.
 
+Atualizar o controlador de entrada sem reconstruir o motor ao alterar o modo de controle e deixar de capturar teclas de interface durante a pausa.
+
 - [x] **Step 4: Rodar suíte e build completos**
 
 Run: `npm test`
@@ -111,6 +127,7 @@ Conferir centralização/responsividade, ações dos três ícones, retorno do m
 
 ```powershell
 git add docs/superpowers/specs/2026-11-04-pause-popup-e-rocket-irritado-design.md docs/superpowers/plans/2026-11-04-pause-popup-e-rocket-irritado.md public/assets/ui/pause src/App.jsx src/screens/PauseOverlay.jsx src/screens/pauseModel.js src/screens/pauseModel.test.js src/styles/index.css src/game/audio/audioManager.js src/game/audio/audioManager.test.js
-git commit -m "feat: refresh pause popup and rocket reaction"
-git push origin HEAD
+git add src/components/GameCanvas.jsx src/game/engine/GameEngine.js src/game/engine/GameEngine.test.js src/game/engine/input.js src/game/engine/input.test.js
+git commit -m "fix: preserve paused run when changing controls"
+git push -u origin codex/pause-popup-rocket-angry
 ```

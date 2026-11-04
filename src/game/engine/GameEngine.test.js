@@ -290,6 +290,24 @@ test("pausa, retomada e reinício não deixam frames nem estado antigos ativos",
   });
 });
 
+test("alterar o modo de controle enquanto pausado preserva a rodada e o progresso", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const round = engine.currentRound;
+    engine.score = 250;
+    engine.progressMs = 2400;
+    engine.pause();
+
+    engine.setControlMode("keyboard");
+
+    assert.equal(engine.paused, true);
+    assert.equal(engine.currentRound, round);
+    assert.equal(engine.score, 250);
+    assert.equal(engine.progressMs, 2400);
+    engine.stop();
+  });
+});
+
 test("pausa congela a janela de resposta e a animação de perspectiva", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));

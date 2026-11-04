@@ -53,3 +53,54 @@ test("teclado continua controlando o foguete no modo mouse e toque", () => {
     input.destroy();
   });
 });
+
+test("o modo de controle pode mudar sem recriar o input nem reutilizar um ponteiro antigo", () => {
+  withInputEnvironment(({ canvasListeners, target, canvas }) => {
+    const input = createInputController(target, "pointer");
+    const rocket = new Rocket();
+    rocket.place(320, 640);
+    const initialX = rocket.x;
+
+    canvasListeners.get("pointermove")({ clientX: 290, pointerType: "mouse" });
+    input.apply(rocket, canvas, 0.1);
+    assert.notEqual(rocket.targetX, initialX);
+
+    input.setControlMode("keyboard");
+    rocket.targetX = rocket.x;
+    input.apply(rocket, canvas, 0.1);
+    assert.equal(rocket.targetX, rocket.x);
+
+    input.setControlMode("pointer");
+    input.apply(rocket, canvas, 0.1);
+    assert.equal(rocket.targetX, rocket.x, "switching back should wait for a fresh pointer position");
+
+    canvasListeners.get("pointermove")({ clientX: 40, pointerType: "mouse" });
+    input.apply(rocket, canvas, 0.1);
+    assert.notEqual(rocket.targetX, rocket.x);
+    input.destroy();
+  });
+});
+
+test("desativar input do jogo deixa setas e espaço disponíveis para a interface", () => {
+  withInputEnvironment(({ listeners, target, canvas }) => {
+    const input = createInputController(target, "keyboard");
+    const rocket = new Rocket();
+    rocket.place(320, 640);
+    const initialX = rocket.x;
+
+    input.setEnabled(false);
+    let preventedDefault = false;
+    listeners.get("keydown")({ key: "ArrowRight", preventDefault() { preventedDefault = true; } });
+    listeners.get("keydown")({ key: " ", preventDefault() { preventedDefault = true; } });
+    input.apply(rocket, canvas, 0.1);
+
+    assert.equal(preventedDefault, false);
+    assert.equal(rocket.targetX, initialX);
+
+    input.setEnabled(true);
+    listeners.get("keydown")({ key: "ArrowRight", preventDefault() {} });
+    input.apply(rocket, canvas, 0.1);
+    assert.ok(rocket.targetX > initialX);
+    input.destroy();
+  });
+});

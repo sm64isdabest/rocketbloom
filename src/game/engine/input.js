@@ -1,6 +1,8 @@
 import { INPUT, ROCKET } from "../config/gameConfig.js";
 
 export function createInputController(target, controlMode = "pointer") {
+  let activeControlMode = controlMode;
+  let enabled = true;
   const state = {
     pointerX: null,
     pointerActive: false,
@@ -8,12 +10,14 @@ export function createInputController(target, controlMode = "pointer") {
   };
 
   const onPointerDown = (event) => {
+    if (!enabled) return;
     state.pointerActive = true;
     state.pointerX = event.clientX;
     target.setPointerCapture?.(event.pointerId);
   };
 
   const onPointerMove = (event) => {
+    if (!enabled) return;
     if (!state.pointerActive && event.pointerType === "mouse") {
       state.pointerX = event.clientX;
       return;
@@ -24,10 +28,12 @@ export function createInputController(target, controlMode = "pointer") {
   };
 
   const onPointerUp = () => {
+    if (!enabled) return;
     state.pointerActive = false;
   };
 
   const onKeyDown = (event) => {
+    if (!enabled) return;
     if (["ArrowLeft", "ArrowRight", "Escape", " "].includes(event.key)) event.preventDefault();
     state.keys.add(event.key);
   };
@@ -50,9 +56,23 @@ export function createInputController(target, controlMode = "pointer") {
   window.addEventListener("blur", onWindowBlur);
 
   return {
+    setControlMode(nextControlMode) {
+      if (activeControlMode === nextControlMode) return;
+      activeControlMode = nextControlMode;
+      state.pointerX = null;
+      state.pointerActive = false;
+    },
+    setEnabled(nextEnabled) {
+      enabled = nextEnabled;
+      if (!enabled) {
+        state.keys.clear();
+        state.pointerX = null;
+        state.pointerActive = false;
+      }
+    },
     apply(rocket, canvas, dt) {
       const rect = canvas.getBoundingClientRect();
-      if (controlMode === "pointer" && state.pointerX != null) {
+      if (activeControlMode === "pointer" && state.pointerX != null) {
         const localX = ((state.pointerX - rect.left) / rect.width) * canvas.clientWidth;
         const nextX = localX - rocket.width / 2;
         if (Math.abs(nextX - rocket.x) > INPUT.pointerDeadZone) {

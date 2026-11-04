@@ -145,6 +145,7 @@ export class GameEngine {
   start() {
     if (this.ended || this.disposed) return;
     this.paused = false;
+    this.input.setEnabled(true);
     startGameAudio();
     this.render();
     this.loop.start();
@@ -154,6 +155,7 @@ export class GameEngine {
   pause() {
     if (this.ended || this.disposed || this.paused) return;
     this.paused = true;
+    this.input.setEnabled(false);
     pauseGameAudio();
     this.loop.stop();
     this.emitHud(true);
@@ -162,8 +164,13 @@ export class GameEngine {
   resume() {
     if (this.ended || this.disposed || !this.paused) return;
     this.paused = false;
+    this.input.setEnabled(true);
     startGameAudio();
     this.loop.start();
+  }
+
+  setControlMode(controlMode) {
+    this.input.setControlMode(controlMode);
   }
 
   stop() {
