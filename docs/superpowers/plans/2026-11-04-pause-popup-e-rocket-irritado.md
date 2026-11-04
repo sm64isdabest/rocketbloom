@@ -123,7 +123,7 @@ Expected: build Vite concluído sem erros.
 
 Conferir centralização/responsividade, ações dos três ícones, retorno do modal de configurações ao popup, reinício da animação em toque repetido e ausência da animação com movimento reduzido. A abertura no navegador foi tentada, mas a ferramenta de automação encerrou a sessão ao não conseguir determinar a URL da janela; o layout visual foi revisado pelo CSS e o build passou.
 
-- [ ] **Step 6: Stage, commit e push**
+- [x] **Step 6: Stage, commit e push**
 
 ```powershell
 git add docs/superpowers/specs/2026-11-04-pause-popup-e-rocket-irritado-design.md docs/superpowers/plans/2026-11-04-pause-popup-e-rocket-irritado.md public/assets/ui/pause src/App.jsx src/screens/PauseOverlay.jsx src/screens/pauseModel.js src/screens/pauseModel.test.js src/styles/index.css src/game/audio/audioManager.js src/game/audio/audioManager.test.js
