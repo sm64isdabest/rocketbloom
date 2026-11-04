@@ -1,9 +1,8 @@
 import { AUDIO } from "../config/gameConfig.js";
 
 let audioContext = null;
-let musicTimeout = 0;
-let musicStep = 0;
 let gameAudioActive = false;
+let gameplayMusic = null;
 let preferences = {
   music: true,
   soundEffects: true,
@@ -18,7 +17,7 @@ export function scaleAudioVolume(sourceVolume, volumePercent) {
   return sourceVolume * percent / AUDIO.maxVolume;
 }
 
-const MUSIC_NOTES = [196, 246.94, 293.66, 246.94, 174.61, 220, 261.63, 220];
+const GAMEPLAY_MUSIC_URL = new URL("../../assets/gameplay-space-loop.wav", import.meta.url).href;
 const SOUND_NOTES = {
   correct: { notes: [523.25, 659.25, 783.99], duration: 0.11, wave: "sine", volume: 0.12 },
   incorrect: { notes: [293.66, 246.94], duration: 0.14, wave: "triangle", volume: 0.12 },
@@ -72,29 +71,36 @@ function playSequence(notes, duration, wave, volume, spacing = duration * 0.82) 
 }
 
 function stopMusic() {
-  if (musicTimeout) window.clearTimeout(musicTimeout);
-  musicTimeout = 0;
+  gameplayMusic?.pause();
 }
 
-function scheduleMusic() {
+function startMusic() {
   if (!gameAudioActive || !preferences.music || preferences.musicVolume <= AUDIO.minVolume) return;
-  const context = getContext();
-  if (!context) return;
-  playTone(MUSIC_NOTES[musicStep % MUSIC_NOTES.length], context.currentTime + 0.01, 0.8, "sine", scaleAudioVolume(0.018, preferences.musicVolume));
-  if (musicStep % 4 === 0) playTone(MUSIC_NOTES[(musicStep + 2) % MUSIC_NOTES.length] / 2, context.currentTime + 0.01, 1.5, "sine", scaleAudioVolume(0.012, preferences.musicVolume));
-  musicStep += 1;
-  musicTimeout = window.setTimeout(scheduleMusic, 850);
+  if (typeof Audio === "undefined") return;
+  if (!gameplayMusic) {
+    try {
+      gameplayMusic = new Audio(GAMEPLAY_MUSIC_URL);
+      gameplayMusic.loop = true;
+      gameplayMusic.preload = "auto";
+    } catch {
+      return;
+    }
+  }
+  gameplayMusic.volume = scaleAudioVolume(1, preferences.musicVolume);
+  const playback = gameplayMusic.play();
+  if (playback?.catch) playback.catch(() => {});
 }
 
 export function configureAudio(nextPreferences = {}) {
   preferences = { ...preferences, ...nextPreferences };
+  if (gameplayMusic) gameplayMusic.volume = scaleAudioVolume(1, preferences.musicVolume);
   if (!preferences.music || preferences.musicVolume <= AUDIO.minVolume) stopMusic();
-  else if (gameAudioActive && !musicTimeout) scheduleMusic();
+  else if (gameAudioActive) startMusic();
 }
 
 export function startGameAudio() {
   gameAudioActive = true;
-  if (preferences.music && preferences.musicVolume > AUDIO.minVolume && !musicTimeout) scheduleMusic();
+  startMusic();
 }
 
 export function pauseGameAudio() {
