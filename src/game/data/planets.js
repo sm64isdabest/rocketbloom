@@ -10,8 +10,8 @@ export const CAMPAIGN_CONFIG = {
     speedMultiplier: { start: 1, end: 1.46 },
     speedLossMultiplier: { start: 1, end: 1.18 },
     obstaclePenaltyMultiplier: { start: 1, end: 0.72 },
-    obstacleIntervalMs: { start: 4600, end: 2750 },
-    obstacleMinIntervalMs: { start: 2450, end: 1550 },
+    obstacleIntervalMs: { start: 3800, end: 2300 },
+    obstacleMinIntervalMs: { start: 2000, end: 1250 },
     obstacleSpeedMultiplier: { start: 1, end: 1.3 },
   },
 };
