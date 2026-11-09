@@ -132,6 +132,40 @@ test("a seleção pelo centro do foguete registra acerto uma vez e recompensa ap
   });
 });
 
+test("tocar um laser escolhe a alternativa da faixa sem causar dano", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const correctAnswer = engine.currentRound.answers.find((candidate) => candidate.correct);
+    const laser = engine.answerLasers.find((candidate) => candidate.lane === correctAnswer.lane);
+    const answer = engine.currentRound.answers.find((candidate) => candidate.lane === laser.lane);
+    moveRocketToLane(engine, laser.lane);
+    laser.y = engine.rocket.y - laser.height;
+    engine.answerChoiceRemainingMs = 2000;
+    const speedBeforeTouch = engine.speed;
+
+    engine.tick(0.05);
+
+    assert.equal(engine.currentRound.selectedAnswer, answer);
+    assert.equal(engine.currentRound.result.lane, laser.lane);
+    assert.equal(engine.rocket.damageFeedbackRemainingMs, 0);
+    assert.equal(engine.speed, speedBeforeTouch);
+    engine.stop();
+  });
+});
+
+test("quatro lasers aparecem uma vez por alternativa, abaixo dela e na cor da faixa", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    assert.equal(engine.answerLasers.length, 4);
+    for (const laser of engine.answerLasers) {
+      const answer = engine.currentRound.answers.find((candidate) => candidate.lane === laser.lane);
+      assert.ok(laser.y > answer.y + answer.height);
+      assert.equal(laser.color, ["#00FFFF", "#FF00FE", "#FFFF00", "#FFFFFF"][laser.lane]);
+    }
+    engine.stop();
+  });
+});
+
 test("controles, obstáculos e progresso continuam ativos durante animação de resposta", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
@@ -620,7 +654,7 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
     while (!engine.ended && iterations < 30_000) {
       const round = engine.currentRound;
       if (round?.status === "awaiting-resolution") {
-        if (round.id !== lastAnswerRound && engine.answerChoiceRemainingMs <= 50) {
+        if (round.id !== lastAnswerRound) {
           metrics.questionCount += 1;
           lastAnswerRound = round.id;
           const isOccasionalError = metrics.questionCount % 5 === 0;
@@ -631,13 +665,6 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
               ?? round.answers.find((option) => safeLanes.includes(option.lane));
           }
           moveRocketToLane(engine, answer.lane);
-        } else if (engine.answerChoiceRemainingMs > 50) {
-          const safeLanes = getSafeLaneIndexes(engine);
-          if (safeLanes.length) {
-            const currentLane = Math.floor((engine.rocket.x + engine.rocket.width / 2) / (engine.view.width / 4));
-            const safestLane = safeLanes.reduce((best, lane) => Math.abs(lane - currentLane) < Math.abs(best - currentLane) ? lane : best);
-            moveRocketToLane(engine, safestLane);
-          }
         }
       }
 

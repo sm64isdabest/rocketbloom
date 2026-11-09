@@ -16,7 +16,7 @@ function createRecordingContext() {
 }
 
 test("colunas usam as quatro cores hexadecimais especificadas", () => {
-  assert.deepEqual(LANE_COLORS, ["#00FFFF", "#FF00FE", "#FFFF00", "#000000"]);
+  assert.deepEqual(LANE_COLORS, ["#00FFFF", "#FF00FE", "#FFFF00", "#FFFFFF"]);
 });
 
 test("seleção usa o centro do foguete e os limites reais de cada coluna", () => {

@@ -1,4 +1,4 @@
-export const LANE_COLORS = ["#00FFFF", "#FF00FE", "#FFFF00", "#000000"];
+export const LANE_COLORS = ["#00FFFF", "#FF00FE", "#FFFF00", "#FFFFFF"];
 
 export function getLaneBounds(width, lane) {
   const laneWidth = width / 4;

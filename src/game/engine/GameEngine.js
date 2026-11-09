@@ -1,13 +1,14 @@
 import { COLLECTIBLES } from "../data/items.js";
 import { SPEED, SCORE, SPAWN, QUESTION_TIMING, MYSTERY_BOX, POWER_UPS } from "../config/gameConfig.js";
 import { Answer } from "../entities/Answer.js";
+import { AnswerLaser } from "../entities/AnswerLaser.js";
 import { Collectible } from "../entities/Collectible.js";
 import { MysteryBox } from "../entities/MysteryBox.js";
 import { Obstacle } from "../entities/Obstacle.js";
 import { Rocket } from "../entities/Rocket.js";
 import { cullOffscreen } from "../systems/spawn.js";
 import { completeAnswerRound, createAnswerRound, resolveAnswerRound } from "../systems/answerRound.js";
-import { getLaneFromCenter, renderLaneColumns } from "../systems/lanes.js";
+import { getLaneBounds, getLaneFromCenter, LANE_COLORS, renderLaneColumns } from "../systems/lanes.js";
 import { generateQuestion } from "../systems/questions.js";
 import { sampleInterQuestionDelayMs } from "../systems/questionTiming.js";
 import { aabbOverlaps } from "./collision.js";
@@ -54,6 +55,7 @@ export class GameEngine {
     this.speedStreaks = [];
     this.leaves = [];
     this.answers = [];
+    this.answerLasers = [];
     this.obstacles = [];
     this.collectibles = [];
     this.mysteryBox = null;
@@ -135,6 +137,11 @@ export class GameEngine {
       const lane = answer.lane ?? 1.5;
       answer.x = clamp(this.view.width * ((lane + 0.5) / 4) - answer.width / 2, 0, this.view.width - answer.width);
     }
+    for (const laser of this.answerLasers) {
+      const { left, width } = getLaneBounds(this.view.width, laser.lane);
+      laser.x = left + 6;
+      laser.width = Math.max(20, width - 12);
+    }
     const fallingEntities = [...this.obstacles, ...this.collectibles];
     if (this.mysteryBox) fallingEntities.push(this.mysteryBox);
     for (const entity of fallingEntities) {
@@ -206,6 +213,17 @@ export class GameEngine {
       fallSpeed: this.getEntitySpeed(SPAWN.answerFallSpeed),
     });
     this.answers = this.currentRound.answers;
+    this.answerLasers = this.answers.map((answer) => {
+      const { left, width } = getLaneBounds(this.view.width, answer.lane);
+      return new AnswerLaser({
+        lane: answer.lane,
+        x: left + 6,
+        y: answer.y + answer.height + 12,
+        width: Math.max(20, width - 12),
+        color: LANE_COLORS[answer.lane],
+        speed: 90,
+      });
+    });
     this.answerChoiceRemainingMs = QUESTION_TIMING.choiceWindowMs;
     this.answerAnimationElapsedMs = 0;
     this.answerFeedbackRemainingMs = 0;
@@ -299,6 +317,16 @@ export class GameEngine {
   updateQuestions(dt, frameMs) {
     if (!this.currentRound) return;
     if (this.currentRound.status === "awaiting-resolution") {
+      for (const laser of this.answerLasers) {
+        if (!laser.alive) continue;
+        laser.update(dt);
+        if (aabbOverlaps(this.rocket, laser)) {
+          const selected = this.currentRound.answers.find((answer) => answer.lane === laser.lane);
+          laser.alive = false;
+          this.resolveCurrentAnswer(selected);
+          return;
+        }
+      }
       this.answerChoiceRemainingMs -= frameMs;
       if (this.answerChoiceRemainingMs <= 0) {
         const lane = getLaneFromCenter(this.rocket.x + this.rocket.width / 2, this.view.width);
@@ -350,6 +378,7 @@ export class GameEngine {
   finishAnswerFeedback() {
     if (!completeAnswerRound(this.currentRound)) return;
     this.answers = [];
+    this.answerLasers = [];
     this.columnFlashRemainingMs = 0;
     this.interQuestionRemainingMs = sampleInterQuestionDelayMs(this.rng);
     this.questionFeedback = "";
@@ -702,6 +731,7 @@ export class GameEngine {
       this.currentRound.selectedAnswer?.renderPerspective(ctx, this.answerAnimationElapsedMs / QUESTION_TIMING.perspectiveAnimationMs, view.height);
     } else if (this.currentRound?.status === "awaiting-resolution") {
       for (const answer of this.answers) if (answer.alive) answer.render(ctx);
+      for (const laser of this.answerLasers) laser.render(ctx);
     }
     for (const particle of this.particles) {
       ctx.save(); ctx.globalAlpha = clamp(particle.life / particle.maxLife, 0, 1); ctx.fillStyle = particle.color;
@@ -753,6 +783,9 @@ export class GameEngine {
       for (const collectible of this.collectibles) {
         if (!collectible.alive) continue;
         this.renderCollisionBox(collectible, collectible.kind === "diamond" ? "#38bdf8" : "#facc15");
+      }
+      for (const laser of this.answerLasers) {
+        if (laser.alive) this.renderCollisionBox(laser, laser.color);
       }
       this.renderCollisionBox(this.rocket, "#fb7185");
     }
