@@ -25,6 +25,10 @@ body { min-height: 100vh; background-image: radial-gradient(1px 1px at 8% 18%, #
 button { color: inherit; font: inherit; }
 button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
 button:disabled { cursor: not-allowed; }
+.fullscreen-float { position: fixed; z-index: 1100; display: grid; width: 52px; height: 52px; place-items: center; padding: 13px; border: 1px solid rgba(190, 222, 218, .38); border-radius: 50%; background: rgba(9, 25, 32, .58); color: rgba(240, 247, 242, .88); box-shadow: 0 4px 18px rgba(0, 0, 0, .25); cursor: grab; opacity: .72; touch-action: none; backdrop-filter: blur(8px); transition: opacity .18s ease, background .18s ease; }
+.fullscreen-float:hover, .fullscreen-float:focus-visible { background: rgba(9, 25, 32, .88); opacity: 1; }
+.fullscreen-float:active { cursor: grabbing; }
+.fullscreen-float svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; pointer-events: none; }
 ::selection { background: #386755; color: white; }
 h1, h2, h3, p { margin-top: 0; }
 h1, h2, h3 { letter-spacing: -.045em; line-height: 1.08; }

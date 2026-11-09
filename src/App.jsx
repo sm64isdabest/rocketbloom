@@ -20,6 +20,7 @@ import { preloadImages } from "./utils/preloadImages.js";
 import { getSettingsReturnPage } from "./screens/menuModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
 import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets } from "./utils/debugTools.js";
+import { FullscreenButton } from "./components/FullscreenButton.jsx";
 
 const APP_BASE = import.meta.env.BASE_URL;
 const PROJECT_IMAGE_URLS = PROJECT_IMAGES.map((image) => `${APP_BASE}${image.slice(1)}`);
@@ -197,12 +198,14 @@ export default function App() {
   };
 
   if (fatal || screen === SCREEN.ERROR) {
-    return <ErrorScreen message={fatal || bootError || "Erro ao iniciar o RocketBloom."} onRetry={() => window.location.reload()} />;
+    return <><FullscreenButton /><ErrorScreen message={fatal || bootError || "Erro ao iniciar o RocketBloom."} onRetry={() => window.location.reload()} /></>;
   }
-  if (!progress || screen === SCREEN.BOOT) return <BootScreen progress={assetProgress} baseUrl={APP_BASE} />;
+  if (!progress || screen === SCREEN.BOOT) return <><FullscreenButton /><BootScreen progress={assetProgress} baseUrl={APP_BASE} /></>;
 
   const planet = run ? getPlanetById(run.planetId) : null;
   return (
+    <>
+    <FullscreenButton />
     <div className={`app-shell ${progress.settings.reducedMotion || systemReducedMotion ? "motion-reduced" : ""}`}>
       {screen === SCREEN.MENU && (menuPage === SCREEN.MENU || menuPage === SCREEN.SETTINGS) ? (
         <MenuScreen
@@ -301,5 +304,6 @@ export default function App() {
         />
       ) : null}
     </div>
+    </>
   );
 }
