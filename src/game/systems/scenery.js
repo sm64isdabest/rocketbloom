@@ -39,7 +39,20 @@ export function renderPlanetBackground(ctx, view, planet, { offsetX = 0, offsetY
   const x = (view.width - width) / 2 + Math.max(-maxOffsetX, Math.min(maxOffsetX, offsetX));
   const baseY = (view.height - height) / 2;
   const y = baseY + ((offsetY % height) + height) % height - height;
+  const overlap = Math.min(96, height * 0.12);
+  const nextY = y + height - overlap;
   ctx.drawImage(image, x, y, width, height);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, nextY, width, overlap);
+  ctx.clip();
+  for (let slice = 0; slice < 12; slice += 1) {
+    const sliceHeight = overlap / 12;
+    ctx.globalAlpha = (slice + 1) / 12;
+    ctx.drawImage(image, 0, slice * image.naturalHeight / 12, image.naturalWidth, image.naturalHeight / 12,
+      x, nextY + slice * sliceHeight, width, sliceHeight);
+  }
+  ctx.restore();
   ctx.drawImage(image, x, y + height, width, height);
   return true;
 }
