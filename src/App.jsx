@@ -18,6 +18,8 @@ import { DefeatScreen } from "./screens/DefeatScreen.jsx";
 import { configureAudio, pauseMenuAudio, playGameSound, startMenuAudio } from "./game/audio/audioManager.js";
 import { preloadImages } from "./utils/preloadImages.js";
 import { getSettingsReturnPage } from "./screens/menuModel.js";
+import { DebugMenu } from "./screens/DebugMenu.jsx";
+import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets } from "./utils/debugTools.js";
 
 const APP_BASE = import.meta.env.BASE_URL;
 const PROJECT_IMAGE_URLS = PROJECT_IMAGES.map((image) => `${APP_BASE}${image.slice(1)}`);
@@ -37,6 +39,9 @@ export default function App() {
   const [outcomeRewards, setOutcomeRewards] = useState(null);
   const [systemReducedMotion, setSystemReducedMotion] = useState(false);
   const hudRef = useRef(null);
+  const [debugOpen, setDebugOpen] = useState(false);
+  const debugReturnScreen = useRef(SCREEN.MENU);
+  const pressedKeys = useRef(new Set());
 
   useEffect(() => {
     let active = true;
@@ -49,6 +54,49 @@ export default function App() {
     });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    const isEditableTarget = (target) => target instanceof HTMLElement
+      && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
+    const openDebug = () => {
+      if (debugOpen) {
+        setDebugOpen(false);
+        setScreen(debugReturnScreen.current);
+        return;
+      }
+      debugReturnScreen.current = screen;
+      if (screen === SCREEN.PLAYING) setScreen(SCREEN.PAUSED);
+      setDebugOpen(true);
+    };
+    const onKeyDown = (event) => {
+      if (event.repeat || isEditableTarget(event.target)) return;
+      const key = event.key.toLowerCase();
+      if (key !== "q" && key !== "p") return;
+      pressedKeys.current.add(key);
+      if (isDebugShortcut(pressedKeys.current) && progress && screen !== SCREEN.BOOT && screen !== SCREEN.ERROR) {
+        event.preventDefault();
+        openDebug();
+      }
+    };
+    const onKeyUp = (event) => pressedKeys.current.delete(event.key.toLowerCase());
+    const onBlur = () => pressedKeys.current.clear();
+    const onEscape = (event) => {
+      if (event.key !== "Escape" || !debugOpen) return;
+      event.preventDefault();
+      setDebugOpen(false);
+      setScreen(debugReturnScreen.current);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("keydown", onEscape);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("keydown", onEscape);
+    };
+  }, [debugOpen, progress, screen]);
 
   useEffect(() => {
     if (!progress || !assetsReady || screen !== SCREEN.BOOT) return undefined;
@@ -93,12 +141,22 @@ export default function App() {
   }, []);
 
   const startStage = (planetId, stageId) => {
+    setDebugOpen(false);
     setPauseSettingsOpen(false);
     setRun({ planetId, stageId });
     setOutcomeSnapshot(null);
     setOutcomeRewards(null);
     hudRef.current = null;
     setScreen(SCREEN.PLAYING);
+  };
+
+  const debugUpdateProgress = (update) => persist(update(progress));
+  const debugCompleteStage = (planetId, stageId) => {
+    try {
+      debugUpdateProgress((current) => completeDebugStage(current, planetId, stageId));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const markPlanetSeen = useCallback((planetId) => {
@@ -228,6 +286,18 @@ export default function App() {
           onRetry={() => {
             if (run) { setRunKey((value) => value + 1); startStage(run.planetId, run.stageId); }
           }}
+        />
+      ) : null}
+      {debugOpen ? (
+        <DebugMenu
+          progress={progress}
+          run={run}
+          onClose={() => { setDebugOpen(false); setScreen(debugReturnScreen.current); }}
+          onChange={patchSettings}
+          onGrant={(currency, amount) => debugUpdateProgress((current) => addDebugCurrency(current, currency, amount))}
+          onUnlockAll={() => debugUpdateProgress(unlockAllPlanets)}
+          onCompleteStage={debugCompleteStage}
+          onStartStage={startStage}
         />
       ) : null}
     </div>
