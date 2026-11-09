@@ -56,7 +56,7 @@ export class AnswerLaser {
     ctx.shadowColor = this.color;
     ctx.shadowBlur = 9;
     const aspectRatio = frame.naturalWidth / frame.naturalHeight;
-    const renderHeight = Math.min(this.height, this.width / aspectRatio);
+    const renderHeight = this.width / aspectRatio;
     ctx.drawImage(frame, this.x, this.y + (this.height - renderHeight) / 2, this.width, renderHeight);
     ctx.restore();
   }
