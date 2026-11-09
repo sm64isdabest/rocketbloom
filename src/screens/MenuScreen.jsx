@@ -11,7 +11,7 @@ const NOTICE_CONTENT = {
   },
 };
 
-export function MenuScreen({ warning, onPlay, onSettings, onCommandRoom }) {
+export function MenuScreen({ warning, onPlay, onSettings }) {
   const [notice, setNotice] = useState(null);
   const noticeTitleId = useId();
 
@@ -46,10 +46,6 @@ export function MenuScreen({ warning, onPlay, onSettings, onCommandRoom }) {
             <span>Jogar</span>
           </button>
 
-          <button type="button" className="menu__option menu__option--laboratory" onClick={onCommandRoom}>
-            <img src={menuAsset("laboratory.png")} alt="" />
-            <span>Laboratório</span>
-          </button>
           <button type="button" className="menu__option menu__option--shop" onClick={() => setNotice("shop")}>
             <img src={menuAsset("shop.png")} alt="" />
             <span>Loja</span>

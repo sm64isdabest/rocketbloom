@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SCREEN } from "./utils/screenStates.js";
 import { validateCatalog } from "./game/data/catalog.js";
+import { PROJECT_IMAGES } from "./game/data/projectImages.js";
 import { PLANETS, getPlanetById, getFirstStage } from "./game/data/planets.js";
 import { usePersistentProgress } from "./hooks/usePersistentProgress.js";
 import { applyRunOutcome } from "./utils/runProgress.js";
@@ -15,12 +16,20 @@ import { PauseOverlay } from "./screens/PauseOverlay.jsx";
 import { VictoryScreen } from "./screens/VictoryScreen.jsx";
 import { DefeatScreen } from "./screens/DefeatScreen.jsx";
 import { configureAudio, pauseMenuAudio, playGameSound, startMenuAudio } from "./game/audio/audioManager.js";
+import { preloadImages } from "./utils/preloadImages.js";
+import { getSettingsReturnPage } from "./screens/menuModel.js";
+
+const APP_BASE = import.meta.env.BASE_URL;
+const PROJECT_IMAGE_URLS = PROJECT_IMAGES.map((image) => `${APP_BASE}${image.slice(1)}`);
 
 export default function App() {
   const { progress, warning, fatal, patchSettings, persist } = usePersistentProgress();
   const [screen, setScreen] = useState(SCREEN.BOOT);
   const [menuPage, setMenuPage] = useState(SCREEN.MENU);
+  const [settingsReturnPage, setSettingsReturnPage] = useState(SCREEN.MENU);
   const [bootError, setBootError] = useState(null);
+  const [assetProgress, setAssetProgress] = useState({ total: PROJECT_IMAGE_URLS.length, loaded: 0, failed: 0, completed: 0 });
+  const [assetsReady, setAssetsReady] = useState(false);
   const [run, setRun] = useState(null);
   const [runKey, setRunKey] = useState(0);
   const [pauseSettingsOpen, setPauseSettingsOpen] = useState(false);
@@ -30,16 +39,28 @@ export default function App() {
   const hudRef = useRef(null);
 
   useEffect(() => {
-    if (!progress || screen !== SCREEN.BOOT) return undefined;
+    let active = true;
+    preloadImages(PROJECT_IMAGE_URLS, {
+      onProgress: (nextProgress) => {
+        if (active) setAssetProgress(nextProgress);
+      },
+    }).then(() => {
+      if (active) setAssetsReady(true);
+    });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!progress || !assetsReady || screen !== SCREEN.BOOT) return undefined;
     const catalogErrors = validateCatalog();
     if (catalogErrors.length) {
       setBootError(catalogErrors.join(" "));
       setScreen(SCREEN.ERROR);
       return undefined;
     }
-    const timer = window.setTimeout(() => setScreen(SCREEN.MENU), 450);
+    const timer = window.setTimeout(() => setScreen(SCREEN.MENU), 250);
     return () => window.clearTimeout(timer);
-  }, [progress, screen]);
+  }, [assetsReady, progress, screen]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -112,10 +133,15 @@ export default function App() {
     setScreen(outcome === "victory" ? SCREEN.VICTORY : SCREEN.DEFEAT);
   }, [persist, progress]);
 
+  const openSettings = () => {
+    setSettingsReturnPage(getSettingsReturnPage(menuPage, SCREEN));
+    setMenuPage(SCREEN.SETTINGS);
+  };
+
   if (fatal || screen === SCREEN.ERROR) {
     return <ErrorScreen message={fatal || bootError || "Erro ao iniciar o RocketBloom."} onRetry={() => window.location.reload()} />;
   }
-  if (!progress || screen === SCREEN.BOOT) return <BootScreen />;
+  if (!progress || screen === SCREEN.BOOT) return <BootScreen progress={assetProgress} baseUrl={APP_BASE} />;
 
   const planet = run ? getPlanetById(run.planetId) : null;
   return (
@@ -125,15 +151,21 @@ export default function App() {
           progress={progress}
           warning={warning}
           onPlay={() => setMenuPage(SCREEN.PLANETS)}
-          onSettings={() => setMenuPage(SCREEN.SETTINGS)}
-          onCommandRoom={() => setMenuPage(SCREEN.COMMAND)}
+          onSettings={openSettings}
         />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.PLANETS ? (
-        <PlanetsScreen progress={progress} onBack={() => setMenuPage(SCREEN.MENU)} onPlay={startStage} onMarkPlanetSeen={markPlanetSeen} />
+        <PlanetsScreen
+          progress={progress}
+          onBack={() => setMenuPage(SCREEN.MENU)}
+          onPlay={startStage}
+          onMarkPlanetSeen={markPlanetSeen}
+          onSettings={openSettings}
+          onCommandRoom={() => setMenuPage(SCREEN.COMMAND)}
+        />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.SETTINGS ? (
-        <SettingsScreen progress={progress} onBack={() => setMenuPage(SCREEN.MENU)} onChange={patchSettings} />
+        <SettingsScreen progress={progress} onBack={() => setMenuPage(settingsReturnPage)} onChange={patchSettings} />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.COMMAND ? (
         <CommandRoomScreen progress={progress} onBack={() => setMenuPage(SCREEN.MENU)} />

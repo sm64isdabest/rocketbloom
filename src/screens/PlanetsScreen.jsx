@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { PLANETS } from "../game/data/planets.js";
 import { playGameSound } from "../game/audio/audioManager.js";
 import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetSelectorModel } from "./planetSelectorModel.js";
+import { getMenuAssetUrl } from "./menuModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const PANEL_WIDTH = 472;
@@ -27,7 +28,7 @@ const stageStatusLabel = (stage) => {
   return stage.available ? "fase atual, disponível" : "bloqueada";
 };
 
-export function PlanetsScreen({ progress, onBack, onPlay, onMarkPlanetSeen }) {
+export function PlanetsScreen({ progress, onBack, onPlay, onMarkPlanetSeen, onSettings, onCommandRoom }) {
   const initialPlanetId = getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const [selectedPlanetId, setSelectedPlanetId] = useState(initialPlanetId);
   const [revealingPlanetId, setRevealingPlanetId] = useState(null);
@@ -81,6 +82,10 @@ export function PlanetsScreen({ progress, onBack, onPlay, onMarkPlanetSeen }) {
 
         <button type="button" className="phase-selection-back" onClick={onBack} aria-label="Voltar ao menu">
           <span aria-hidden="true">‹</span><span>Menu</span>
+        </button>
+
+        <button type="button" className="phase-selection-settings" onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
+          <img src={getMenuAssetUrl("settings.png", APP_BASE)} alt="" aria-hidden="true" />
         </button>
 
         <header className="phase-selection-header" aria-label="Planeta e recursos">
@@ -154,6 +159,10 @@ export function PlanetsScreen({ progress, onBack, onPlay, onMarkPlanetSeen }) {
           aria-label={canGoForward ? `Próximo planeta: ${nextPlanet.name}` : "Conclua todas as fases para desbloquear o próximo planeta"}
         >
           <img src={`${APP_BASE}assets/ui/level-frames/arrow-right.png`} alt="" aria-hidden="true" draggable="false" />
+        </button>
+        <button type="button" className="phase-selection-laboratory" onClick={onCommandRoom} aria-label="Abrir Laboratório">
+          <img src={getMenuAssetUrl("laboratory.png", APP_BASE)} alt="" aria-hidden="true" />
+          <span>Laboratório</span>
         </button>
         <p className="visually-hidden" aria-live="polite">{model.progressLabel}</p>
       </div>

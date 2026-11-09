@@ -1,4 +1,4 @@
-import { useEffect, useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { AUDIO } from "../game/config/gameConfig.js";
 import { getMenuAssetUrl } from "./menuModel.js";
 
@@ -10,6 +10,8 @@ function clampVolume(value) {
 
 export function SettingsScreen({ progress, onBack, onChange }) {
   const ids = useId();
+  const [activeTab, setActiveTab] = useState("audio");
+  const tabRefs = useRef([]);
   const controlMode = progress.settings.controlMode ?? "pointer";
   const fallbackMusic = progress.settings.music === false ? AUDIO.minVolume : AUDIO.defaultMusicVolume;
   const fallbackEffects = progress.settings.soundEffects === false ? AUDIO.minVolume : AUDIO.defaultSoundEffectsVolume;
@@ -32,6 +34,25 @@ export function SettingsScreen({ progress, onBack, onChange }) {
     onChange({ [settingName]: volume, [isMusic ? "music" : "soundEffects"]: volume > AUDIO.minVolume });
   };
 
+  const tabs = [
+    { id: "audio", label: "Áudio" },
+    { id: "gameplay", label: "Jogabilidade" },
+    { id: "accessibility", label: "Acessibilidade" },
+    { id: "information", label: "Informações" },
+  ];
+
+  const handleTabKeyDown = (event, index) => {
+    let nextIndex;
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+    else if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabs.length) % tabs.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = tabs.length - 1;
+    else return;
+    event.preventDefault();
+    setActiveTab(tabs[nextIndex].id);
+    tabRefs.current[nextIndex]?.focus();
+  };
+
   return (
     <div className="settings-overlay" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onBack();
@@ -43,7 +64,28 @@ export function SettingsScreen({ progress, onBack, onChange }) {
         </button>
 
         <div className="settings-popup__content">
-          <fieldset className="settings-popup__audio" aria-label="Áudio">
+          <div className="settings-popup__tabs" role="tablist" aria-label="Seções das configurações">
+            {tabs.map((tab, index) => (
+              <button
+                key={tab.id}
+                ref={(element) => { tabRefs.current[index] = element; }}
+                id={`${ids}-tab-${tab.id}`}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`${ids}-panel`}
+                tabIndex={activeTab === tab.id ? 0 : -1}
+                className={`settings-popup__tab ${activeTab === tab.id ? "is-active" : ""}`}
+                onClick={() => setActiveTab(tab.id)}
+                onKeyDown={(event) => handleTabKeyDown(event, index)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div id={`${ids}-panel`} className="settings-popup__tab-panel" role="tabpanel" aria-labelledby={`${ids}-tab-${activeTab}`} tabIndex={0}>
+          {activeTab === "audio" ? <fieldset className="settings-popup__audio" aria-label="Áudio">
             <label className="settings-popup__volume-label" htmlFor={`${ids}-music`}>Música</label>
             <input
               id={`${ids}-music`}
@@ -73,9 +115,9 @@ export function SettingsScreen({ progress, onBack, onChange }) {
               aria-valuetext={`${soundEffectsVolume}%`}
               onChange={(event) => changeVolume("soundEffectsVolume", event.currentTarget.value)}
             />
-          </fieldset>
+          </fieldset> : null}
 
-          <section className="settings-popup__group" aria-labelledby={`${ids}-controls`}>
+          {activeTab === "gameplay" ? <section className="settings-popup__group" aria-labelledby={`${ids}-controls`}>
             <p className="settings-popup__section-label">CONTROLES</p>
             <h2 id={`${ids}-controls`}>Como pilotar</h2>
             <p className="settings-popup__description">As setas do teclado continuam disponíveis em qualquer modo.</p>
@@ -88,8 +130,9 @@ export function SettingsScreen({ progress, onBack, onChange }) {
               </button>
             </div>
             <p className="settings-popup__note">Pausar a missão: Esc ou P.</p>
-          </section>
+          </section> : null}
 
+          {activeTab === "accessibility" ? <>
           <section className="settings-popup__accessibility" aria-labelledby={`${ids}-motion`}>
             <div>
               <p className="settings-popup__section-label">ACESSIBILIDADE</p>
@@ -111,6 +154,15 @@ export function SettingsScreen({ progress, onBack, onChange }) {
               <span />{showHitboxes ? "Ligado" : "Desligado"}
             </button>
           </section>
+          </> : null}
+
+          {activeTab === "information" ? <section className="settings-popup__group" aria-labelledby={`${ids}-information`}>
+            <p className="settings-popup__section-label">SOBRE A MISSÃO</p>
+            <h2 id={`${ids}-information`}>Ajude a flora a florescer</h2>
+            <p className="settings-popup__description">Pilote o foguete pelas fases e alcance as respostas corretas para ganhar velocidade e resgatar as espécies de cada planeta.</p>
+            <p className="settings-popup__description">Acompanhe as plantas resgatadas no Laboratório e avance pela campanha para explorar novos planetas.</p>
+          </section> : null}
+          </div>
         </div>
       </section>
     </div>
