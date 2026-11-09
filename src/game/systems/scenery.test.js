@@ -12,12 +12,12 @@ test("o fundo repete verticalmente e desloca horizontalmente com a câmera", () 
     set src(value) { this.source = value; }
   };
   try {
-    const ctx = { drawImage: (...args) => draws.push(args), save() {}, restore() {}, beginPath() {}, rect() {}, clip() {} };
+    const ctx = { drawImage: (...args) => draws.push(args), save() {}, restore() {}, translate() {}, scale() {} };
     assert.equal(renderPlanetBackground(ctx, { width: 320, height: 640 }, { id: "earth" }, { offsetX: 40, offsetY: 200 }), true);
-    assert.equal(draws.length, 2);
+    assert.equal(draws.length, 3);
     assert.equal(draws[0][1], -368.8888888888889);
     assert.equal(draws[1][1], -368.8888888888889);
-    assert.equal(draws[0][2] + draws[0][4], draws[1][2]);
+    assert.equal(draws[2][2], draws[0][2] + draws[0][4] * 2);
   } finally {
     globalThis.Image = previousImage;
   }
