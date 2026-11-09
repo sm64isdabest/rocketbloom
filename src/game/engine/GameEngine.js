@@ -323,6 +323,12 @@ export class GameEngine {
         if (aabbOverlaps(this.rocket, laser)) {
           const selected = this.currentRound.answers.find((answer) => answer.lane === laser.lane);
           laser.alive = false;
+          this.spawnParticles(
+            this.rocket.x + this.rocket.width / 2,
+            this.rocket.y + this.rocket.height / 2,
+            laser.color,
+            18,
+          );
           this.resolveCurrentAnswer(selected);
           return;
         }

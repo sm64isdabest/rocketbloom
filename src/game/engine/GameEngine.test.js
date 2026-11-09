@@ -147,6 +147,8 @@ test("tocar um laser escolhe a alternativa da faixa sem causar dano", () => {
 
     assert.equal(engine.currentRound.selectedAnswer, answer);
     assert.equal(engine.currentRound.result.lane, laser.lane);
+    assert.ok(engine.particles.length > 0);
+    assert.ok(engine.particles.every((particle) => particle.color === laser.color));
     assert.equal(engine.rocket.damageFeedbackRemainingMs, 0);
     assert.equal(engine.speed, speedBeforeTouch);
     engine.stop();
