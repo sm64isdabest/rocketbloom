@@ -28,14 +28,19 @@ function getBackgroundImage(planetId) {
   return backgroundImages.get(planetId);
 }
 
-export function renderPlanetBackground(ctx, view, planet) {
+export function renderPlanetBackground(ctx, view, planet, { offsetX = 0, offsetY = 0 } = {}) {
   const image = getBackgroundImage(planet.id);
   if (!image?.complete || image.naturalWidth === 0) return false;
 
   const scale = Math.max(view.width / image.naturalWidth, view.height / image.naturalHeight);
   const width = image.naturalWidth * scale;
   const height = image.naturalHeight * scale;
-  ctx.drawImage(image, (view.width - width) / 2, (view.height - height) / 2, width, height);
+  const maxOffsetX = Math.max(0, (width - view.width) / 2);
+  const x = (view.width - width) / 2 + Math.max(-maxOffsetX, Math.min(maxOffsetX, offsetX));
+  const baseY = (view.height - height) / 2;
+  const y = baseY + ((offsetY % height) + height) % height - height;
+  ctx.drawImage(image, x, y, width, height);
+  ctx.drawImage(image, x, y + height, width, height);
   return true;
 }
 

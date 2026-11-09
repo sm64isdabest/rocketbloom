@@ -67,6 +67,7 @@ export class GameEngine {
     this.particles = [];
     this.entitySequence = 0;
     this.speed = SPEED.start;
+    this.backgroundOffsetY = 0;
     this.elapsedMs = 0;
     this.progressMs = 0;
     this.coins = 0;
@@ -253,6 +254,7 @@ export class GameEngine {
       SPEED.maxProgressMultiplier,
     );
     this.progressMs += frameMs * progressMultiplier * this.turboSpeedFactor;
+    this.backgroundOffsetY += this.speed * this.turboSpeedFactor * frameSeconds;
     updateStarfield(this.stars, frameSeconds, this.view.width, this.view.height,
       (0.35 + progressMultiplier * 0.58) * this.turboSpeedFactor, this.visualRng);
     updateFallingLeaves(this.leaves, frameSeconds, this.view.width, this.view.height, this.visualRng);
@@ -673,7 +675,8 @@ export class GameEngine {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, view.width, view.height);
 
-    if (!renderPlanetBackground(ctx, view, session.planet)) {
+    const horizontalOffset = (view.width / 2 - (this.rocket.x + this.rocket.width / 2)) * 0.22;
+    if (!renderPlanetBackground(ctx, view, session.planet, { offsetX: horizontalOffset, offsetY: this.backgroundOffsetY })) {
       renderStarfield(ctx, this.stars);
       renderPlanetScenery(ctx, view, session.planet, this.progressMs);
     }
