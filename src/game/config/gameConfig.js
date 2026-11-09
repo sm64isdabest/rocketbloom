@@ -86,7 +86,7 @@ export const POWER_UPS = {
 };
 
 export const QUESTION_TIMING = {
-  choiceWindowMs: 2800,
+  choiceWindowMs: 6500,
   perspectiveAnimationMs: 1450,
   resolutionFeedbackMs: 700,
   interQuestionMinMs: 3000,

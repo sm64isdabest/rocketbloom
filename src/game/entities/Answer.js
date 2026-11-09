@@ -21,7 +21,7 @@ export class Answer {
     ctx.shadowColor = "rgba(0,0,0,.72)";
     ctx.shadowBlur = 5;
     ctx.fillStyle = "#FFFFFF";
-    ctx.font = `700 ${Math.min(26, this.width * 0.48)}px Trebuchet MS, sans-serif`;
+    ctx.font = `700 ${Math.min(36, this.width * 0.58)}px Trebuchet MS, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(String(this.value), this.x + this.width / 2, this.y + this.height / 2);
@@ -41,7 +41,7 @@ export class Answer {
     ctx.fillStyle = "#FFFFFF";
     ctx.shadowColor = "rgba(0,0,0,.7)";
     ctx.shadowBlur = 6 / scale;
-    ctx.font = `800 ${Math.min(26, this.width * 0.48)}px Trebuchet MS, sans-serif`;
+    ctx.font = `800 ${Math.min(36, this.width * 0.58)}px Trebuchet MS, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(String(this.value), 0, 0);

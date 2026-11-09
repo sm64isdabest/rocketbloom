@@ -55,7 +55,9 @@ export class AnswerLaser {
     ctx.filter = LASER_FILTERS[this.color] ?? "none";
     ctx.shadowColor = this.color;
     ctx.shadowBlur = 9;
-    ctx.drawImage(frame, this.x, this.y, this.width, this.height);
+    const aspectRatio = frame.naturalWidth / frame.naturalHeight;
+    const renderHeight = Math.min(this.height, this.width / aspectRatio);
+    ctx.drawImage(frame, this.x, this.y + (this.height - renderHeight) / 2, this.width, renderHeight);
     ctx.restore();
   }
 }

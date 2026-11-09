@@ -17,6 +17,7 @@ test("alternativas ficam fixas em quatro colunas com somente uma correta", () =>
   assert.equal(round.answers.filter((answer) => answer.correct).length, 1);
   assert.equal(round.status, "awaiting-resolution");
   assert.ok(round.answers.every((answer) => answer.x >= 0 && answer.x + answer.width <= 320));
+  assert.equal(round.answers[0].width, 62);
   assert.equal(new Set(round.answers.map((answer) => answer.y)).size, 1);
 });
 

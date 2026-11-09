@@ -405,7 +405,7 @@ test("intervalo após resolução esconde opções, respeita pausa e não duplic
 
     const restarted = new GameEngine(engineOptions(canvas, {}, { runId: "question-gap-restart" }));
     assert.equal(restarted.interQuestionRemainingMs, 0);
-    assert.equal(restarted.answerChoiceRemainingMs, 2800);
+    assert.equal(restarted.answerChoiceRemainingMs, 6500);
     restarted.stop();
   });
 });

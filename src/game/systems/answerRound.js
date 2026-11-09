@@ -17,7 +17,7 @@ export function createAnswerRound(question, { width, id, rng = Math.random, fall
     throw new Error("A questão precisa ter quatro alternativas distintas e uma única resposta correta.");
   }
 
-  const cardWidth = Math.min(78, Math.max(44, width / 4 - 18));
+  const cardWidth = Math.min(96, Math.max(56, width / 4 - 18));
   const cardHeight = 58;
   const lanes = shuffled([0, 1, 2, 3], rng);
   const answers = choices.map((value, index) => {

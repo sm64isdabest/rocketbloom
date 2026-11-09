@@ -36,3 +36,11 @@ test("laser renderiza o quadro atual com a cor da faixa", () => {
   assert.equal(ctx.filter, "hue-rotate(300deg) saturate(1.35)");
   assert.ok(calls.some(({ method, args }) => method === "drawImage" && args[0] === frame));
 });
+
+test("laser mantém a proporção original do sprite ao renderizar", () => {
+  let dimensions;
+  const frame = { complete: true, naturalWidth: 320, naturalHeight: 80 };
+  const ctx = new Proxy({}, { get: (_target, method) => (...args) => { if (method === "drawImage") dimensions = args.slice(-2); } });
+  new AnswerLaser({ lane: 0, x: 0, y: 0, width: 70, height: 28, color: "#00FFFF", frames: [frame] }).render(ctx);
+  assert.deepEqual(dimensions, [70, 17.5]);
+});

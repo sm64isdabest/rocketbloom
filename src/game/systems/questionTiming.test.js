@@ -13,7 +13,7 @@ test("intervalos aleatórios ficam entre 3 e 10 segundos com distribuição unif
 });
 
 test("janela de escolha é independente do intervalo entre questões", () => {
-  assert.equal(QUESTION_TIMING.choiceWindowMs, 2800);
+  assert.equal(QUESTION_TIMING.choiceWindowMs, 6500);
   assert.equal(QUESTION_TIMING.interQuestionMinMs, 3000);
   assert.equal(QUESTION_TIMING.interQuestionMaxMs, 10000);
 });
