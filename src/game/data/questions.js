@@ -1,44 +1,22 @@
-export const QUESTION_POOLS = {
-  earth: [
-    {
-      id: "earth-q1",
-      prompt: "Quanto é 6 + 7?",
-      choices: [13, 14, 12, 16],
-      correct: 13,
-    },
-    {
-      id: "earth-q2",
-      prompt: "Quanto é 8 + 5?",
-      choices: [13, 12, 14, 11],
-      correct: 13,
-    },
-  ],
-  mars: [
-    {
-      id: "mars-q1",
-      prompt: "Quanto é 15 − 8?",
-      choices: [7, 6, 8, 5],
-      correct: 7,
-    },
-  ],
-  saturn: [
-    {
-      id: "saturn-q1",
-      prompt: "Quanto é 4 × 6?",
-      choices: [24, 20, 18, 28],
-      correct: 24,
-    },
-  ],
-  neptune: [
-    {
-      id: "neptune-q1",
-      prompt: "Quanto é 24 ÷ 6?",
-      choices: [4, 3, 5, 6],
-      correct: 4,
-    },
-  ],
-};
+import QUESTION_BANK from "./questions.json" with { type: "json" };
 
-export function getQuestionPool(poolId) {
-  return QUESTION_POOLS[poolId] ?? [];
+export { QUESTION_BANK };
+
+export function getQuestionsForStage(stageId) {
+  const questions = QUESTION_BANK[stageId];
+  return Array.isArray(questions) ? questions : [];
+}
+
+export function pickQuestion(questions, { rng = Math.random, previousId = null } = {}) {
+  if (!questions?.length) return null;
+
+  const filteredQuestions = questions.length > 1
+    ? questions.filter((question) => question.id !== previousId)
+    : questions;
+  const candidates = filteredQuestions.length ? filteredQuestions : questions;
+  const randomValue = rng();
+  const normalizedRandomValue = Number.isFinite(randomValue) ? Math.max(0, Math.min(0.999999, randomValue)) : 0;
+  const index = Math.min(candidates.length - 1,
+    Math.floor(normalizedRandomValue * candidates.length));
+  return candidates[index];
 }

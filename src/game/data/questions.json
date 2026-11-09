@@ -1,0 +1,2442 @@
+{
+  "earth-1": [
+    {
+      "id": "earth-1-q01",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 2?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "earth-1-q02",
+      "category": "addition",
+      "prompt": "Quanto é 10 + 10?",
+      "correctAnswer": 20,
+      "choices": [
+        20,
+        21,
+        19,
+        22
+      ]
+    },
+    {
+      "id": "earth-1-q03",
+      "category": "addition",
+      "prompt": "Quanto é 10 + 9?",
+      "correctAnswer": 19,
+      "choices": [
+        19,
+        20,
+        18,
+        21
+      ]
+    },
+    {
+      "id": "earth-1-q04",
+      "category": "addition",
+      "prompt": "Quanto é 10 + 8?",
+      "correctAnswer": 18,
+      "choices": [
+        18,
+        19,
+        17,
+        20
+      ]
+    },
+    {
+      "id": "earth-1-q05",
+      "category": "addition",
+      "prompt": "Quanto é 10 + 7?",
+      "correctAnswer": 17,
+      "choices": [
+        17,
+        18,
+        16,
+        19
+      ]
+    },
+    {
+      "id": "earth-1-q06",
+      "category": "addition",
+      "prompt": "Quanto é 10 + 6?",
+      "correctAnswer": 16,
+      "choices": [
+        16,
+        17,
+        15,
+        18
+      ]
+    },
+    {
+      "id": "earth-1-q07",
+      "category": "addition",
+      "prompt": "Quanto é 10 + 5?",
+      "correctAnswer": 15,
+      "choices": [
+        15,
+        16,
+        14,
+        17
+      ]
+    },
+    {
+      "id": "earth-1-q08",
+      "category": "addition",
+      "prompt": "Quanto é 10 + 4?",
+      "correctAnswer": 14,
+      "choices": [
+        14,
+        15,
+        13,
+        16
+      ]
+    },
+    {
+      "id": "earth-1-q09",
+      "category": "addition",
+      "prompt": "Quanto é 10 + 3?",
+      "correctAnswer": 13,
+      "choices": [
+        13,
+        14,
+        12,
+        15
+      ]
+    },
+    {
+      "id": "earth-1-q10",
+      "category": "addition",
+      "prompt": "Quanto é 10 + 2?",
+      "correctAnswer": 12,
+      "choices": [
+        12,
+        13,
+        11,
+        14
+      ]
+    }
+  ],
+  "earth-2": [
+    {
+      "id": "earth-2-q01",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 9?",
+      "correctAnswer": 11,
+      "choices": [
+        11,
+        12,
+        10,
+        13
+      ]
+    },
+    {
+      "id": "earth-2-q02",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 8?",
+      "correctAnswer": 10,
+      "choices": [
+        10,
+        11,
+        9,
+        12
+      ]
+    },
+    {
+      "id": "earth-2-q03",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 7?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "earth-2-q04",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 6?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "earth-2-q05",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 5?",
+      "correctAnswer": 7,
+      "choices": [
+        7,
+        8,
+        6,
+        9
+      ]
+    },
+    {
+      "id": "earth-2-q06",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 4?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "earth-2-q07",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 3?",
+      "correctAnswer": 5,
+      "choices": [
+        5,
+        6,
+        4,
+        7
+      ]
+    },
+    {
+      "id": "earth-2-q08",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 2?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "earth-2-q09",
+      "category": "addition",
+      "prompt": "Quanto é 12 + 12?",
+      "correctAnswer": 24,
+      "choices": [
+        24,
+        25,
+        23,
+        26
+      ]
+    },
+    {
+      "id": "earth-2-q10",
+      "category": "addition",
+      "prompt": "Quanto é 12 + 11?",
+      "correctAnswer": 23,
+      "choices": [
+        23,
+        24,
+        22,
+        25
+      ]
+    }
+  ],
+  "earth-3": [
+    {
+      "id": "earth-3-q01",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 3?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "earth-3-q02",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 2?",
+      "correctAnswer": 5,
+      "choices": [
+        5,
+        6,
+        4,
+        7
+      ]
+    },
+    {
+      "id": "earth-3-q03",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 14?",
+      "correctAnswer": 16,
+      "choices": [
+        16,
+        17,
+        15,
+        18
+      ]
+    },
+    {
+      "id": "earth-3-q04",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 13?",
+      "correctAnswer": 15,
+      "choices": [
+        15,
+        16,
+        14,
+        17
+      ]
+    },
+    {
+      "id": "earth-3-q05",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 12?",
+      "correctAnswer": 14,
+      "choices": [
+        14,
+        15,
+        13,
+        16
+      ]
+    },
+    {
+      "id": "earth-3-q06",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 11?",
+      "correctAnswer": 13,
+      "choices": [
+        13,
+        14,
+        12,
+        15
+      ]
+    },
+    {
+      "id": "earth-3-q07",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 10?",
+      "correctAnswer": 12,
+      "choices": [
+        12,
+        13,
+        11,
+        14
+      ]
+    },
+    {
+      "id": "earth-3-q08",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 9?",
+      "correctAnswer": 11,
+      "choices": [
+        11,
+        12,
+        10,
+        13
+      ]
+    },
+    {
+      "id": "earth-3-q09",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 8?",
+      "correctAnswer": 10,
+      "choices": [
+        10,
+        11,
+        9,
+        12
+      ]
+    },
+    {
+      "id": "earth-3-q10",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 7?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    }
+  ],
+  "earth-4": [
+    {
+      "id": "earth-4-q01",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 8?",
+      "correctAnswer": 11,
+      "choices": [
+        11,
+        12,
+        10,
+        13
+      ]
+    },
+    {
+      "id": "earth-4-q02",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 7?",
+      "correctAnswer": 10,
+      "choices": [
+        10,
+        11,
+        9,
+        12
+      ]
+    },
+    {
+      "id": "earth-4-q03",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 6?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "earth-4-q04",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 5?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "earth-4-q05",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 4?",
+      "correctAnswer": 7,
+      "choices": [
+        7,
+        8,
+        6,
+        9
+      ]
+    },
+    {
+      "id": "earth-4-q06",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 3?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "earth-4-q07",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 2?",
+      "correctAnswer": 5,
+      "choices": [
+        5,
+        6,
+        4,
+        7
+      ]
+    },
+    {
+      "id": "earth-4-q08",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 16?",
+      "correctAnswer": 18,
+      "choices": [
+        18,
+        19,
+        17,
+        20
+      ]
+    },
+    {
+      "id": "earth-4-q09",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 15?",
+      "correctAnswer": 17,
+      "choices": [
+        17,
+        18,
+        16,
+        19
+      ]
+    },
+    {
+      "id": "earth-4-q10",
+      "category": "addition",
+      "prompt": "Quanto é 2 + 14?",
+      "correctAnswer": 16,
+      "choices": [
+        16,
+        17,
+        15,
+        18
+      ]
+    }
+  ],
+  "earth-5": [
+    {
+      "id": "earth-5-q01",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 13?",
+      "correctAnswer": 16,
+      "choices": [
+        16,
+        17,
+        15,
+        18
+      ]
+    },
+    {
+      "id": "earth-5-q02",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 12?",
+      "correctAnswer": 15,
+      "choices": [
+        15,
+        16,
+        14,
+        17
+      ]
+    },
+    {
+      "id": "earth-5-q03",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 11?",
+      "correctAnswer": 14,
+      "choices": [
+        14,
+        15,
+        13,
+        16
+      ]
+    },
+    {
+      "id": "earth-5-q04",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 10?",
+      "correctAnswer": 13,
+      "choices": [
+        13,
+        14,
+        12,
+        15
+      ]
+    },
+    {
+      "id": "earth-5-q05",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 9?",
+      "correctAnswer": 12,
+      "choices": [
+        12,
+        13,
+        11,
+        14
+      ]
+    },
+    {
+      "id": "earth-5-q06",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 8?",
+      "correctAnswer": 11,
+      "choices": [
+        11,
+        12,
+        10,
+        13
+      ]
+    },
+    {
+      "id": "earth-5-q07",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 7?",
+      "correctAnswer": 10,
+      "choices": [
+        10,
+        11,
+        9,
+        12
+      ]
+    },
+    {
+      "id": "earth-5-q08",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 6?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "earth-5-q09",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 5?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "earth-5-q10",
+      "category": "addition",
+      "prompt": "Quanto é 3 + 4?",
+      "correctAnswer": 7,
+      "choices": [
+        7,
+        8,
+        6,
+        9
+      ]
+    }
+  ],
+  "mars-1": [
+    {
+      "id": "mars-1-q01",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 2?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "mars-1-q02",
+      "category": "subtraction",
+      "prompt": "Quanto é 9 − 9?",
+      "correctAnswer": 0,
+      "choices": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "id": "mars-1-q03",
+      "category": "subtraction",
+      "prompt": "Quanto é 9 − 8?",
+      "correctAnswer": 1,
+      "choices": [
+        1,
+        2,
+        0,
+        3
+      ]
+    },
+    {
+      "id": "mars-1-q04",
+      "category": "subtraction",
+      "prompt": "Quanto é 9 − 7?",
+      "correctAnswer": 2,
+      "choices": [
+        2,
+        3,
+        1,
+        4
+      ]
+    },
+    {
+      "id": "mars-1-q05",
+      "category": "subtraction",
+      "prompt": "Quanto é 9 − 6?",
+      "correctAnswer": 3,
+      "choices": [
+        3,
+        4,
+        2,
+        5
+      ]
+    },
+    {
+      "id": "mars-1-q06",
+      "category": "subtraction",
+      "prompt": "Quanto é 9 − 5?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "mars-1-q07",
+      "category": "subtraction",
+      "prompt": "Quanto é 9 − 4?",
+      "correctAnswer": 5,
+      "choices": [
+        5,
+        6,
+        4,
+        7
+      ]
+    },
+    {
+      "id": "mars-1-q08",
+      "category": "subtraction",
+      "prompt": "Quanto é 9 − 3?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "mars-1-q09",
+      "category": "subtraction",
+      "prompt": "Quanto é 9 − 2?",
+      "correctAnswer": 7,
+      "choices": [
+        7,
+        8,
+        6,
+        9
+      ]
+    },
+    {
+      "id": "mars-1-q10",
+      "category": "subtraction",
+      "prompt": "Quanto é 8 − 8?",
+      "correctAnswer": 0,
+      "choices": [
+        0,
+        1,
+        2,
+        3
+      ]
+    }
+  ],
+  "mars-2": [
+    {
+      "id": "mars-2-q01",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 9?",
+      "correctAnswer": 1,
+      "choices": [
+        1,
+        2,
+        0,
+        3
+      ]
+    },
+    {
+      "id": "mars-2-q02",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 8?",
+      "correctAnswer": 2,
+      "choices": [
+        2,
+        3,
+        1,
+        4
+      ]
+    },
+    {
+      "id": "mars-2-q03",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 7?",
+      "correctAnswer": 3,
+      "choices": [
+        3,
+        4,
+        2,
+        5
+      ]
+    },
+    {
+      "id": "mars-2-q04",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 6?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "mars-2-q05",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 5?",
+      "correctAnswer": 5,
+      "choices": [
+        5,
+        6,
+        4,
+        7
+      ]
+    },
+    {
+      "id": "mars-2-q06",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 4?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "mars-2-q07",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 3?",
+      "correctAnswer": 7,
+      "choices": [
+        7,
+        8,
+        6,
+        9
+      ]
+    },
+    {
+      "id": "mars-2-q08",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 2?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "mars-2-q09",
+      "category": "subtraction",
+      "prompt": "Quanto é 9 − 9?",
+      "correctAnswer": 0,
+      "choices": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "id": "mars-2-q10",
+      "category": "subtraction",
+      "prompt": "Quanto é 9 − 8?",
+      "correctAnswer": 1,
+      "choices": [
+        1,
+        2,
+        0,
+        3
+      ]
+    }
+  ],
+  "mars-3": [
+    {
+      "id": "mars-3-q01",
+      "category": "subtraction",
+      "prompt": "Quanto é 11 − 7?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "mars-3-q02",
+      "category": "subtraction",
+      "prompt": "Quanto é 11 − 6?",
+      "correctAnswer": 5,
+      "choices": [
+        5,
+        6,
+        4,
+        7
+      ]
+    },
+    {
+      "id": "mars-3-q03",
+      "category": "subtraction",
+      "prompt": "Quanto é 11 − 5?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "mars-3-q04",
+      "category": "subtraction",
+      "prompt": "Quanto é 11 − 4?",
+      "correctAnswer": 7,
+      "choices": [
+        7,
+        8,
+        6,
+        9
+      ]
+    },
+    {
+      "id": "mars-3-q05",
+      "category": "subtraction",
+      "prompt": "Quanto é 11 − 3?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "mars-3-q06",
+      "category": "subtraction",
+      "prompt": "Quanto é 11 − 2?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "mars-3-q07",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 10?",
+      "correctAnswer": 0,
+      "choices": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "id": "mars-3-q08",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 9?",
+      "correctAnswer": 1,
+      "choices": [
+        1,
+        2,
+        0,
+        3
+      ]
+    },
+    {
+      "id": "mars-3-q09",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 8?",
+      "correctAnswer": 2,
+      "choices": [
+        2,
+        3,
+        1,
+        4
+      ]
+    },
+    {
+      "id": "mars-3-q10",
+      "category": "subtraction",
+      "prompt": "Quanto é 10 − 7?",
+      "correctAnswer": 3,
+      "choices": [
+        3,
+        4,
+        2,
+        5
+      ]
+    }
+  ],
+  "mars-4": [
+    {
+      "id": "mars-4-q01",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 16?",
+      "correctAnswer": 20,
+      "choices": [
+        20,
+        21,
+        19,
+        22
+      ]
+    },
+    {
+      "id": "mars-4-q02",
+      "category": "subtraction",
+      "prompt": "Quanto é 12 − 3?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "mars-4-q03",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 14?",
+      "correctAnswer": 18,
+      "choices": [
+        18,
+        19,
+        17,
+        20
+      ]
+    },
+    {
+      "id": "mars-4-q04",
+      "category": "subtraction",
+      "prompt": "Quanto é 11 − 11?",
+      "correctAnswer": 0,
+      "choices": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "id": "mars-4-q05",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 12?",
+      "correctAnswer": 16,
+      "choices": [
+        16,
+        17,
+        15,
+        18
+      ]
+    },
+    {
+      "id": "mars-4-q06",
+      "category": "subtraction",
+      "prompt": "Quanto é 11 − 9?",
+      "correctAnswer": 2,
+      "choices": [
+        2,
+        3,
+        1,
+        4
+      ]
+    },
+    {
+      "id": "mars-4-q07",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 10?",
+      "correctAnswer": 14,
+      "choices": [
+        14,
+        15,
+        13,
+        16
+      ]
+    },
+    {
+      "id": "mars-4-q08",
+      "category": "subtraction",
+      "prompt": "Quanto é 11 − 7?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "mars-4-q09",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 8?",
+      "correctAnswer": 12,
+      "choices": [
+        12,
+        13,
+        11,
+        14
+      ]
+    },
+    {
+      "id": "mars-4-q10",
+      "category": "subtraction",
+      "prompt": "Quanto é 11 − 5?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    }
+  ],
+  "mars-5": [
+    {
+      "id": "mars-5-q01",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 19?",
+      "correctAnswer": 23,
+      "choices": [
+        23,
+        24,
+        22,
+        25
+      ]
+    },
+    {
+      "id": "mars-5-q02",
+      "category": "subtraction",
+      "prompt": "Quanto é 12 − 10?",
+      "correctAnswer": 2,
+      "choices": [
+        2,
+        3,
+        1,
+        4
+      ]
+    },
+    {
+      "id": "mars-5-q03",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 17?",
+      "correctAnswer": 21,
+      "choices": [
+        21,
+        22,
+        20,
+        23
+      ]
+    },
+    {
+      "id": "mars-5-q04",
+      "category": "subtraction",
+      "prompt": "Quanto é 12 − 8?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "mars-5-q05",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 15?",
+      "correctAnswer": 19,
+      "choices": [
+        19,
+        20,
+        18,
+        21
+      ]
+    },
+    {
+      "id": "mars-5-q06",
+      "category": "subtraction",
+      "prompt": "Quanto é 12 − 6?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "mars-5-q07",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 13?",
+      "correctAnswer": 17,
+      "choices": [
+        17,
+        18,
+        16,
+        19
+      ]
+    },
+    {
+      "id": "mars-5-q08",
+      "category": "subtraction",
+      "prompt": "Quanto é 12 − 4?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "mars-5-q09",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 11?",
+      "correctAnswer": 15,
+      "choices": [
+        15,
+        16,
+        14,
+        17
+      ]
+    },
+    {
+      "id": "mars-5-q10",
+      "category": "subtraction",
+      "prompt": "Quanto é 12 − 2?",
+      "correctAnswer": 10,
+      "choices": [
+        10,
+        11,
+        9,
+        12
+      ]
+    }
+  ],
+  "saturn-1": [
+    {
+      "id": "saturn-1-q01",
+      "category": "multiplication",
+      "prompt": "Quanto é 3 × 4?",
+      "correctAnswer": 12,
+      "choices": [
+        12,
+        13,
+        11,
+        14
+      ]
+    },
+    {
+      "id": "saturn-1-q02",
+      "category": "multiplication",
+      "prompt": "Quanto é 3 × 3?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "saturn-1-q03",
+      "category": "multiplication",
+      "prompt": "Quanto é 3 × 2?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "saturn-1-q04",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 5?",
+      "correctAnswer": 10,
+      "choices": [
+        10,
+        11,
+        9,
+        12
+      ]
+    },
+    {
+      "id": "saturn-1-q05",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 4?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "saturn-1-q06",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 3?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "saturn-1-q07",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 2?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "saturn-1-q08",
+      "category": "multiplication",
+      "prompt": "Quanto é 5 × 5?",
+      "correctAnswer": 25,
+      "choices": [
+        25,
+        26,
+        24,
+        27
+      ]
+    },
+    {
+      "id": "saturn-1-q09",
+      "category": "multiplication",
+      "prompt": "Quanto é 5 × 4?",
+      "correctAnswer": 20,
+      "choices": [
+        20,
+        21,
+        19,
+        22
+      ]
+    },
+    {
+      "id": "saturn-1-q10",
+      "category": "multiplication",
+      "prompt": "Quanto é 5 × 3?",
+      "correctAnswer": 15,
+      "choices": [
+        15,
+        16,
+        14,
+        17
+      ]
+    }
+  ],
+  "saturn-2": [
+    {
+      "id": "saturn-2-q01",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 4?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "saturn-2-q02",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 3?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "saturn-2-q03",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 2?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "saturn-2-q04",
+      "category": "multiplication",
+      "prompt": "Quanto é 6 × 6?",
+      "correctAnswer": 36,
+      "choices": [
+        36,
+        37,
+        35,
+        38
+      ]
+    },
+    {
+      "id": "saturn-2-q05",
+      "category": "multiplication",
+      "prompt": "Quanto é 6 × 5?",
+      "correctAnswer": 30,
+      "choices": [
+        30,
+        31,
+        29,
+        32
+      ]
+    },
+    {
+      "id": "saturn-2-q06",
+      "category": "multiplication",
+      "prompt": "Quanto é 6 × 4?",
+      "correctAnswer": 24,
+      "choices": [
+        24,
+        25,
+        23,
+        26
+      ]
+    },
+    {
+      "id": "saturn-2-q07",
+      "category": "multiplication",
+      "prompt": "Quanto é 6 × 3?",
+      "correctAnswer": 18,
+      "choices": [
+        18,
+        19,
+        17,
+        20
+      ]
+    },
+    {
+      "id": "saturn-2-q08",
+      "category": "multiplication",
+      "prompt": "Quanto é 6 × 2?",
+      "correctAnswer": 12,
+      "choices": [
+        12,
+        13,
+        11,
+        14
+      ]
+    },
+    {
+      "id": "saturn-2-q09",
+      "category": "multiplication",
+      "prompt": "Quanto é 5 × 6?",
+      "correctAnswer": 30,
+      "choices": [
+        30,
+        31,
+        29,
+        32
+      ]
+    },
+    {
+      "id": "saturn-2-q10",
+      "category": "multiplication",
+      "prompt": "Quanto é 5 × 5?",
+      "correctAnswer": 25,
+      "choices": [
+        25,
+        26,
+        24,
+        27
+      ]
+    }
+  ],
+  "saturn-3": [
+    {
+      "id": "saturn-3-q01",
+      "category": "multiplication",
+      "prompt": "Quanto é 4 × 2?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "saturn-3-q02",
+      "category": "multiplication",
+      "prompt": "Quanto é 3 × 7?",
+      "correctAnswer": 21,
+      "choices": [
+        21,
+        22,
+        20,
+        23
+      ]
+    },
+    {
+      "id": "saturn-3-q03",
+      "category": "multiplication",
+      "prompt": "Quanto é 3 × 6?",
+      "correctAnswer": 18,
+      "choices": [
+        18,
+        19,
+        17,
+        20
+      ]
+    },
+    {
+      "id": "saturn-3-q04",
+      "category": "multiplication",
+      "prompt": "Quanto é 3 × 5?",
+      "correctAnswer": 15,
+      "choices": [
+        15,
+        16,
+        14,
+        17
+      ]
+    },
+    {
+      "id": "saturn-3-q05",
+      "category": "multiplication",
+      "prompt": "Quanto é 3 × 4?",
+      "correctAnswer": 12,
+      "choices": [
+        12,
+        13,
+        11,
+        14
+      ]
+    },
+    {
+      "id": "saturn-3-q06",
+      "category": "multiplication",
+      "prompt": "Quanto é 3 × 3?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "saturn-3-q07",
+      "category": "multiplication",
+      "prompt": "Quanto é 3 × 2?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "saturn-3-q08",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 7?",
+      "correctAnswer": 14,
+      "choices": [
+        14,
+        15,
+        13,
+        16
+      ]
+    },
+    {
+      "id": "saturn-3-q09",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 6?",
+      "correctAnswer": 12,
+      "choices": [
+        12,
+        13,
+        11,
+        14
+      ]
+    },
+    {
+      "id": "saturn-3-q10",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 5?",
+      "correctAnswer": 10,
+      "choices": [
+        10,
+        11,
+        9,
+        12
+      ]
+    }
+  ],
+  "saturn-4": [
+    {
+      "id": "saturn-4-q01",
+      "category": "addition",
+      "prompt": "Quanto é 5 + 6?",
+      "correctAnswer": 11,
+      "choices": [
+        11,
+        12,
+        10,
+        13
+      ]
+    },
+    {
+      "id": "saturn-4-q02",
+      "category": "subtraction",
+      "prompt": "Quanto é 15 − 2?",
+      "correctAnswer": 13,
+      "choices": [
+        13,
+        14,
+        12,
+        15
+      ]
+    },
+    {
+      "id": "saturn-4-q03",
+      "category": "multiplication",
+      "prompt": "Quanto é 7 × 7?",
+      "correctAnswer": 49,
+      "choices": [
+        49,
+        50,
+        48,
+        51
+      ]
+    },
+    {
+      "id": "saturn-4-q04",
+      "category": "addition",
+      "prompt": "Quanto é 5 + 3?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "saturn-4-q05",
+      "category": "subtraction",
+      "prompt": "Quanto é 14 − 12?",
+      "correctAnswer": 2,
+      "choices": [
+        2,
+        3,
+        1,
+        4
+      ]
+    },
+    {
+      "id": "saturn-4-q06",
+      "category": "multiplication",
+      "prompt": "Quanto é 7 × 4?",
+      "correctAnswer": 28,
+      "choices": [
+        28,
+        29,
+        27,
+        30
+      ]
+    },
+    {
+      "id": "saturn-4-q07",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 29?",
+      "correctAnswer": 33,
+      "choices": [
+        33,
+        34,
+        32,
+        35
+      ]
+    },
+    {
+      "id": "saturn-4-q08",
+      "category": "subtraction",
+      "prompt": "Quanto é 14 − 9?",
+      "correctAnswer": 5,
+      "choices": [
+        5,
+        6,
+        4,
+        7
+      ]
+    },
+    {
+      "id": "saturn-4-q09",
+      "category": "multiplication",
+      "prompt": "Quanto é 6 × 8?",
+      "correctAnswer": 48,
+      "choices": [
+        48,
+        49,
+        47,
+        50
+      ]
+    },
+    {
+      "id": "saturn-4-q10",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 26?",
+      "correctAnswer": 30,
+      "choices": [
+        30,
+        31,
+        29,
+        32
+      ]
+    }
+  ],
+  "saturn-5": [
+    {
+      "id": "saturn-5-q01",
+      "category": "addition",
+      "prompt": "Quanto é 5 + 7?",
+      "correctAnswer": 12,
+      "choices": [
+        12,
+        13,
+        11,
+        14
+      ]
+    },
+    {
+      "id": "saturn-5-q02",
+      "category": "subtraction",
+      "prompt": "Quanto é 15 − 9?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "saturn-5-q03",
+      "category": "multiplication",
+      "prompt": "Quanto é 6 × 2?",
+      "correctAnswer": 12,
+      "choices": [
+        12,
+        13,
+        11,
+        14
+      ]
+    },
+    {
+      "id": "saturn-5-q04",
+      "category": "addition",
+      "prompt": "Quanto é 5 + 4?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "saturn-5-q05",
+      "category": "subtraction",
+      "prompt": "Quanto é 15 − 6?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "saturn-5-q06",
+      "category": "multiplication",
+      "prompt": "Quanto é 5 × 7?",
+      "correctAnswer": 35,
+      "choices": [
+        35,
+        36,
+        34,
+        37
+      ]
+    },
+    {
+      "id": "saturn-5-q07",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 32?",
+      "correctAnswer": 36,
+      "choices": [
+        36,
+        37,
+        35,
+        38
+      ]
+    },
+    {
+      "id": "saturn-5-q08",
+      "category": "subtraction",
+      "prompt": "Quanto é 15 − 3?",
+      "correctAnswer": 12,
+      "choices": [
+        12,
+        13,
+        11,
+        14
+      ]
+    },
+    {
+      "id": "saturn-5-q09",
+      "category": "multiplication",
+      "prompt": "Quanto é 5 × 4?",
+      "correctAnswer": 20,
+      "choices": [
+        20,
+        21,
+        19,
+        22
+      ]
+    },
+    {
+      "id": "saturn-5-q10",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 29?",
+      "correctAnswer": 33,
+      "choices": [
+        33,
+        34,
+        32,
+        35
+      ]
+    }
+  ],
+  "neptune-1": [
+    {
+      "id": "neptune-1-q01",
+      "category": "division",
+      "prompt": "Quanto é 81 ÷ 9?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "neptune-1-q02",
+      "category": "division",
+      "prompt": "Quanto é 72 ÷ 9?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "neptune-1-q03",
+      "category": "division",
+      "prompt": "Quanto é 63 ÷ 9?",
+      "correctAnswer": 7,
+      "choices": [
+        7,
+        8,
+        6,
+        9
+      ]
+    },
+    {
+      "id": "neptune-1-q04",
+      "category": "division",
+      "prompt": "Quanto é 54 ÷ 9?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "neptune-1-q05",
+      "category": "division",
+      "prompt": "Quanto é 45 ÷ 9?",
+      "correctAnswer": 5,
+      "choices": [
+        5,
+        6,
+        4,
+        7
+      ]
+    },
+    {
+      "id": "neptune-1-q06",
+      "category": "division",
+      "prompt": "Quanto é 36 ÷ 9?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "neptune-1-q07",
+      "category": "division",
+      "prompt": "Quanto é 27 ÷ 9?",
+      "correctAnswer": 3,
+      "choices": [
+        3,
+        4,
+        2,
+        5
+      ]
+    },
+    {
+      "id": "neptune-1-q08",
+      "category": "division",
+      "prompt": "Quanto é 18 ÷ 9?",
+      "correctAnswer": 2,
+      "choices": [
+        2,
+        3,
+        1,
+        4
+      ]
+    },
+    {
+      "id": "neptune-1-q09",
+      "category": "division",
+      "prompt": "Quanto é 120 ÷ 8?",
+      "correctAnswer": 15,
+      "choices": [
+        15,
+        16,
+        14,
+        17
+      ]
+    },
+    {
+      "id": "neptune-1-q10",
+      "category": "division",
+      "prompt": "Quanto é 112 ÷ 8?",
+      "correctAnswer": 14,
+      "choices": [
+        14,
+        15,
+        13,
+        16
+      ]
+    }
+  ],
+  "neptune-2": [
+    {
+      "id": "neptune-2-q01",
+      "category": "division",
+      "prompt": "Quanto é 81 ÷ 9?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "neptune-2-q02",
+      "category": "division",
+      "prompt": "Quanto é 72 ÷ 9?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "neptune-2-q03",
+      "category": "division",
+      "prompt": "Quanto é 63 ÷ 9?",
+      "correctAnswer": 7,
+      "choices": [
+        7,
+        8,
+        6,
+        9
+      ]
+    },
+    {
+      "id": "neptune-2-q04",
+      "category": "division",
+      "prompt": "Quanto é 54 ÷ 9?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "neptune-2-q05",
+      "category": "division",
+      "prompt": "Quanto é 45 ÷ 9?",
+      "correctAnswer": 5,
+      "choices": [
+        5,
+        6,
+        4,
+        7
+      ]
+    },
+    {
+      "id": "neptune-2-q06",
+      "category": "division",
+      "prompt": "Quanto é 36 ÷ 9?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "neptune-2-q07",
+      "category": "division",
+      "prompt": "Quanto é 27 ÷ 9?",
+      "correctAnswer": 3,
+      "choices": [
+        3,
+        4,
+        2,
+        5
+      ]
+    },
+    {
+      "id": "neptune-2-q08",
+      "category": "division",
+      "prompt": "Quanto é 18 ÷ 9?",
+      "correctAnswer": 2,
+      "choices": [
+        2,
+        3,
+        1,
+        4
+      ]
+    },
+    {
+      "id": "neptune-2-q09",
+      "category": "division",
+      "prompt": "Quanto é 128 ÷ 8?",
+      "correctAnswer": 16,
+      "choices": [
+        16,
+        17,
+        15,
+        18
+      ]
+    },
+    {
+      "id": "neptune-2-q10",
+      "category": "division",
+      "prompt": "Quanto é 120 ÷ 8?",
+      "correctAnswer": 15,
+      "choices": [
+        15,
+        16,
+        14,
+        17
+      ]
+    }
+  ],
+  "neptune-3": [
+    {
+      "id": "neptune-3-q01",
+      "category": "division",
+      "prompt": "Quanto é 81 ÷ 9?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "neptune-3-q02",
+      "category": "division",
+      "prompt": "Quanto é 72 ÷ 9?",
+      "correctAnswer": 8,
+      "choices": [
+        8,
+        9,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "neptune-3-q03",
+      "category": "division",
+      "prompt": "Quanto é 63 ÷ 9?",
+      "correctAnswer": 7,
+      "choices": [
+        7,
+        8,
+        6,
+        9
+      ]
+    },
+    {
+      "id": "neptune-3-q04",
+      "category": "division",
+      "prompt": "Quanto é 54 ÷ 9?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "neptune-3-q05",
+      "category": "division",
+      "prompt": "Quanto é 45 ÷ 9?",
+      "correctAnswer": 5,
+      "choices": [
+        5,
+        6,
+        4,
+        7
+      ]
+    },
+    {
+      "id": "neptune-3-q06",
+      "category": "division",
+      "prompt": "Quanto é 36 ÷ 9?",
+      "correctAnswer": 4,
+      "choices": [
+        4,
+        5,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "neptune-3-q07",
+      "category": "division",
+      "prompt": "Quanto é 27 ÷ 9?",
+      "correctAnswer": 3,
+      "choices": [
+        3,
+        4,
+        2,
+        5
+      ]
+    },
+    {
+      "id": "neptune-3-q08",
+      "category": "division",
+      "prompt": "Quanto é 18 ÷ 9?",
+      "correctAnswer": 2,
+      "choices": [
+        2,
+        3,
+        1,
+        4
+      ]
+    },
+    {
+      "id": "neptune-3-q09",
+      "category": "division",
+      "prompt": "Quanto é 136 ÷ 8?",
+      "correctAnswer": 17,
+      "choices": [
+        17,
+        18,
+        16,
+        19
+      ]
+    },
+    {
+      "id": "neptune-3-q10",
+      "category": "division",
+      "prompt": "Quanto é 128 ÷ 8?",
+      "correctAnswer": 16,
+      "choices": [
+        16,
+        17,
+        15,
+        18
+      ]
+    }
+  ],
+  "neptune-4": [
+    {
+      "id": "neptune-4-q01",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 38?",
+      "correctAnswer": 42,
+      "choices": [
+        42,
+        43,
+        41,
+        44
+      ]
+    },
+    {
+      "id": "neptune-4-q02",
+      "category": "subtraction",
+      "prompt": "Quanto é 17 − 8?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "neptune-4-q03",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 5?",
+      "correctAnswer": 10,
+      "choices": [
+        10,
+        11,
+        9,
+        12
+      ]
+    },
+    {
+      "id": "neptune-4-q04",
+      "category": "division",
+      "prompt": "Quanto é 54 ÷ 9?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "neptune-4-q05",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 34?",
+      "correctAnswer": 38,
+      "choices": [
+        38,
+        39,
+        37,
+        40
+      ]
+    },
+    {
+      "id": "neptune-4-q06",
+      "category": "subtraction",
+      "prompt": "Quanto é 17 − 4?",
+      "correctAnswer": 13,
+      "choices": [
+        13,
+        14,
+        12,
+        15
+      ]
+    },
+    {
+      "id": "neptune-4-q07",
+      "category": "multiplication",
+      "prompt": "Quanto é 12 × 12?",
+      "correctAnswer": 144,
+      "choices": [
+        144,
+        145,
+        143,
+        146
+      ]
+    },
+    {
+      "id": "neptune-4-q08",
+      "category": "division",
+      "prompt": "Quanto é 18 ÷ 9?",
+      "correctAnswer": 2,
+      "choices": [
+        2,
+        3,
+        1,
+        4
+      ]
+    },
+    {
+      "id": "neptune-4-q09",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 30?",
+      "correctAnswer": 34,
+      "choices": [
+        34,
+        35,
+        33,
+        36
+      ]
+    },
+    {
+      "id": "neptune-4-q10",
+      "category": "subtraction",
+      "prompt": "Quanto é 16 − 15?",
+      "correctAnswer": 1,
+      "choices": [
+        1,
+        2,
+        0,
+        3
+      ]
+    }
+  ],
+  "neptune-5": [
+    {
+      "id": "neptune-5-q01",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 41?",
+      "correctAnswer": 45,
+      "choices": [
+        45,
+        46,
+        44,
+        47
+      ]
+    },
+    {
+      "id": "neptune-5-q02",
+      "category": "subtraction",
+      "prompt": "Quanto é 17 − 15?",
+      "correctAnswer": 2,
+      "choices": [
+        2,
+        3,
+        1,
+        4
+      ]
+    },
+    {
+      "id": "neptune-5-q03",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 12?",
+      "correctAnswer": 24,
+      "choices": [
+        24,
+        25,
+        23,
+        26
+      ]
+    },
+    {
+      "id": "neptune-5-q04",
+      "category": "division",
+      "prompt": "Quanto é 117 ÷ 9?",
+      "correctAnswer": 13,
+      "choices": [
+        13,
+        14,
+        12,
+        15
+      ]
+    },
+    {
+      "id": "neptune-5-q05",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 37?",
+      "correctAnswer": 41,
+      "choices": [
+        41,
+        42,
+        40,
+        43
+      ]
+    },
+    {
+      "id": "neptune-5-q06",
+      "category": "subtraction",
+      "prompt": "Quanto é 17 − 11?",
+      "correctAnswer": 6,
+      "choices": [
+        6,
+        7,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "neptune-5-q07",
+      "category": "multiplication",
+      "prompt": "Quanto é 2 × 8?",
+      "correctAnswer": 16,
+      "choices": [
+        16,
+        17,
+        15,
+        18
+      ]
+    },
+    {
+      "id": "neptune-5-q08",
+      "category": "division",
+      "prompt": "Quanto é 81 ÷ 9?",
+      "correctAnswer": 9,
+      "choices": [
+        9,
+        10,
+        8,
+        11
+      ]
+    },
+    {
+      "id": "neptune-5-q09",
+      "category": "addition",
+      "prompt": "Quanto é 4 + 33?",
+      "correctAnswer": 37,
+      "choices": [
+        37,
+        38,
+        36,
+        39
+      ]
+    },
+    {
+      "id": "neptune-5-q10",
+      "category": "subtraction",
+      "prompt": "Quanto é 17 − 7?",
+      "correctAnswer": 10,
+      "choices": [
+        10,
+        11,
+        9,
+        12
+      ]
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { COLLECTIBLES } from "../data/items.js";
+import { getQuestionsForStage, pickQuestion } from "../data/questions.js";
 import { SPEED, SCORE, SPAWN, QUESTION_TIMING, MYSTERY_BOX, POWER_UPS } from "../config/gameConfig.js";
 import { Answer } from "../entities/Answer.js";
 import { AnswerLaser } from "../entities/AnswerLaser.js";
@@ -9,7 +10,6 @@ import { Rocket } from "../entities/Rocket.js";
 import { cullOffscreen } from "../systems/spawn.js";
 import { completeAnswerRound, createAnswerRound, resolveAnswerRound } from "../systems/answerRound.js";
 import { getLaneBounds, getLaneFromCenter, LANE_COLORS, renderLaneColumns } from "../systems/lanes.js";
-import { generateQuestion } from "../systems/questions.js";
 import { sampleInterQuestionDelayMs } from "../systems/questionTiming.js";
 import { aabbOverlaps } from "./collision.js";
 import { createSpeedStreaks, createStarfield, renderSpeedStreaks, renderStarfield, updateSpeedStreaks, updateStarfield } from "../systems/stars.js";
@@ -86,7 +86,7 @@ export class GameEngine {
     this.collectibleAcc = 0;
     this.interQuestionRemainingMs = 0;
     this.roundNumber = 0;
-    this.lastQuestionPrompt = null;
+    this.lastQuestionId = null;
     this.answerChoiceRemainingMs = QUESTION_TIMING.choiceWindowMs;
     this.answerAnimationElapsedMs = 0;
     this.answerFeedbackRemainingMs = 0;
@@ -197,15 +197,15 @@ export class GameEngine {
     if (this.currentRound && this.interQuestionRemainingMs > 0) return;
     this.rocket.clearDamageFeedback();
     this.roundNumber += 1;
-    const question = generateQuestion({
-      difficulty: this.session.difficulty.mathTier,
-      categories: this.session.stage.questionCategories,
-      limits: this.session.stage.questionLimits,
-      previousPrompt: this.lastQuestionPrompt,
+    const questions = this.session.questions ?? getQuestionsForStage(this.session.stage.id);
+    const question = pickQuestion(questions, {
+      previousId: this.lastQuestionId,
       rng: this.rng,
-      id: `${this.session.stage.id}-q${this.roundNumber}`,
     });
-    this.lastQuestionPrompt = question.prompt;
+    if (!question) {
+      throw new Error(`Nenhuma pergunta disponível para a fase ${this.session.stage.id}.`);
+    }
+    this.lastQuestionId = question.id;
     this.currentRound = createAnswerRound(question, {
       width: this.view.width,
       id: `${this.runId}-round-${this.roundNumber}`,
