@@ -437,17 +437,15 @@ test("obstáculo aplica uma penalidade por colisão e a pausa congela perigos e 
   });
 });
 
-test("folhas caem nas fases da Terra, congelam na pausa e não aparecem em outros planetas", () => {
+test("partículas de folha não aparecem nas fases da Terra nem em outros planetas", () => {
   withCanvasEnvironment(({ canvas }) => {
     const earth = new GameEngine(engineOptions(canvas));
-    assert.equal(earth.leaves.length, 16);
-    const initialY = earth.leaves[0].y;
+    assert.deepEqual(earth.leaves, []);
     earth.tick(0.05);
-    assert.notEqual(earth.leaves[0].y, initialY);
+    assert.deepEqual(earth.leaves, []);
     earth.pause();
-    const pausedY = earth.leaves[0].y;
     earth.tick(0.5);
-    assert.equal(earth.leaves[0].y, pausedY);
+    assert.deepEqual(earth.leaves, []);
     earth.stop();
 
     const mars = PLANETS.find(({ id }) => id === "mars");
