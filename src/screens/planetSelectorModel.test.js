@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { PLANETS } from "../game/data/planets.js";
 import { createDefaultProgress } from "../utils/storage.js";
-import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetSelectorModel } from "./planetSelectorModel.js";
+import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetIdForStage, getPlanetSelectorModel } from "./planetSelectorModel.js";
 
 test("selector keeps five phase states per planet and respects the saved unlock order", () => {
   const progress = createDefaultProgress();
@@ -42,6 +42,11 @@ test("when the campaign is complete, selector defaults to the last unlocked plan
 
   assert.equal(getInitialExpandedPlanetId(progress), "neptune");
   assert.ok(PLANETS.every((planet) => getPlanetSelectorModel(planet, progress).stages.every(({ status }) => status === "completed")));
+});
+
+test("selector can return to the planet containing the phase just completed", () => {
+  assert.equal(getPlanetIdForStage("earth-5"), "earth");
+  assert.equal(getPlanetIdForStage("unknown-stage"), null);
 });
 
 test("planet navigation only permits adjacent unlocked planets and gates forward travel on completion", () => {

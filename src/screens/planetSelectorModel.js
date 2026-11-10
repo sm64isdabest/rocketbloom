@@ -1,5 +1,9 @@
 import { PLANETS } from "../game/data/planets.js";
 
+export function getPlanetIdForStage(stageId, planets = PLANETS) {
+  return planets.find((planet) => planet.stages.some((stage) => stage.id === stageId))?.id ?? null;
+}
+
 export function getInitialExpandedPlanetId(progress, planets = PLANETS) {
   const unlocked = planets.filter((planet) => progress.unlockedPlanetIds.includes(planet.id));
   const nextPlanet = unlocked.find((planet) => planet.stages.some((stage) => !progress.completedStageIds.includes(stage.id)));

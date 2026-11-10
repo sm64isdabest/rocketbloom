@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { SCREEN } from "./utils/screenStates.js";
 import { validateCatalog } from "./game/data/catalog.js";
 import { PROJECT_IMAGES } from "./game/data/projectImages.js";
-import { PLANETS, getPlanetById, getFirstStage } from "./game/data/planets.js";
+import { getPlanetById } from "./game/data/planets.js";
 import { usePersistentProgress } from "./hooks/usePersistentProgress.js";
 import { applyRunOutcome } from "./utils/runProgress.js";
 import { BootScreen } from "./screens/BootScreen.jsx";
@@ -21,6 +21,7 @@ import { getSettingsReturnPage } from "./screens/menuModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
 import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets } from "./utils/debugTools.js";
 import { FullscreenButton } from "./components/FullscreenButton.jsx";
+import { getOutcomeReturn } from "./utils/outcomeFlow.js";
 
 const APP_BASE = import.meta.env.BASE_URL;
 const PROJECT_IMAGE_URLS = PROJECT_IMAGES.map((image) => `${APP_BASE}${image.slice(1)}`);
@@ -37,8 +38,8 @@ export default function App() {
   const [runKey, setRunKey] = useState(0);
   const [pauseSettingsOpen, setPauseSettingsOpen] = useState(false);
   const [outcomeSnapshot, setOutcomeSnapshot] = useState(null);
-  const [outcomeRewards, setOutcomeRewards] = useState(null);
   const [systemReducedMotion, setSystemReducedMotion] = useState(false);
+  const [completionStageId, setCompletionStageId] = useState(null);
   const hudRef = useRef(null);
   const [debugOpen, setDebugOpen] = useState(false);
   const debugReturnScreen = useRef(SCREEN.MENU);
@@ -116,6 +117,24 @@ export default function App() {
   }, [screen, menuPage, runKey]);
 
   useEffect(() => {
+    if (screen !== SCREEN.VICTORY) return undefined;
+    const timer = window.setTimeout(() => {
+      const destination = getOutcomeReturn("victory", outcomeSnapshot);
+      setRun(null);
+      setMenuPage(destination.menuPage);
+      setCompletionStageId(destination.completedStageId);
+      setScreen(SCREEN.MENU);
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [outcomeSnapshot, screen]);
+
+  useEffect(() => {
+    if (!completionStageId) return undefined;
+    const timer = window.setTimeout(() => setCompletionStageId(null), 2800);
+    return () => window.clearTimeout(timer);
+  }, [completionStageId]);
+
+  useEffect(() => {
     if (progress) configureAudio(progress.settings);
   }, [
     progress?.settings?.music,
@@ -142,11 +161,11 @@ export default function App() {
   }, []);
 
   const startStage = (planetId, stageId) => {
+    setCompletionStageId(null);
     setDebugOpen(false);
     setPauseSettingsOpen(false);
     setRun({ planetId, stageId });
     setOutcomeSnapshot(null);
-    setOutcomeRewards(null);
     hudRef.current = null;
     setScreen(SCREEN.PLAYING);
   };
@@ -169,10 +188,10 @@ export default function App() {
   }, [persist, progress]);
 
   const goMenu = () => {
+    setCompletionStageId(null);
     setPauseSettingsOpen(false);
     setRun(null);
     setOutcomeSnapshot(null);
-    setOutcomeRewards(null);
     setMenuPage(SCREEN.MENU);
     setScreen(SCREEN.MENU);
   };
@@ -186,7 +205,6 @@ export default function App() {
     if (snapshot) {
       const applied = applyRunOutcome(progress, snapshot, outcome);
       if (!applied.alreadyApplied) persist(applied.progress);
-      setOutcomeRewards(applied.rewards);
     }
     setOutcomeSnapshot(snapshot ?? null);
     setScreen(outcome === "victory" ? SCREEN.VICTORY : SCREEN.DEFEAT);
@@ -218,6 +236,7 @@ export default function App() {
       {screen === SCREEN.MENU && menuPage === SCREEN.PLANETS ? (
         <PlanetsScreen
           progress={progress}
+          completedStageId={completionStageId}
           onBack={() => setMenuPage(SCREEN.MENU)}
           onPlay={startStage}
           onMarkPlanetSeen={markPlanetSeen}
@@ -261,28 +280,7 @@ export default function App() {
         <SettingsScreen progress={progress} onBack={() => setPauseSettingsOpen(false)} onChange={patchSettings} />
       ) : null}
       {screen === SCREEN.VICTORY ? (
-        <VictoryScreen
-          planetName={planet?.name ?? "o planeta"}
-          snapshot={outcomeSnapshot}
-          rewards={outcomeRewards}
-          onMenu={goMenu}
-          onNext={() => {
-            const nextStageIndex = planet?.stages.findIndex((stage) => stage.id === run?.stageId) + 1;
-            const nextStage = planet?.stages[nextStageIndex];
-            const currentIndex = PLANETS.findIndex((candidate) => candidate.id === planet?.id);
-            const nextPlanet = PLANETS[currentIndex + 1];
-            const firstStage = getFirstStage(nextPlanet);
-            if (planet && nextStage) startStage(planet.id, nextStage.id);
-            else if (nextPlanet && progress.unlockedPlanetIds.includes(nextPlanet.id) && firstStage) startStage(nextPlanet.id, firstStage.id);
-            else if (nextPlanet) {
-              setRun(null);
-              setOutcomeSnapshot(null);
-              setOutcomeRewards(null);
-              setMenuPage(SCREEN.PLANETS);
-              setScreen(SCREEN.MENU);
-            } else goMenu();
-          }}
-        />
+        <VictoryScreen />
       ) : null}
       {screen === SCREEN.DEFEAT ? (
         <DefeatScreen

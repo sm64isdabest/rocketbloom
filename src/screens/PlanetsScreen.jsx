@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { PLANETS } from "../game/data/planets.js";
 import { playGameSound } from "../game/audio/audioManager.js";
-import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetSelectorModel } from "./planetSelectorModel.js";
+import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetIdForStage, getPlanetSelectorModel } from "./planetSelectorModel.js";
 import { getMenuAssetUrl } from "./menuModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
@@ -28,8 +28,8 @@ const stageStatusLabel = (stage) => {
   return stage.available ? "fase atual, disponível" : "bloqueada";
 };
 
-export function PlanetsScreen({ progress, onBack, onPlay, onMarkPlanetSeen, onSettings, onCommandRoom }) {
-  const initialPlanetId = getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
+export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMarkPlanetSeen, onSettings, onCommandRoom }) {
+  const initialPlanetId = getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const [selectedPlanetId, setSelectedPlanetId] = useState(initialPlanetId);
   const [revealingPlanetId, setRevealingPlanetId] = useState(null);
   const discoveryHandled = useRef(new Set(progress.seenPlanetIds ?? []));
@@ -110,7 +110,7 @@ export function PlanetsScreen({ progress, onBack, onPlay, onMarkPlanetSeen, onSe
             return (
               <li
                 key={stage.id}
-                className={`phase-selection-stage${stage.status ? ` is-${stage.status}` : ""}${current ? " is-current" : ""}`}
+                className={`phase-selection-stage${stage.status ? ` is-${stage.status}` : ""}${current ? " is-current" : ""}${completedStageId === stage.id ? " is-completing" : ""}`}
                 style={{
                   "--stage-x": `${(x / PANEL_WIDTH) * 100}%`,
                   "--stage-y": `${(y / PANEL_HEIGHT) * 100}%`,
@@ -164,6 +164,9 @@ export function PlanetsScreen({ progress, onBack, onPlay, onMarkPlanetSeen, onSe
           <img src={getMenuAssetUrl("laboratory.png", APP_BASE)} alt="" aria-hidden="true" />
           <span>Laboratório</span>
         </button>
+        {completedStageId && planet.stages.some((stage) => stage.id === completedStageId) ? (
+          <p className="phase-completion-title" role="status" aria-live="polite">FASE CONCLUÍDA</p>
+        ) : null}
         <p className="visually-hidden" aria-live="polite">{model.progressLabel}</p>
       </div>
     </main>

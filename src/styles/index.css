@@ -839,6 +839,36 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   font-weight: 800;
   box-shadow: 0 1px 6px rgba(0, 0, 0, .65);
 }
+.phase-selection-stage.is-completing .phase-selection-stage__button { animation: completed-stage-glow 1s ease-out both; }
+.phase-selection-stage.is-completing .phase-selection-stage__check { animation: completed-check-in .7s cubic-bezier(.2,.85,.35,1.15) both; }
+.phase-completion-title {
+  position: absolute;
+  z-index: 8;
+  top: 50%;
+  left: 50%;
+  width: max-content;
+  max-width: 94%;
+  margin: 0;
+  color: #fff;
+  font: 900 clamp(2rem, 8cqw, 5.5rem)/1 Arial, "Segoe UI", sans-serif;
+  letter-spacing: .035em;
+  text-align: center;
+  text-shadow: 0 3px 8px rgba(0, 5, 22, .95), 0 0 28px rgba(104, 229, 174, .8);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: completion-title-in 2.8s cubic-bezier(.2,.75,.25,1) both;
+}
+@keyframes completion-title-in { 0% { opacity: 0; transform: translate(-50%, calc(-50% + 12px)) scale(.96); } 18% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 82% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes completed-stage-glow { 0% { filter: brightness(1); } 40% { filter: brightness(1.5); } 100% { filter: brightness(1); } }
+@keyframes completed-check-in { from { opacity: 0; transform: scale(.35) rotate(-15deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+.victory-transition-screen {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  background: #fff;
+  animation: victory-white-fade-in .45s ease-out both;
+}
+@keyframes victory-white-fade-in { from { opacity: 0; } to { opacity: 1; } }
 .phase-selection-stage__progress {
   position: absolute;
   z-index: 2;
