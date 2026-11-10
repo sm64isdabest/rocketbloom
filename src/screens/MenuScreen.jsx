@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from "react";
+import { MenuSpaceBackground } from "./MenuSpaceBackground.jsx";
 import { getMenuAssetUrl } from "./menuModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
@@ -32,6 +33,7 @@ export function MenuScreen({ warning, onPlay, onSettings }) {
       aria-labelledby="game-title"
       style={{ "--menu-background": `url("${menuAsset("background.png")}")` }}
     >
+      <MenuSpaceBackground />
       <button type="button" className="menu__settings" onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
         <img src={menuAsset("settings.png")} alt="" />
       </button>

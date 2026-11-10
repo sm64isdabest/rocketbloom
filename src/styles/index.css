@@ -163,6 +163,14 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
   overflow-y: auto;
   background: #05091c;
 }
+.menu__space-canvas {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
 .menu.screen--home::before {
   inset: 0;
   z-index: -1;
@@ -188,6 +196,8 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 .menu__settings img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .menu__settings:hover { filter: brightness(1.17); transform: rotate(8deg); }
 .menu__layout {
+  position: relative;
+  z-index: 1;
   display: flex;
   width: 100%;
   min-height: 100svh;
