@@ -38,14 +38,23 @@ export function renderPlanetBackground(ctx, view, planet, { offsetX = 0, offsetY
   const maxOffsetX = Math.max(0, (width - view.width) / 2);
   const x = (view.width - width) / 2 + Math.max(-maxOffsetX, Math.min(maxOffsetX, offsetX));
   const baseY = (view.height - height) / 2;
-  const y = baseY + ((offsetY % height) + height) % height - height;
-  ctx.drawImage(image, x, y, width, height);
-  ctx.save();
-  ctx.translate(0, y + height * 3);
-  ctx.scale(1, -1);
-  ctx.drawImage(image, x, y + height * 2, width, height);
-  ctx.restore();
-  ctx.drawImage(image, x, y + height * 2, width, height);
+  const phase = ((offsetY % height) + height) % height;
+  const tileIndex = Math.floor(offsetY / height);
+  const firstY = baseY - phase;
+  const tilesToDraw = Math.ceil(view.height / height) + 2;
+  for (let index = -1; index <= tilesToDraw; index += 1) {
+    const tileY = firstY + index * height;
+    const isMirrored = Math.abs(tileIndex + index) % 2 === 1;
+    if (isMirrored) {
+      ctx.save();
+      ctx.translate(0, tileY * 2 + height);
+      ctx.scale(1, -1);
+      ctx.drawImage(image, x, tileY, width, height);
+      ctx.restore();
+    } else {
+      ctx.drawImage(image, x, tileY, width, height);
+    }
+  }
   return true;
 }
 
