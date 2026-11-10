@@ -273,7 +273,7 @@ export class GameEngine {
     );
     this.progressMs += frameMs * progressMultiplier * this.turboSpeedFactor;
     const backgroundScrollSpeed = 90 * progressMultiplier * this.turboSpeedFactor;
-    this.backgroundOffsetY += backgroundScrollSpeed * frameSeconds;
+    this.backgroundOffsetY -= backgroundScrollSpeed * frameSeconds;
     updateStarfield(this.stars, frameSeconds, this.view.width, this.view.height,
       (0.35 + progressMultiplier * 0.58) * this.turboSpeedFactor, this.visualRng);
     updateFallingLeaves(this.leaves, frameSeconds, this.view.width, this.view.height, this.visualRng);
