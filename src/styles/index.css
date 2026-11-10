@@ -248,7 +248,7 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
   paint-order: stroke fill;
 }
 .menu__option img { width: clamp(37px, 13vw, 52px); height: clamp(37px, 13vw, 52px); flex: 0 0 auto; object-fit: contain; }
-.menu__option--shop { height: clamp(45px, 5.7vh, 51px); margin-top: 2px; border-color: #51400e; border-radius: 14px; background: linear-gradient(110deg, #e2b83e, #75520d); box-shadow: inset 0 2px 0 rgba(255, 235, 136, .4), 0 3px 0 #2b1e07; }
+.menu__option--shop { display: none; height: clamp(45px, 5.7vh, 51px); margin-top: 2px; border-color: #51400e; border-radius: 14px; background: linear-gradient(110deg, #e2b83e, #75520d); box-shadow: inset 0 2px 0 rgba(255, 235, 136, .4), 0 3px 0 #2b1e07; }
 .menu__option--info { height: clamp(36px, 4.3vh, 39px); margin-top: 3px; gap: 8px; border: 1px solid rgba(230, 229, 244, .84); border-radius: 5px; background: linear-gradient(110deg, rgba(128, 128, 148, .78), rgba(72, 73, 94, .8)); box-shadow: inset 0 1px 0 rgba(255,255,255,.37), 0 2px 4px rgba(0,0,0,.25); font-size: clamp(.98rem, 5.6vw, 1.27rem); font-weight: 600; }
 .menu__info-icon { display: grid; width: 22px; height: 22px; flex: 0 0 auto; place-items: center; border: 2px solid #090c13; border-radius: 50%; color: #090c13; font: 700 15px/1 Georgia, serif; text-shadow: none; }
 .menu__warning { position: absolute; z-index: 2; top: 59px; right: 12px; width: min(310px, calc(100% - 24px)); margin: 0; padding: 10px 12px; border: 1px solid rgba(255, 208, 109, .6); border-radius: 9px; color: #fff4d4; background: rgba(41, 26, 12, .9); font-size: .76rem; line-height: 1.45; }
