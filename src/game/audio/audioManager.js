@@ -22,6 +22,7 @@ export function scaleAudioVolume(sourceVolume, volumePercent) {
 const GAMEPLAY_MUSIC_URL = new URL("../../assets/gameplay-space-loop.wav", import.meta.url).href;
 const MENU_MUSIC_URL = new URL("../../assets/menu-space-loop.wav", import.meta.url).href;
 const SOUND_NOTES = {
+  menuClick: { notes: [659.25, 880], duration: 0.07, wave: "sine", volume: 0.1 },
   correct: { notes: [523.25, 659.25, 783.99], duration: 0.11, wave: "sine", volume: 0.12 },
   incorrect: { notes: [293.66, 246.94], duration: 0.14, wave: "triangle", volume: 0.12 },
   collision: { notes: [130.81, 98], duration: 0.1, wave: "sawtooth", volume: 0.1 },

@@ -41,6 +41,39 @@ test("discovery plays a five-note fanfare through the configured effects volume"
   }
 });
 
+test("menu play click plays a short interface sound through the configured effects volume", async () => {
+  const frequencies = [];
+  class FakeAudioContext {
+    currentTime = 1;
+    state = "running";
+    destination = {};
+    createOscillator() {
+      return {
+        type: "sine",
+        frequency: { setValueAtTime: (frequency) => frequencies.push(frequency) },
+        connect() {},
+        start() {},
+        stop() {},
+      };
+    }
+    createGain() {
+      return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} };
+    }
+  }
+
+  const priorWindow = globalThis.window;
+  globalThis.window = { AudioContext: FakeAudioContext, addEventListener() {} };
+  try {
+    const { configureAudio, playGameSound } = await import("./audioManager.js?menu-click");
+    configureAudio({ soundEffects: true, soundEffectsVolume: 100 });
+    playGameSound("menuClick");
+    assert.deepEqual(frequencies, [659.25, 880]);
+  } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+  }
+});
+
 test("angry rocket touch plays a low, short effect through the configured sound volume", async () => {
   const frequencies = [];
   class FakeAudioContext {

@@ -219,23 +219,25 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
   transition: filter .15s ease, transform .15s ease, box-shadow .15s ease;
 }
 .menu__play, .menu__option { position: relative; left: clamp(0px, 3.4vw, 14px); }
+.menu__play { left: 0; }
 .menu__play:hover, .menu__option:hover { filter: brightness(1.13); transform: translateY(-2px); }
 .menu__play:active, .menu__option:active { filter: brightness(.92); transform: translateY(1px) scale(.99); }
 .menu__play {
-  width: min(64vw, 258px);
-  height: clamp(68px, 11vh, 96px);
-  gap: clamp(6px, 2vw, 12px);
-  padding: 5px 10px 5px 6px;
-  border: 2px solid #020b02;
-  border-radius: 20px;
-  background: linear-gradient(110deg, #169800, #006500 72%);
-  box-shadow: inset 0 2px 0 rgba(141, 255, 53, .46), 0 4px 0 #061305, 0 8px 20px rgba(0, 0, 0, .42);
-  font-size: clamp(2.15rem, 11vw, 3rem);
+  width: min(80vw, 300px);
+  height: auto;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: clamp(2.5rem, 12vw, 3.5rem);
   letter-spacing: .01em;
   -webkit-text-stroke: 1px #050606;
   paint-order: stroke fill;
 }
-.menu__play img { display: block; width: clamp(61px, 22vw, 88px); height: auto; flex: 0 0 auto; object-fit: contain; }
+.menu__play img { display: block; width: clamp(104px, 32vw, 142px); height: auto; flex: 0 0 auto; object-fit: contain; }
 .menu__option {
   width: min(54vw, 220px);
   gap: 9px;
@@ -261,21 +263,19 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
   .menu__layout { padding-top: max(64px, 10vh); }
   .menu__logo { width: min(72vw, 245px, 40vh); }
   .menu__buttons { gap: 7px; margin-top: clamp(12px, 3.6vh, 24px); }
-  .menu__play { height: clamp(62px, 10vh, 78px); }
   .menu__option--shop { height: 38px; margin-top: 0; }
   .menu__option--info { height: 30px; margin-top: 0; }
 }
 @media (max-width: 360px) {
   .menu__layout { padding-right: 12px; padding-left: 12px; }
-  .menu__play { width: min(69vw, 258px); }
+  .menu__play { width: min(80vw, 300px); }
   .menu__option { width: min(61vw, 220px); }
 }
 @media (orientation: landscape) and (max-height: 600px) {
   .menu__layout { padding-top: 55px; }
   .menu__logo { width: min(50vh, 230px); }
   .menu__buttons { gap: 7px; margin-top: 10px; }
-  .menu__play { height: 58px; }
-  .menu__play img { width: 52px; }
+  .menu__play img { width: 82px; }
   .menu__option { height: 39px; }
   .menu__option img { width: 33px; height: 33px; }
 }
