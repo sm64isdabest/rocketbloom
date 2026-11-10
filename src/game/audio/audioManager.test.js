@@ -41,6 +41,40 @@ test("discovery plays a five-note fanfare through the configured effects volume"
   }
 });
 
+test("defeat plays a short low explosive burst through the configured effects volume", async () => {
+  const frequencies = [];
+  const waves = [];
+  class FakeAudioContext {
+    currentTime = 1;
+    state = "running";
+    destination = {};
+    createOscillator() {
+      return {
+        set type(wave) { waves.push(wave); },
+        frequency: { setValueAtTime: (frequency) => frequencies.push(frequency) },
+        connect() {}, start() {}, stop() {},
+      };
+    }
+    createGain() {
+      return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} };
+    }
+  }
+
+  const priorWindow = globalThis.window;
+  globalThis.window = { AudioContext: FakeAudioContext, addEventListener() {} };
+  try {
+    const { configureAudio, playGameSound } = await import("./audioManager.js?defeat-explosion");
+    configureAudio({ soundEffects: true, soundEffectsVolume: 100 });
+    playGameSound("defeat");
+    assert.ok(frequencies.length >= 3, "the defeat effect should contain a layered burst");
+    assert.ok(frequencies.every((frequency) => frequency < 200), "the defeat effect should use low frequencies");
+    assert.ok(waves.every((wave) => wave === "sawtooth"), "the defeat burst should sound rough and explosive");
+  } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+  }
+});
+
 test("menu play click plays a short interface sound through the configured effects volume", async () => {
   const frequencies = [];
   class FakeAudioContext {

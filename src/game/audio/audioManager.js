@@ -31,7 +31,7 @@ const SOUND_NOTES = {
   angryTouch: { notes: [196, 164.81, 138.59], duration: 0.12, wave: "sawtooth", volume: 0.1 },
   victory: { notes: [523.25, 659.25, 783.99, 1046.5], duration: 0.2, wave: "triangle", volume: 0.12 },
   discovery: { notes: [523.25, 659.25, 783.99, 1046.5, 1318.51], duration: 0.16, wave: "sine", volume: 0.12 },
-  defeat: { notes: [392, 329.63, 261.63, 196], duration: 0.24, wave: "triangle", volume: 0.12 },
+  defeat: { notes: [130.81, 65.41, 32.7], duration: 0.3, wave: "sawtooth", volume: 0.14, spacing: 0.045 },
 };
 
 function getContext() {
@@ -158,5 +158,5 @@ export function finishGameAudio(outcome) {
 export function playGameSound(name) {
   if (!preferences.soundEffects || preferences.soundEffectsVolume <= AUDIO.minVolume) return;
   const sound = SOUND_NOTES[name];
-  if (sound) playSequence(sound.notes, sound.duration, sound.wave, scaleAudioVolume(sound.volume, preferences.soundEffectsVolume));
+  if (sound) playSequence(sound.notes, sound.duration, sound.wave, scaleAudioVolume(sound.volume, preferences.soundEffectsVolume), sound.spacing);
 }
