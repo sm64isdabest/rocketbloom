@@ -17,14 +17,19 @@ export function MenuSpaceBackground() {
     };
     const resizeObserver = new ResizeObserver(() => animation?.resize());
     const resizeWindow = () => animation?.resize();
-    const resetPointer = () => animation?.setPointer(0, 0);
     const movePointer = (event) => {
       const bounds = canvas.getBoundingClientRect();
       if (bounds.width === 0 || bounds.height === 0) return;
-      animation?.setPointer(
-        ((event.clientX - bounds.left) / bounds.width) * 2 - 1,
-        ((event.clientY - bounds.top) / bounds.height) * 2 - 1,
-      );
+      const x = Math.max(-1, Math.min(1, ((event.clientX - bounds.left) / bounds.width) * 2 - 1));
+      const y = Math.max(-1, Math.min(1, ((event.clientY - bounds.top) / bounds.height) * 2 - 1));
+      animation?.setPointer(x, y);
+      canvas.parentElement.style.setProperty("--menu-pointer-x", x);
+      canvas.parentElement.style.setProperty("--menu-pointer-y", y);
+    };
+    const resetPointer = () => {
+      animation?.setPointer(0, 0);
+      canvas.parentElement.style.setProperty("--menu-pointer-x", 0);
+      canvas.parentElement.style.setProperty("--menu-pointer-y", 0);
     };
 
     resizeObserver.observe(canvas.parentElement);

@@ -177,6 +177,8 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
   background-image: linear-gradient(180deg, rgba(3, 7, 22, .3), rgba(4, 8, 30, .3)), var(--menu-background);
   background-position: center;
   background-size: cover;
+  transform: translate(calc(var(--menu-pointer-x, 0) * -1%), calc(var(--menu-pointer-y, 0) * -1%)) scale(1.06);
+  transition: transform .28s ease-out;
 }
 .menu__settings {
   position: absolute;
