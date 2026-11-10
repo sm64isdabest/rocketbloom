@@ -316,8 +316,13 @@ export class GameEngine {
       for (const laser of this.answerLasers) {
         if (!laser.alive) continue;
         laser.update(dt);
+        const answer = this.currentRound.answers.find((candidate) => candidate.lane === laser.lane);
+        if (answer) {
+          answer.x = laser.x + (laser.width - answer.width) / 2;
+          answer.y = laser.y - answer.height - 8;
+        }
         if (aabbOverlaps(this.rocket, laser)) {
-          const selected = this.currentRound.answers.find((answer) => answer.lane === laser.lane);
+          const selected = answer;
           laser.alive = false;
           this.spawnParticles(
             this.rocket.x + this.rocket.width / 2,

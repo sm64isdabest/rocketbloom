@@ -168,6 +168,20 @@ test("quatro lasers aparecem uma vez por alternativa, abaixo dela e na cor da fa
   });
 });
 
+test("respostas acompanham e ficam centralizadas sobre cada laser", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const laser = engine.answerLasers[0];
+    const answer = engine.currentRound.answers.find((candidate) => candidate.lane === laser.lane);
+    const initialY = answer.y;
+    engine.tick(0.05);
+    assert.equal(answer.x + answer.width / 2, laser.x + laser.width / 2);
+    assert.equal(answer.y, laser.y - answer.height - 8);
+    assert.ok(answer.y > initialY);
+    engine.stop();
+  });
+});
+
 test("controles, obstáculos e progresso continuam ativos durante animação de resposta", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
