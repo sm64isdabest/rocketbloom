@@ -25,14 +25,14 @@ function makeStars(width, height, random) {
   })));
 }
 
-function drawNebula(ctx, width, height, elapsed) {
+function drawNebula(ctx, width, height, elapsed, parallax) {
   const clouds = [
     { x: 0.23, y: 0.28, rx: 0.44, ry: 0.5, color: "70, 117, 255", phase: 0.2 },
     { x: 0.79, y: 0.62, rx: 0.42, ry: 0.54, color: "72, 73, 220", phase: 2.3 },
   ];
   for (const cloud of clouds) {
-    const x = width * (cloud.x + Math.sin(elapsed * 0.018 + cloud.phase) * 0.008);
-    const y = height * (cloud.y + Math.cos(elapsed * 0.014 + cloud.phase) * 0.01);
+    const x = width * (cloud.x + Math.sin(elapsed * 0.018 + cloud.phase) * 0.008) + parallax.x * 8;
+    const y = height * (cloud.y + Math.cos(elapsed * 0.014 + cloud.phase) * 0.01) + parallax.y * 8;
     const radius = Math.max(width * cloud.rx, height * cloud.ry);
     const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
     gradient.addColorStop(0, `rgba(${cloud.color}, 0.045)`);
@@ -130,6 +130,8 @@ export function createMenuSpaceAnimation(canvas, options = {}) {
   let stars = [];
   let streaks = [];
   let elapsed = 0;
+  let pointerTarget = { x: 0, y: 0 };
+  let parallax = { x: 0, y: 0 };
   let meteorIn = randomBetween(random, 4, 8);
   let shootingStarIn = randomBetween(random, 2, 4);
   let cometIn = randomBetween(random, 22, 35);
@@ -149,6 +151,9 @@ export function createMenuSpaceAnimation(canvas, options = {}) {
 
   function update(dt) {
     elapsed += dt;
+    const easing = 1 - Math.exp(-dt * 4.5);
+    parallax.x += (pointerTarget.x - parallax.x) * easing;
+    parallax.y += (pointerTarget.y - parallax.y) * easing;
     for (let layerIndex = 0; layerIndex < stars.length; layerIndex += 1) {
       const layer = stars[layerIndex];
       for (const star of layer) {
@@ -186,8 +191,12 @@ export function createMenuSpaceAnimation(canvas, options = {}) {
 
   function draw() {
     ctx.clearRect(0, 0, width, height);
-    drawNebula(ctx, width, height, elapsed);
+    drawNebula(ctx, width, height, elapsed, parallax);
+    const parallaxDepths = [5, 14, 25];
     for (let layerIndex = 0; layerIndex < stars.length; layerIndex += 1) {
+      const depth = parallaxDepths[layerIndex];
+      ctx.save();
+      ctx.translate(-parallax.x * depth, -parallax.y * depth);
       for (const star of stars[layerIndex]) {
         const twinkle = star.twinkle ? 0.68 + Math.sin(elapsed * star.twinkleSpeed + star.phase) * 0.24 : 1;
         ctx.globalAlpha = star.alpha * twinkle;
@@ -196,9 +205,13 @@ export function createMenuSpaceAnimation(canvas, options = {}) {
         ctx.arc(star.x, star.y, star.radius * (star.twinkle ? 0.92 + twinkle * 0.12 : 1), 0, Math.PI * 2);
         ctx.fill();
       }
+      ctx.restore();
     }
     ctx.globalAlpha = 1;
+    ctx.save();
+    ctx.translate(-parallax.x * 25, -parallax.y * 25);
     for (const streak of streaks) drawStreak(ctx, streak, elapsed);
+    ctx.restore();
     ctx.globalAlpha = 1;
   }
 
@@ -213,6 +226,10 @@ export function createMenuSpaceAnimation(canvas, options = {}) {
 
   return {
     resize,
+    setPointer(x, y) {
+      if (reducedMotion) return;
+      pointerTarget = { x: clamp(x, -1, 1), y: clamp(y, -1, 1) };
+    },
     start() {
       if (running) return;
       running = true;
