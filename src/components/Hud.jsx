@@ -49,12 +49,12 @@ export function Hud({ snapshot, onPause, onSpecialAnswer, onSpecialContinue }) {
               onClick={() => onSpecialAnswer?.(choice)}
             ><span aria-hidden="true">{["A", "B", "C"][index]}</span>{choice}</button>)}
           </div>
-          {specialQuestion.result ? <div className="hud__special-result" role="status" aria-live="polite">
+          {specialQuestion.result && !specialQuestion.result.correct ? <div className="hud__special-result" role="status" aria-live="polite">
             <strong>{specialQuestion.result.message}</strong>
             {!specialQuestion.result.correct ? <p>A resposta certa é <b>{specialQuestion.result.correctAnswer}</b>.</p> : null}
             <p>{specialQuestion.result.explanation}</p>
             <button type="button" className="hud__special-continue" onClick={onSpecialContinue}>Continuar aventura 🚀</button>
-          </div> : <p className="hud__special-hint">Escolha uma resposta para continuar!</p>}
+          </div> : !specialQuestion.result ? <p className="hud__special-hint">Escolha uma resposta para continuar!</p> : null}
         </section>
       </div> : null}
       <button type="button" className="btn btn--ghost hud__pause" onClick={onPause} aria-label="Pausar fase">

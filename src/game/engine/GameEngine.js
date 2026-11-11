@@ -491,6 +491,9 @@ export class GameEngine {
       this.correctAnswers += 1;
       this.score += SCORE.correctAnswer;
       playGameSound("correct");
+      this.specialQuestion = null;
+      this.interQuestionRemainingMs = sampleInterQuestionDelayMs(this.rng);
+      this.resume();
     } else {
       this.incorrectAnswers += 1;
       playGameSound("discovery");
