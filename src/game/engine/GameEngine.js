@@ -29,7 +29,7 @@ function clamp(value, min, max) {
 }
 
 export class GameEngine {
-  constructor({ canvas, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, rng = Math.random, runId = makeRunId(), explosionImage }) {
+  constructor({ canvas, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, rng = Math.random, runId = makeRunId(), explosionImage, bubbleImage }) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.session = session;
@@ -49,6 +49,7 @@ export class GameEngine {
     this.view = { width: 0, height: 0, dpr: 1 };
     this.rocket = new Rocket();
     this.explosionImage = explosionImage ?? this.createExplosionImage();
+    this.bubbleImage = bubbleImage ?? this.createBubbleImage();
     this.outcome = null;
     this.stars = [];
     this.speedStreaks = [];
@@ -118,6 +119,14 @@ export class GameEngine {
     const image = new Image();
     const basePath = import.meta.env?.BASE_URL ?? "/";
     image.src = `${basePath.endsWith("/") ? basePath : `${basePath}/`}assets/explosion.png`;
+    return image;
+  }
+
+  createBubbleImage() {
+    if (typeof Image === "undefined") return null;
+    const image = new Image();
+    const basePath = import.meta.env?.BASE_URL ?? "/";
+    image.src = `${basePath.endsWith("/") ? basePath : `${basePath}/`}assets/powerups/bubble-shield.png`;
     return image;
   }
 
@@ -800,17 +809,13 @@ export class GameEngine {
     } else {
       this.rocket.render(ctx, this.elapsedMs, this.reducedMotion);
     }
-    if (this.powerUps.bubble) {
-      ctx.save();
-      ctx.strokeStyle = "rgba(116, 226, 255, .78)";
-      ctx.fillStyle = "rgba(116, 226, 255, .12)";
-      ctx.lineWidth = 3;
-      ctx.shadowColor = "#72e6ff";
-      ctx.shadowBlur = 18;
-      ctx.beginPath();
-      ctx.ellipse(this.rocket.x + this.rocket.width / 2, this.rocket.y + this.rocket.height / 2,
-        this.rocket.width * 0.72, this.rocket.height * 0.63, 0, 0, Math.PI * 2);
-      ctx.fill(); ctx.stroke(); ctx.restore();
+    if (this.powerUps.bubble && this.bubbleImage?.complete && this.bubbleImage.naturalWidth > 0) {
+      const pulse = this.reducedMotion ? 0 : Math.sin(this.elapsedMs * Math.PI * 2 / 3200);
+      const bubbleHeight = this.rocket.height * 1.45 * (1 - pulse * 0.018);
+      const bubbleWidth = bubbleHeight * this.bubbleImage.naturalWidth / this.bubbleImage.naturalHeight * (1 + pulse * 0.025);
+      const centerX = this.rocket.x + this.rocket.width / 2;
+      const centerY = this.rocket.y + this.rocket.height / 2;
+      ctx.drawImage(this.bubbleImage, centerX - bubbleWidth / 2, centerY - bubbleHeight / 2, bubbleWidth, bubbleHeight);
     }
     if (this.powerUps.rouletteMs > 0) this.renderPowerRoulette();
     if (this.shrinkFlashRemainingMs > 0) {

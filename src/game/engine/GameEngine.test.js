@@ -22,10 +22,11 @@ function withCanvasEnvironment(run) {
   const observers = [];
   const strokeRects = [];
   const drawnImages = [];
+  const drawnImageCalls = [];
   const ctx = new Proxy({
     createLinearGradient: () => ({ addColorStop() {} }),
     setTransform() {},
-    drawImage(image) { drawnImages.push(image); },
+    drawImage(...args) { drawnImages.push(args[0]); drawnImageCalls.push(args); },
     strokeRect(x, y, width, height) {
       strokeRects.push({ x, y, width, height, color: this.strokeStyle, lineWidth: this.lineWidth });
     },
@@ -52,7 +53,7 @@ function withCanvasEnvironment(run) {
   };
 
   try {
-    run({ canvas, scheduled, observers, strokeRects, drawnImages });
+    run({ canvas, scheduled, observers, strokeRects, drawnImages, drawnImageCalls });
   } finally {
     globalThis.window = original.window;
     globalThis.ResizeObserver = original.ResizeObserver;
@@ -81,8 +82,53 @@ function engineOptions(canvas, callbacks = {}, extras = {}) {
     onHud: callbacks.onHud,
     onPauseRequest: callbacks.onPauseRequest,
     explosionImage: extras.explosionImage,
+    bubbleImage: extras.bubbleImage,
   };
 }
+
+test("bolha protetora desenha a arte iridescente envolvendo o foguete", () => {
+  withCanvasEnvironment(({ canvas, drawnImageCalls }) => {
+    const bubbleImage = { complete: true, naturalWidth: 1536, naturalHeight: 1024 };
+    const engine = new GameEngine(engineOptions(canvas, {}, { bubbleImage }));
+    engine.powerUps = activatePowerUp(createPowerUpState(), "bubble");
+
+    engine.render();
+
+    const bubbleDraw = drawnImageCalls.find(([image]) => image === bubbleImage);
+    assert.ok(bubbleDraw, "a imagem da bolha precisa ser desenhada");
+    assert.ok(bubbleDraw[3] >= engine.rocket.width * 2.7, "a bolha deve deixar folga horizontal para a nave");
+    assert.ok(bubbleDraw[4] >= engine.rocket.height * 1.4, "a bolha deve deixar folga vertical para a nave");
+    assert.ok(bubbleDraw[1] < engine.rocket.x, "a bolha deve envolver a nave pela esquerda");
+    assert.ok(bubbleDraw[1] + bubbleDraw[3] > engine.rocket.x + engine.rocket.width, "a bolha deve envolver a nave pela direita");
+    engine.stop();
+  });
+});
+
+test("animação da bolha pulsa suavemente e fica estática com movimento reduzido", () => {
+  withCanvasEnvironment(({ canvas, drawnImageCalls }) => {
+    const bubbleImage = { complete: true, naturalWidth: 1536, naturalHeight: 1024 };
+    const engine = new GameEngine(engineOptions(canvas, {}, { bubbleImage }));
+    engine.powerUps = activatePowerUp(createPowerUpState(), "bubble");
+    const getBubbleSize = () => drawnImageCalls.filter(([image]) => image === bubbleImage).at(-1).slice(3, 5);
+
+    engine.elapsedMs = 0;
+    engine.render();
+    const firstSize = getBubbleSize();
+    engine.elapsedMs = 750;
+    engine.render();
+    const secondSize = getBubbleSize();
+    assert.notDeepEqual(secondSize, firstSize, "a escala da bolha deve pulsar durante a partida");
+
+    engine.reducedMotion = true;
+    engine.elapsedMs = 1500;
+    engine.render();
+    const reducedMotionSize = getBubbleSize();
+    engine.elapsedMs = 2250;
+    engine.render();
+    assert.deepEqual(getBubbleSize(), reducedMotionSize, "movimento reduzido deve manter a bolha estática");
+    engine.stop();
+  });
+});
 
 function moveRocketToLane(engine, lane) {
   const laneWidth = engine.view.width / 4;

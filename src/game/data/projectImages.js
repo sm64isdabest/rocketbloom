@@ -38,6 +38,7 @@ export const PROJECT_IMAGES = [
   "/assets/obstacles/earth/helicopter.png",
   "/assets/obstacles/earth/plane.png",
   "/assets/powerups/bubble.png",
+  "/assets/powerups/bubble-shield.png",
   "/assets/powerups/mystery-box.png",
   "/assets/powerups/shrink.png",
   "/assets/powerups/star.png",
