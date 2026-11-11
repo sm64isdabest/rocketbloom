@@ -169,7 +169,7 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 .laboratory-scene__title { color: rgba(226, 245, 255, .84); font-size: clamp(.66rem, 2.4vw, .9rem); font-weight: 800; letter-spacing: .12em; text-shadow: 0 2px 4px #0a1740; text-transform: uppercase; }
 .laboratory-scene__icon-button { display: grid; width: clamp(37px, 9vw, 50px); height: clamp(37px, 9vw, 50px); place-items: center; padding: 5px; border: 2px solid #0872c6; border-radius: 12px; color: #fff; background: linear-gradient(180deg, #0c4f9b, #07285e); box-shadow: inset 0 0 0 2px rgba(27, 180, 255, .3), 0 2px 0 #071b45, 0 0 16px rgba(0, 183, 255, .35); cursor: pointer; font-size: 1.65rem; font-weight: 900; line-height: 1; text-shadow: 1px 2px 1px #061331; }
 .laboratory-scene__icon-button img { width: 100%; height: 100%; object-fit: contain; }
-.laboratory-scene__icon-button:first-child { width: min(14vw, 36svh, 184px); height: min(14vw, 36svh, 184px); padding: 2px; }
+.laboratory-scene__icon-button:first-child { width: min(14vw, 36svh, 184px); height: min(14vw, 36svh, 184px); padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .laboratory-scene__back-icon { display: block; width: 100%; height: 100%; object-fit: contain; }
 .laboratory-scene__icon-button--settings { width: min(16vw, 38svh, 190px); height: min(16vw, 38svh, 190px); padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .laboratory-scene__icon-button--settings img { filter: drop-shadow(0 3px 5px rgba(4, 17, 51, .62)); }
@@ -177,7 +177,7 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 .laboratory-specimen__plant { display: block; width: min(53vw, 27svh, 320px); max-height: 27svh; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(3, 11, 32, .46)); transform-origin: 50% 94%; animation: laboratory-plant-sway 3.8s ease-in-out infinite; }
 @keyframes laboratory-plant-sway { 0%, 100% { transform: rotate(-2deg) translateY(0); } 50% { transform: rotate(2.2deg) translateY(-3px); } }
 .laboratory-planet-navigation { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
-.laboratory-planet-navigation__arrow { position: absolute; top: 51%; display: grid; width: min(15vw, 38svh, 190px); height: min(15vw, 38svh, 190px); place-items: center; padding: 8px; border: 2px solid rgba(32, 38, 60, .8); border-radius: 9px; color: #263044; background: linear-gradient(145deg, #fff, #aeb8c8); box-shadow: inset 0 1px 0 #fff, 0 3px 0 #4a4d5d, 0 3px 8px rgba(0, 0, 0, .42); cursor: pointer; pointer-events: auto; }
+.laboratory-planet-navigation__arrow { position: absolute; top: 51%; display: grid; width: min(15vw, 38svh, 190px); height: min(15vw, 38svh, 190px); place-items: center; padding: 0; border: 0; border-radius: 0; color: #263044; background: transparent; box-shadow: none; cursor: pointer; pointer-events: auto; }
 .laboratory-planet-navigation__arrow img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .laboratory-planet-navigation__arrow:hover { filter: brightness(1.12); transform: translateY(-1px); }
 .laboratory-planet-navigation__arrow:first-child { left: max(12px, env(safe-area-inset-left)); }
