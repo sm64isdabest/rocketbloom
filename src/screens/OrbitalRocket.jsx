@@ -6,7 +6,7 @@ import { getRocketOrbitPose, smoothTarget } from "./rocketOrbit.js";
 const MAX_PIXEL_RATIO = 1.5;
 const TRAIL_COUNT = 15;
 
-export function OrbitalRocket({ targetRef, targetKey, hovered = false, reducedMotion = false, selectionPulse = 0 }) {
+export function OrbitalRocket({ targetRef, hovered = false, reducedMotion = false, selectionPulse = 0 }) {
   const layerRef = useRef(null);
   const hoveredRef = useRef(hovered);
   const pulseRef = useRef(selectionPulse);
@@ -209,7 +209,7 @@ export function OrbitalRocket({ targetRef, targetKey, hovered = false, reducedMo
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, [targetRef, targetKey, reducedMotion]);
+  }, [targetRef, reducedMotion]);
 
   return <div ref={layerRef} className="orbital-rocket-layer" aria-hidden="true" />;
 }

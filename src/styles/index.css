@@ -831,6 +831,18 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .phase-selection-stage.is-locked .phase-selection-stage__frame { filter: grayscale(1) brightness(.58); }
 .phase-selection-stage.is-locked .phase-selection-stage__number { color: #9ba8b6; }
 .phase-selection-stage.is-current .phase-selection-stage__frame { filter: drop-shadow(0 0 5px rgba(92, 218, 255, .9)); }
+.phase-selection-stage.is-selected::after {
+  position: absolute;
+  z-index: 2;
+  inset: -5%;
+  border: 2px solid rgba(255, 249, 203, .95);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(255, 211, 91, .9), inset 0 0 8px rgba(255, 231, 133, .35);
+  content: "";
+  pointer-events: none;
+  animation: phase-stage-selected 1.1s ease-in-out infinite alternate;
+}
+@keyframes phase-stage-selected { from { opacity: .62; transform: scale(.96); } to { opacity: 1; transform: scale(1.035); } }
 .phase-selection-stage__check {
   position: absolute;
   z-index: 2;
@@ -941,6 +953,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   .phase-selection-stage__number { font-size: 6.5cqw; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .phase-selection-stage.is-selected::after { animation: none; }
   .phase-selection-arrow { transition: none; }
   .phase-selection-canvas.is-revealing .phase-selection-background,
   .phase-selection-canvas.is-revealing .phase-selection-stage__frame { animation-duration: .01ms; }

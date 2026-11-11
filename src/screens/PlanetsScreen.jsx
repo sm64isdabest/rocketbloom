@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { PLANETS } from "../game/data/planets.js";
 import { playGameSound } from "../game/audio/audioManager.js";
-import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetIdForStage, getPlanetSelectorModel } from "./planetSelectorModel.js";
+import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
 import { getMenuAssetUrl } from "./menuModel.js";
 import { setOrbitTargetElement } from "./rocketOrbit.js";
 
@@ -34,13 +34,13 @@ const stageStatusLabel = (stage) => {
 export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMarkPlanetSeen, onSettings, onCommandRoom }) {
   const initialPlanetId = getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const [selectedPlanetId, setSelectedPlanetId] = useState(initialPlanetId);
+  const [selectedStageId, setSelectedStageId] = useState(null);
   const [revealingPlanetId, setRevealingPlanetId] = useState(null);
   const [hoveredSelector, setHoveredSelector] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [selectionPulse, setSelectionPulse] = useState(0);
   const discoveryHandled = useRef(new Set(progress.seenPlanetIds ?? []));
   const activeStageElementRef = useRef(null);
-  const launchTimeoutRef = useRef(null);
   const planet = PLANETS.find(({ id }) => id === selectedPlanetId) ?? PLANETS[0];
   const model = getPlanetSelectorModel(planet, progress);
   const planetIndex = PLANETS.findIndex(({ id }) => id === planet.id);
@@ -62,25 +62,30 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
     preference.addEventListener?.("change", updatePreference);
     return () => {
       preference.removeEventListener?.("change", updatePreference);
-      if (launchTimeoutRef.current !== null) window.clearTimeout(launchTimeoutRef.current);
     };
   }, []);
 
   const canGoBack = previousPlanet && canNavigateToPlanet(planet.id, previousPlanet.id, progress);
   const canGoForward = nextPlanet && canNavigateToPlanet(planet.id, nextPlanet.id, progress);
   const activeStage = model.stages.find((stage) => stage.available && !stage.completed);
-  const orbitStage = activeStage ?? model.stages.find((stage) => !stage.completed) ?? model.stages.at(-1);
+  const orbitStage = model.stages.find((stage) => stage.id === selectedStageId)
+    ?? activeStage
+    ?? model.stages.find((stage) => !stage.completed)
+    ?? model.stages.at(-1);
   const baseClass = `phase-selection-canvas phase-selection-canvas--${planet.id}${revealingPlanetId === planet.id ? " is-revealing" : ""}`;
 
   const launchStage = (stageId, targetElement) => {
     setOrbitTargetElement(activeStageElementRef, targetElement);
-    setSelectionPulse((pulse) => pulse + 1);
-    if (launchTimeoutRef.current !== null) window.clearTimeout(launchTimeoutRef.current);
-    const delay = reducedMotion ? 0 : 260;
-    launchTimeoutRef.current = window.setTimeout(() => {
-      launchTimeoutRef.current = null;
-      onPlay(planet.id, stageId);
-    }, delay);
+    if (getStageClickAction(selectedStageId, stageId) === "select") {
+      setSelectedStageId(stageId);
+      setSelectionPulse((pulse) => pulse + 1);
+      return;
+    }
+    onPlay(planet.id, stageId);
+  };
+  const selectPlanet = (planetId) => {
+    setSelectedStageId(null);
+    setSelectedPlanetId(planetId);
   };
 
   return (
@@ -118,7 +123,6 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
           <Suspense fallback={null}>
             <OrbitalRocket
               targetRef={activeStageElementRef}
-              targetKey={`${planet.id}:${orbitStage.id}`}
               hovered={hoveredSelector}
               reducedMotion={reducedMotion}
               selectionPulse={selectionPulse}
@@ -156,7 +160,7 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
             return (
               <li
                 key={stage.id}
-                className={`phase-selection-stage${stage.status ? ` is-${stage.status}` : ""}${current ? " is-current" : ""}${completedStageId === stage.id ? " is-completing" : ""}`}
+                className={`phase-selection-stage${stage.status ? ` is-${stage.status}` : ""}${current ? " is-current" : ""}${selectedStageId === stage.id ? " is-selected" : ""}${completedStageId === stage.id ? " is-completing" : ""}`}
                 style={{
                   "--stage-x": `${(x / PANEL_WIDTH) * 100}%`,
                   "--stage-y": `${(y / PANEL_HEIGHT) * 100}%`,
@@ -168,7 +172,8 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
                   className="phase-selection-stage__button"
                   disabled={!stage.available}
                   aria-current={current ? "step" : undefined}
-                  aria-label={`${planet.name}, fase ${stageIndex + 1}, ${stageStatusLabel(stage)}`}
+                  aria-pressed={selectedStageId === stage.id}
+                  aria-label={`${planet.name}, fase ${stageIndex + 1}, ${stageStatusLabel(stage)}, ${selectedStageId === stage.id ? "selecionada, clique novamente para entrar" : "clique para selecionar"}`}
                   onClick={(event) => launchStage(stage.id, event.currentTarget)}
                 >
                   <img
@@ -193,7 +198,7 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
           type="button"
           className="phase-selection-arrow phase-selection-arrow--left"
           disabled={!canGoBack}
-          onClick={() => previousPlanet && setSelectedPlanetId(previousPlanet.id)}
+          onClick={() => previousPlanet && selectPlanet(previousPlanet.id)}
           aria-label={canGoBack ? `Planeta anterior: ${previousPlanet.name}` : "Não há planeta anterior desbloqueado"}
         >
           <img src={`${APP_BASE}assets/ui/level-frames/arrow-left.png`} alt="" aria-hidden="true" draggable="false" />
@@ -202,7 +207,7 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
           type="button"
           className="phase-selection-arrow phase-selection-arrow--right"
           disabled={!canGoForward}
-          onClick={() => nextPlanet && canGoForward && setSelectedPlanetId(nextPlanet.id)}
+          onClick={() => nextPlanet && canGoForward && selectPlanet(nextPlanet.id)}
           aria-label={canGoForward ? `Próximo planeta: ${nextPlanet.name}` : "Conclua todas as fases para desbloquear o próximo planeta"}
         >
           <img src={`${APP_BASE}assets/ui/level-frames/arrow-right.png`} alt="" aria-hidden="true" draggable="false" />

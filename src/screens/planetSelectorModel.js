@@ -4,6 +4,10 @@ export function getPlanetIdForStage(stageId, planets = PLANETS) {
   return planets.find((planet) => planet.stages.some((stage) => stage.id === stageId))?.id ?? null;
 }
 
+export function getStageClickAction(selectedStageId, clickedStageId) {
+  return selectedStageId === clickedStageId ? "enter" : "select";
+}
+
 export function getInitialExpandedPlanetId(progress, planets = PLANETS) {
   const unlocked = planets.filter((planet) => progress.unlockedPlanetIds.includes(planet.id));
   const nextPlanet = unlocked.find((planet) => planet.stages.some((stage) => !progress.completedStageIds.includes(stage.id)));

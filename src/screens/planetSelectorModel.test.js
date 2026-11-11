@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { PLANETS } from "../game/data/planets.js";
 import { createDefaultProgress } from "../utils/storage.js";
-import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetIdForStage, getPlanetSelectorModel } from "./planetSelectorModel.js";
+import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
 
 test("selector keeps five phase states per planet and respects the saved unlock order", () => {
   const progress = createDefaultProgress();
@@ -69,4 +69,10 @@ test("planet navigation rejects locked sources and non-adjacent destinations", (
 
   assert.equal(canNavigateToPlanet("earth", "saturn", progress), false);
   assert.equal(canNavigateToPlanet("neptune", "saturn", progress), false);
+});
+
+test("a phase needs a first click to select and a second click to enter", () => {
+  assert.equal(getStageClickAction(null, "earth-1"), "select");
+  assert.equal(getStageClickAction("earth-1", "earth-1"), "enter");
+  assert.equal(getStageClickAction("earth-1", "earth-2"), "select");
 });
