@@ -89,7 +89,7 @@ export const QUESTION_TIMING = {
   choiceWindowMs: 6500,
   perspectiveAnimationMs: 1450,
   resolutionFeedbackMs: 700,
-  interQuestionMinMs: 3000,
+  interQuestionMinMs: 4000,
   interQuestionMaxMs: 10000,
 };
 

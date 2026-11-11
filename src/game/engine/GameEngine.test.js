@@ -391,7 +391,7 @@ test("intervalo após resolução esconde opções, respeita pausa e não duplic
     engine.tick(0.016);
     tickFor(engine, 700);
     assert.equal(engine.currentRound.status, "waiting-next-question");
-    assert.equal(engine.interQuestionRemainingMs, 6010);
+    assert.equal(engine.interQuestionRemainingMs, 6580);
     assert.equal(engine.getSnapshot().question, null);
     assert.ok(engine.answers.every((answer) => !answer.alive));
 
