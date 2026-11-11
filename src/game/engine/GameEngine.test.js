@@ -16,17 +16,28 @@ function withCanvasEnvironment(run) {
     ResizeObserver: globalThis.ResizeObserver,
     requestAnimationFrame: globalThis.requestAnimationFrame,
     cancelAnimationFrame: globalThis.cancelAnimationFrame,
+    Image: globalThis.Image,
   };
   const scheduled = new Map();
   let rafId = 0;
   const observers = [];
   const strokeRects = [];
+  const roundedCards = [];
+  const strokeColors = [];
   const drawnImages = [];
   const drawnImageCalls = [];
+  const drawnImageAlphas = [];
+  globalThis.Image = class {
+    constructor() { this.complete = true; this.naturalWidth = 128; this.naturalHeight = 128; }
+    set src(value) { this._src = value; }
+    get src() { return this._src; }
+  };
   const ctx = new Proxy({
     createLinearGradient: () => ({ addColorStop() {} }),
     setTransform() {},
-    drawImage(...args) { drawnImages.push(args[0]); drawnImageCalls.push(args); },
+    drawImage(...args) { drawnImages.push(args[0]); drawnImageCalls.push(args); drawnImageAlphas.push(this.globalAlpha); },
+    roundRect(...args) { roundedCards.push(args); },
+    stroke() { strokeColors.push(this.strokeStyle); },
     strokeRect(x, y, width, height) {
       strokeRects.push({ x, y, width, height, color: this.strokeStyle, lineWidth: this.lineWidth });
     },
@@ -53,12 +64,13 @@ function withCanvasEnvironment(run) {
   };
 
   try {
-    run({ canvas, scheduled, observers, strokeRects, drawnImages, drawnImageCalls });
+    run({ canvas, scheduled, observers, strokeRects, roundedCards, strokeColors, drawnImages, drawnImageCalls, drawnImageAlphas });
   } finally {
     globalThis.window = original.window;
     globalThis.ResizeObserver = original.ResizeObserver;
     globalThis.requestAnimationFrame = original.requestAnimationFrame;
     globalThis.cancelAnimationFrame = original.cancelAnimationFrame;
+    globalThis.Image = original.Image;
   }
 }
 
@@ -651,6 +663,64 @@ test("caixa coletada inicia roleta enquanto o progresso continua", () => {
     assert.ok(engine.progressMs > progressAtPickup, "the game progresses during the roulette animation");
     assert.equal(engine.powerUps.rouletteMs, 0);
     assert.ok(engine.getSnapshot().powerUps.length > 0, "a power is revealed when the roulette ends");
+    engine.stop();
+  });
+});
+
+test("roleta desenha a arte do poder em um cartão quadrado com borda branca", () => {
+  withCanvasEnvironment(({ canvas, drawnImageCalls, roundedCards, strokeColors }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.powerUps.rouletteMs = 500;
+    engine.render();
+
+    const cardImage = drawnImageCalls.find(([image]) => image.src?.endsWith("/assets/powerups/turbo.png"));
+    assert.ok(cardImage, "a arte do poder deve ser desenhada no canvas");
+    assert.equal(cardImage[3], cardImage[4], "a área da imagem deve ser quadrada");
+    assert.equal(engine.powerUpImages.turbo.src, "/assets/powerups/turbo.png");
+    assert.equal(roundedCards[0][2], roundedCards[0][3], "o cartão deve manter proporção 1:1");
+    assert.equal(strokeColors.at(-1), "#fff", "o contorno do cartão deve ser branco");
+    engine.stop();
+  });
+});
+
+test("poder sorteado faz zoom e fade suaves e a apresentação termina", () => {
+  withCanvasEnvironment(({ canvas, drawnImageCalls, drawnImageAlphas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.pendingPowerUp = "star";
+    engine.powerUps.rouletteMs = 1;
+    engine.tick(0.05);
+    assert.deepEqual(engine.powerUpReveal, { id: "star", elapsedMs: 0 });
+
+    const getRevealSize = () => drawnImageCalls.filter(([image]) => image.src?.endsWith("/assets/powerups/star.png")).at(-1).slice(3, 5);
+    engine.render();
+    const initialSize = getRevealSize();
+    engine.tick(0.05);
+    engine.render();
+    const zoomedSize = getRevealSize();
+    assert.ok(zoomedSize[0] > initialSize[0], "a imagem sorteada deve aumentar de tamanho");
+
+    for (let frame = 0; frame < 9; frame += 1) engine.tick(0.05);
+    engine.render();
+    const revealDrawIndex = drawnImageCalls.findLastIndex(([image]) => image.src?.endsWith("/assets/powerups/star.png"));
+    assert.ok(drawnImageAlphas[revealDrawIndex] < 0.6, "a imagem deve ficar translúcida durante a saída");
+
+    for (let frame = 0; frame < 10; frame += 1) engine.tick(0.05);
+    assert.equal(engine.powerUpReveal, null, "a animação deve limpar seu estado ao terminar");
+    engine.stop();
+  });
+});
+
+test("movimento reduzido mantém a arte do resultado estática e opaca", () => {
+  withCanvasEnvironment(({ canvas, drawnImageCalls, drawnImageAlphas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.reducedMotion = true;
+    engine.powerUpReveal = { id: "bubble", elapsedMs: 500 };
+    engine.render();
+
+    const revealIndex = drawnImageCalls.findLastIndex(([image]) => image.src?.endsWith("/assets/powerups/bubble.png"));
+    assert.ok(revealIndex >= 0, "a imagem do resultado deve continuar visível");
+    assert.ok(drawnImageCalls[revealIndex][3] > 55 && drawnImageCalls[revealIndex][3] < 57, "a arte deve manter seu tamanho original");
+    assert.equal(drawnImageAlphas[revealIndex], 1, "a arte não deve desaparecer");
     engine.stop();
   });
 });

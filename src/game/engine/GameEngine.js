@@ -50,6 +50,8 @@ export class GameEngine {
     this.rocket = new Rocket();
     this.explosionImage = explosionImage ?? this.createExplosionImage();
     this.bubbleImage = bubbleImage ?? this.createBubbleImage();
+    this.powerUpImages = this.createPowerUpImages();
+    this.powerUpReveal = null;
     this.outcome = null;
     this.stars = [];
     this.speedStreaks = [];
@@ -128,6 +130,17 @@ export class GameEngine {
     const basePath = import.meta.env?.BASE_URL ?? "/";
     image.src = `${basePath.endsWith("/") ? basePath : `${basePath}/`}assets/powerups/bubble-shield.png`;
     return image;
+  }
+
+  createPowerUpImages() {
+    if (typeof Image === "undefined") return {};
+    const basePath = import.meta.env?.BASE_URL ?? "/";
+    const base = basePath.endsWith("/") ? basePath : `${basePath}/`;
+    return Object.fromEntries(Object.keys(POWER_UPS).map((power) => {
+      const image = new Image();
+      image.src = `${base}assets/powerups/${power}.png`;
+      return [power, image];
+    }));
   }
 
   resize() {
@@ -289,6 +302,10 @@ export class GameEngine {
     // Os temporizadores avançam somente dentro do loop ativo; em pausa, tick retorna acima.
     const rouletteWasActive = this.powerUps.rouletteMs > 0;
     this.powerUps = tickPowerUps(this.powerUps, frameMs);
+    if (this.powerUpReveal) {
+      this.powerUpReveal.elapsedMs = Math.min(MYSTERY_BOX.selectionRevealMs, this.powerUpReveal.elapsedMs + frameMs);
+      if (this.powerUpReveal.elapsedMs >= MYSTERY_BOX.selectionRevealMs) this.powerUpReveal = null;
+    }
     const turboTarget = this.powerUps.turboMs > 0 ? POWER_UPS.turbo.speedMultiplier : 1;
     this.turboSpeedFactor += (turboTarget - this.turboSpeedFactor) * (1 - Math.exp(-frameSeconds / 0.45));
     this.hazardClearRemainingMs = Math.max(0, this.hazardClearRemainingMs - frameMs);
@@ -612,6 +629,7 @@ export class GameEngine {
     const power = this.pendingPowerUp;
     this.pendingPowerUp = null;
     if (!power) return;
+    this.powerUpReveal = { id: power, elapsedMs: 0 };
     if (power === "shrink") {
       for (const obstacle of this.obstacles) obstacle.startShrink(POWER_UPS.shrink.shrinkMs);
       this.hazardClearRemainingMs = POWER_UPS.shrink.durationMs;
@@ -705,6 +723,7 @@ export class GameEngine {
     this.turboSpeedFactor = 1;
     this.hazardClearRemainingMs = 0;
     this.shrinkFlashRemainingMs = 0;
+    this.powerUpReveal = null;
     this.currentRound && (this.currentRound.status = "resolved");
     this.interQuestionRemainingMs = 0;
     this.answerChoiceRemainingMs = 0;
@@ -744,7 +763,6 @@ export class GameEngine {
         ...(this.hazardClearRemainingMs > 0 ? [{ id: "shrink", icon: "✦", label: "Raio encolhedor", remainingMs: this.hazardClearRemainingMs, durationMs: POWER_UPS.shrink.durationMs }] : []),
       ],
       mysteryBoxVisible: Boolean(this.mysteryBox?.alive),
-      rouletteIcon: this.powerUps.rouletteMs > 0 ? ["⚡", "★", "●", "✦"][Math.floor(this.elapsedMs / 90) % 4] : null,
     };
   }
 
@@ -817,7 +835,7 @@ export class GameEngine {
       const centerY = this.rocket.y + this.rocket.height / 2;
       ctx.drawImage(this.bubbleImage, centerX - bubbleWidth / 2, centerY - bubbleHeight / 2, bubbleWidth, bubbleHeight);
     }
-    if (this.powerUps.rouletteMs > 0) this.renderPowerRoulette();
+    if (this.powerUps.rouletteMs > 0 || this.powerUpReveal) this.renderPowerRoulette();
     if (this.shrinkFlashRemainingMs > 0) {
       ctx.save(); ctx.fillStyle = `rgba(205, 240, 255, ${this.shrinkFlashRemainingMs / 360})`;
       ctx.fillRect(0, 0, view.width, view.height); ctx.restore();
@@ -880,13 +898,35 @@ export class GameEngine {
 
   renderPowerRoulette() {
     const { ctx, view } = this;
+    const isReveal = Boolean(this.powerUpReveal);
+    const progress = isReveal ? clamp(this.powerUpReveal.elapsedMs / MYSTERY_BOX.selectionRevealMs, 0, 1) : 0;
+    const easedProgress = progress * progress * (3 - 2 * progress);
+    const scale = isReveal && !this.reducedMotion ? 1 + easedProgress * 0.6 : 1;
+    const alpha = isReveal && !this.reducedMotion ? 1 - easedProgress : 1;
+    const cardSize = Math.min(96, Math.max(64, view.width * 0.23));
+    const centerX = view.width / 2;
+    const centerY = view.height * 0.42 + 36;
+    const size = cardSize * scale;
+    const left = centerX - size / 2;
+    const top = centerY - size / 2;
+    const powerIds = Object.keys(POWER_UPS);
+    const powerId = this.powerUpReveal?.id
+      ?? powerIds[Math.floor(this.powerUps.rouletteElapsedMs / 150) % powerIds.length];
+    const image = this.powerUpImages[powerId];
+
     ctx.save();
-    ctx.fillStyle = "rgba(5, 23, 54, .62)";
-    ctx.fillRect(view.width * 0.25, view.height * 0.42, view.width * 0.5, 72);
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 38px sans-serif";
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(this.getSnapshot().rouletteIcon, view.width / 2, view.height * 0.42 + 36);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "rgba(5, 23, 54, .9)";
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(left, top, size, size, size * 0.12);
+    ctx.fill();
+    ctx.stroke();
+    if (image?.complete && image.naturalWidth > 0) {
+      const imageSize = size * 0.76;
+      ctx.drawImage(image, centerX - imageSize / 2, centerY - imageSize / 2, imageSize, imageSize);
+    }
     ctx.restore();
   }
 

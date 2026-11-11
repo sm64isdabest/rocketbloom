@@ -76,6 +76,7 @@ export const MYSTERY_BOX = {
   size: 55,
   safeDistance: 104,
   rouletteMs: 1000,
+  selectionRevealMs: 1000,
 };
 
 export const POWER_UPS = {
