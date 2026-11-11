@@ -1,0 +1,50 @@
+{
+  "geometry": [
+    { "id": "special-geo-01", "prompt": "Qual forma tem três lados?", "choices": ["Triângulo", "Círculo", "Quadrado"], "correctAnswer": "Triângulo", "explanation": "O triângulo tem três lados." },
+    { "id": "special-geo-02", "prompt": "Qual forma parece uma bola?", "choices": ["Círculo", "Retângulo", "Triângulo"], "correctAnswer": "Círculo", "explanation": "O círculo é redondinho como uma bola vista de frente." },
+    { "id": "special-geo-03", "prompt": "Quantos lados tem um quadrado?", "choices": ["Quatro", "Dois", "Três"], "correctAnswer": "Quatro", "explanation": "O quadrado tem quatro lados do mesmo tamanho." },
+    { "id": "special-geo-04", "prompt": "Qual forma tem quatro lados compridos ou curtos?", "choices": ["Retângulo", "Círculo", "Estrela"], "correctAnswer": "Retângulo", "explanation": "O retângulo tem quatro lados e parece uma porta." }
+  ],
+  "nature": [
+    { "id": "special-nature-01", "prompt": "O que uma planta precisa para crescer?", "choices": ["Água e luz", "Brinquedo", "Sapato"], "correctAnswer": "Água e luz", "explanation": "Água, luz do Sol e cuidado ajudam a planta a crescer." },
+    { "id": "special-nature-02", "prompt": "De onde vem a maçã?", "choices": ["Da macieira", "Do mar", "Da areia"], "correctAnswer": "Da macieira", "explanation": "A macieira é uma árvore que pode dar maçãs." },
+    { "id": "special-nature-03", "prompt": "Qual parte da planta costuma ficar debaixo da terra?", "choices": ["Raiz", "Flor", "Folha"], "correctAnswer": "Raiz", "explanation": "A raiz fica no solo e ajuda a planta a buscar água." },
+    { "id": "special-nature-04", "prompt": "O que devemos fazer com o lixo?", "choices": ["Colocar na lixeira", "Jogar no rio", "Deixar na rua"], "correctAnswer": "Colocar na lixeira", "explanation": "A lixeira ajuda a manter os lugares limpos e os animais seguros." }
+  ],
+  "animals": [
+    { "id": "special-animal-01", "prompt": "Qual animal vive na água e tem nadadeiras?", "choices": ["Peixe", "Gato", "Cavalo"], "correctAnswer": "Peixe", "explanation": "O peixe usa as nadadeiras para nadar." },
+    { "id": "special-animal-02", "prompt": "Qual animal é conhecido por carregar a casa nas costas?", "choices": ["Caracol", "Coelho", "Macaco"], "correctAnswer": "Caracol", "explanation": "A concha do caracol é sua proteção." },
+    { "id": "special-animal-03", "prompt": "Qual animal faz mel?", "choices": ["Abelha", "Formiga", "Borboleta"], "correctAnswer": "Abelha", "explanation": "As abelhas visitam flores e produzem mel na colmeia." },
+    { "id": "special-animal-04", "prompt": "Qual destes animais tem uma tromba comprida?", "choices": ["Elefante", "Leão", "Pinguim"], "correctAnswer": "Elefante", "explanation": "A tromba ajuda o elefante a pegar água e comida." }
+  ],
+  "body": [
+    { "id": "special-body-01", "prompt": "Com qual parte do corpo sentimos cheiros?", "choices": ["Nariz", "Joelho", "Mão"], "correctAnswer": "Nariz", "explanation": "O nariz nos ajuda a perceber cheiros." },
+    { "id": "special-body-02", "prompt": "O que usamos para ouvir uma música?", "choices": ["Ouvidos", "Cotovelos", "Pés"], "correctAnswer": "Ouvidos", "explanation": "Os ouvidos captam os sons ao nosso redor." },
+    { "id": "special-body-03", "prompt": "Qual parte do corpo bombeia o sangue?", "choices": ["Coração", "Cabelo", "Unha"], "correctAnswer": "Coração", "explanation": "O coração trabalha sem parar para levar sangue pelo corpo." },
+    { "id": "special-body-04", "prompt": "O que usamos para enxergar as cores?", "choices": ["Olhos", "Orelhas", "Ombros"], "correctAnswer": "Olhos", "explanation": "Os olhos ajudam a ver formas, cores e pessoas." }
+  ],
+  "science": [
+    { "id": "special-science-01", "prompt": "O que aparece no céu quando a chuva e o Sol se encontram?", "choices": ["Arco-íris", "Floco de neve", "Folha"], "correctAnswer": "Arco-íris", "explanation": "A luz do Sol atravessa gotinhas de água e pode formar um arco-íris." },
+    { "id": "special-science-02", "prompt": "O que acontece com o gelo quando fica bem quentinho?", "choices": ["Derrete", "Vira pedra", "Cresce"], "correctAnswer": "Derrete", "explanation": "Com calor, o gelo vira água líquida." },
+    { "id": "special-science-03", "prompt": "O que vemos no céu durante uma tempestade?", "choices": ["Relâmpago", "Arco de pedra", "Folha azul"], "correctAnswer": "Relâmpago", "explanation": "O relâmpago é uma luz forte que pode aparecer na tempestade." },
+    { "id": "special-science-04", "prompt": "Qual destes objetos deixa a luz passar?", "choices": ["Vidro limpo", "Parede", "Caixa fechada"], "correctAnswer": "Vidro limpo", "explanation": "O vidro transparente deixa muita luz passar." }
+  ],
+  "astronomy": [
+    { "id": "special-space-01", "prompt": "O que ilumina a Terra durante o dia?", "choices": ["Sol", "Lua", "Marte"], "correctAnswer": "Sol", "explanation": "O Sol é uma estrela que dá luz e calor à Terra." },
+    { "id": "special-space-02", "prompt": "O que podemos ver brilhando no céu à noite?", "choices": ["Estrelas", "Peixes", "Flores"], "correctAnswer": "Estrelas", "explanation": "As estrelas são grandes bolas de luz muito distantes." },
+    { "id": "special-space-03", "prompt": "Qual astro gira ao redor da Terra?", "choices": ["Lua", "Sol", "Júpiter"], "correctAnswer": "Lua", "explanation": "A Lua é a vizinha da Terra no espaço." },
+    { "id": "special-space-04", "prompt": "Em qual planeta nós moramos?", "choices": ["Terra", "Marte", "Saturno"], "correctAnswer": "Terra", "explanation": "A Terra é o planeta onde vivemos." }
+  ],
+  "geography": [
+    { "id": "special-geo-map-01", "prompt": "Como se chama a grande porção de água salgada?", "choices": ["Oceano", "Floresta", "Montanha"], "correctAnswer": "Oceano", "explanation": "Os oceanos são enormes e cobrem grande parte da Terra." },
+    { "id": "special-geo-map-02", "prompt": "O Brasil fica em qual continente?", "choices": ["América do Sul", "Europa", "Ásia"], "correctAnswer": "América do Sul", "explanation": "O Brasil é um país da América do Sul." },
+    { "id": "special-geo-map-03", "prompt": "Qual paisagem tem muita areia e pouca chuva?", "choices": ["Deserto", "Praia com chuva", "Floresta"], "correctAnswer": "Deserto", "explanation": "Desertos são lugares muito secos." },
+    { "id": "special-geo-map-04", "prompt": "Onde a água de um rio costuma correr?", "choices": ["Entre suas margens", "No alto de uma árvore", "Dentro de uma nuvem"], "correctAnswer": "Entre suas margens", "explanation": "As margens ficam dos dois lados do caminho do rio." }
+  ],
+  "everyday": [
+    { "id": "special-daily-01", "prompt": "O que usamos para escovar os dentes?", "choices": ["Escova de dentes", "Colher", "Meia"], "correctAnswer": "Escova de dentes", "explanation": "Escovar os dentes ajuda a cuidar da boca." },
+    { "id": "special-daily-02", "prompt": "Qual alimento costuma vir do leite?", "choices": ["Queijo", "Arroz", "Banana"], "correctAnswer": "Queijo", "explanation": "O queijo é feito com leite." },
+    { "id": "special-daily-03", "prompt": "O que usamos quando chove para não molhar a cabeça?", "choices": ["Guarda-chuva", "Travesseiro", "Prato"], "correctAnswer": "Guarda-chuva", "explanation": "O guarda-chuva ajuda a nos proteger da chuva." },
+    { "id": "special-daily-04", "prompt": "Qual destes alimentos é uma fruta?", "choices": ["Banana", "Pão", "Macarrão"], "correctAnswer": "Banana", "explanation": "A banana é uma fruta que cresce em uma bananeira." }
+  ]
+}

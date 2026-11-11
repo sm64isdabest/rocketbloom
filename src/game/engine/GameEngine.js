@@ -1,5 +1,6 @@
 import { COLLECTIBLES } from "../data/items.js";
 import { getQuestionsForStage, pickQuestion } from "../data/questions.js";
+import { SPECIAL_CATEGORY_LABELS, getAllSpecialQuestions, pickSpecialQuestion } from "../data/specialQuestions.js";
 import { SPEED, SCORE, SPAWN, QUESTION_TIMING, MYSTERY_BOX, POWER_UPS } from "../config/gameConfig.js";
 import { Answer } from "../entities/Answer.js";
 import { AnswerLaser } from "../entities/AnswerLaser.js";
@@ -19,6 +20,7 @@ import { createGameLoop } from "./loop.js";
 import { fitCanvasToContainer } from "./resize.js";
 import { finishGameAudio, pauseGameAudio, playGameSound, startGameAudio } from "../audio/audioManager.js";
 import { activatePowerUp, createPowerUpState, getNextMysteryBoxDelay, getRandomPowerUp, tickPowerUps } from "../systems/powerUps.js";
+import { isSpecialQuestionDue, resolveSpecialAnswer } from "../systems/specialQuestion.js";
 
 function makeRunId() {
   return globalThis.crypto?.randomUUID?.() ?? `run-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -99,6 +101,8 @@ export class GameEngine {
     this.columnFlashColor = null;
     this.columnFlashRemainingMs = 0;
     this.currentRound = null;
+    this.specialQuestion = null;
+    this.usedSpecialQuestionIds = [];
     this.questionFeedback = "";
     this.feedbackTimerMs = 0;
 
@@ -454,7 +458,55 @@ export class GameEngine {
     this.columnFlashRemainingMs = 0;
     this.interQuestionRemainingMs = sampleInterQuestionDelayMs(this.rng);
     this.questionFeedback = "";
+    if (isSpecialQuestionDue(this.roundNumber)) {
+      this.startSpecialQuestion();
+      return;
+    }
     if (!this.godmode && this.speed <= SPEED.defeatAtOrBelow) this.pendingOutcome = "defeat";
+  }
+
+  startSpecialQuestion() {
+    const bank = getAllSpecialQuestions();
+    if (this.usedSpecialQuestionIds.length >= bank.length) {
+      this.usedSpecialQuestionIds = this.usedSpecialQuestionIds.length ? [this.usedSpecialQuestionIds.at(-1)] : [];
+    }
+    const question = pickSpecialQuestion(bank, {
+      usedIds: this.usedSpecialQuestionIds,
+      rng: this.rng,
+    });
+    if (!question) return false;
+    this.usedSpecialQuestionIds.push(question.id);
+    const category = SPECIAL_CATEGORY_LABELS[question.category] ?? { label: "Descobertas", icon: "✨" };
+    this.specialQuestion = { ...question, ...{ categoryLabel: category.label, categoryIcon: category.icon }, result: null };
+    this.pause();
+    this.emitHud(true);
+    return true;
+  }
+
+  answerSpecialQuestion(answer) {
+    if (!this.specialQuestion || this.specialQuestion.result) return false;
+    const result = resolveSpecialAnswer(this.specialQuestion, answer);
+    this.specialQuestion = { ...this.specialQuestion, result };
+    if (result.correct) {
+      this.correctAnswers += 1;
+      this.score += SCORE.correctAnswer;
+      playGameSound("correct");
+    } else {
+      this.incorrectAnswers += 1;
+      playGameSound("discovery");
+    }
+    this.emitHud(true);
+    return true;
+  }
+
+  continueAfterSpecialQuestion() {
+    if (!this.specialQuestion?.result) return false;
+    this.specialQuestion = null;
+    this.questionFeedback = "";
+    this.interQuestionRemainingMs = sampleInterQuestionDelayMs(this.rng);
+    this.resume();
+    this.emitHud(true);
+    return true;
   }
 
   presentPendingOutcome() {
@@ -757,6 +809,7 @@ export class GameEngine {
       planetId: this.session.planet.id,
       stageId: this.session.stage.id,
       question: this.currentRound?.status === "waiting-next-question" ? null : this.currentRound?.question ?? null,
+      specialQuestion: this.specialQuestion,
       answerState: this.currentRound?.status ?? "preparing",
       selectedLane: this.currentRound?.result?.lane ?? getLaneFromCenter(this.rocket.x + this.rocket.width / 2, this.view.width),
       feedback: this.questionFeedback,

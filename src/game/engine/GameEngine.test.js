@@ -115,6 +115,33 @@ test("primeira pergunta aparece três segundos após o início da fase", () => {
   });
 });
 
+test("desafio especial pausa a aventura, dá recompensa no acerto e não pune o erro", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const initialSpeed = engine.speed;
+    const initialScore = engine.score;
+    const initialIncorrect = engine.incorrectAnswers;
+    assert.equal(engine.startSpecialQuestion(), true);
+    assert.equal(engine.paused, true);
+    const specialQuestion = engine.specialQuestion;
+    assert.equal(engine.answerSpecialQuestion("resposta que não existe"), true);
+    assert.equal(engine.specialQuestion.result.correct, false);
+    assert.equal(engine.specialQuestion.result.correctAnswer, specialQuestion.correctAnswer);
+    assert.equal(engine.score, initialScore);
+    assert.equal(engine.speed, initialSpeed);
+    assert.equal(engine.incorrectAnswers, initialIncorrect + 1);
+    assert.equal(engine.continueAfterSpecialQuestion(), true);
+    assert.equal(engine.paused, false);
+
+    engine.startSpecialQuestion();
+    const scoreBeforeCorrect = engine.score;
+    assert.equal(engine.answerSpecialQuestion(engine.specialQuestion.correctAnswer), true);
+    assert.ok(engine.score > scoreBeforeCorrect);
+    assert.equal(engine.specialQuestion.result.message, "Muito bem, explorador!");
+    engine.stop();
+  });
+});
+
 test("bolha protetora desenha a arte iridescente envolvendo o foguete", () => {
   withCanvasEnvironment(({ canvas, drawnImageCalls }) => {
     const bubbleImage = { complete: true, naturalWidth: 1536, naturalHeight: 1024 };
@@ -833,7 +860,7 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
       difficulty: { ...getPlanetDifficulty(planet.id), mathTier: stage.difficulty },
       obstacles: getObstaclesForPlanet(planet.id),
     };
-    const metrics = { obstacleSpawns: 0, obstacleSpawnTimes: [], collisions: 0, intervalsMs: [], questionCount: 0, maxSimultaneousObstacles: 0 };
+    const metrics = { obstacleSpawns: 0, obstacleSpawnTimes: [], collisions: 0, intervalsMs: [], questionCount: 0, specialQuestionCount: 0, maxSimultaneousObstacles: 0 };
     let rngState = 7919;
     const rng = () => {
       rngState = (rngState * 48271) % 2147483647;
@@ -863,6 +890,14 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
     let forcedCollisions = 0;
     let iterations = 0;
     while (!engine.ended && iterations < 30_000) {
+      if (engine.specialQuestion) {
+        if (!engine.specialQuestion.result) {
+          metrics.specialQuestionCount += 1;
+          engine.answerSpecialQuestion(engine.specialQuestion.correctAnswer);
+        } else {
+          engine.continueAfterSpecialQuestion();
+        }
+      }
       const round = engine.currentRound;
       if (round?.status === "awaiting-resolution") {
         if (round.id !== lastAnswerRound) {
@@ -905,6 +940,7 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
     metrics.progressMs = engine.progressMs;
     assert.equal(metrics.result, "victory", JSON.stringify(metrics));
     assert.ok(metrics.correctAnswers > metrics.incorrectAnswers, JSON.stringify(metrics));
+    assert.ok(metrics.specialQuestionCount > 0, JSON.stringify(metrics));
     assert.ok(metrics.collisions >= 1, JSON.stringify(metrics));
     assert.ok(metrics.obstacleSpawns > 10, JSON.stringify(metrics));
     assert.ok(metrics.intervalsMs.every((interval) => interval >= 3000 && interval <= 10000), JSON.stringify(metrics));
