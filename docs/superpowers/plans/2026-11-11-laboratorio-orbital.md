@@ -25,19 +25,20 @@
 - Reduced motion disables plant sway.
 - Settings returns to the laboratory.
 
-### Task 1: Map plant artwork to saved growth stages
+### Task 1: Map seeds and plant artwork to saved growth stages
 
 **Files:** Create `src/screens/laboratoryModel.js` and `src/screens/laboratoryModel.test.js`; add art to `src/game/data/projectImages.js`.
 
-- [x] Test each planet's ordered sprite mapping and stage clamping.
+- [x] Test each planet's seed-to-mature sprite mapping, first-stage visibility, and stage clamping.
 - [x] Implement `getLaboratoryPlantImage(planetId, growthStage, baseUrl)`.
 - [x] Run focused Node tests.
 
-### Task 2: Rebuild the laboratory scene
+### Task 2: Rebuild the laboratory scene and controls
 
 **Files:** Modify `src/screens/CommandRoomScreen.jsx`, `src/styles/index.css`, `src/App.jsx`, and `src/components/FullscreenButton.jsx`.
 
 - [x] Render the full-screen scene, one animated plant, wrapping planet arrows, names, back, and settings controls.
+- [x] Use the supplied directional and back-button artwork, remove the extra settings button frame, and enlarge its icon.
 - [x] Keep sprites and plant metadata synchronized with the selected planet and saved progress.
 - [x] Add responsive and reduced-motion styles.
 - [x] Run focused tests and the full suite, then build.
