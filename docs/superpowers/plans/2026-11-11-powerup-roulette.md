@@ -41,7 +41,7 @@
 - [x] **Step 3: Implement the timed selection reveal and square rounded card with existing powerup images.** Use image-space padding, white stroke, rounded corners, and a smooth zoom/fade only when motion is enabled.
 - [x] **Step 4: Run `node --test src/game/engine/GameEngine.test.js`** and confirm it passes.
 - [x] **Step 5: Run `npm test` and `npm run build`.**
-- [ ] **Step 6: Review the diff, stage the requested implementation and docs, commit on `main`, and push to `origin/main`.**
+- [x] **Step 6: Review the diff, stage the requested implementation and docs, commit on `main`, and push to `origin/main`.**
 
 ## Review note
 
