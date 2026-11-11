@@ -10,8 +10,8 @@ export const CAMPAIGN_CONFIG = {
     speedMultiplier: { start: 1, end: 1.46 },
     speedLossMultiplier: { start: 1, end: 1.18 },
     obstaclePenaltyMultiplier: { start: 1, end: 0.72 },
-    obstacleIntervalMs: { start: 3800, end: 2300 },
-    obstacleMinIntervalMs: { start: 2000, end: 1250 },
+    obstacleIntervalMs: { start: 3200, end: 1900 },
+    obstacleMinIntervalMs: { start: 1650, end: 1000 },
     obstacleSpeedMultiplier: { start: 1, end: 1.3 },
   },
 };
@@ -82,7 +82,7 @@ function buildStages(planet) {
       obstacleIntervalMs: interpolate(difficulty.obstacleIntervalMs),
       obstacleMinIntervalMs: interpolate(difficulty.obstacleMinIntervalMs),
       obstacleSpeedMultiplier: interpolate(difficulty.obstacleSpeedMultiplier),
-      maxActiveObstacles: Math.min(4, 2 + Math.floor(campaignProgress * 2.4)),
+      maxActiveObstacles: Math.min(5, 2 + Math.floor(campaignProgress * 3)),
       questionCategories: [...(MATH_OPERATIONS_BY_PLANET[planet.id]?.[index] ?? [])],
       questionLimits: {
         operandMax: planet.questionLimits.operandMax + index * 2,

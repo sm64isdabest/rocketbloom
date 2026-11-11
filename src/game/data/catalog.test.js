@@ -36,9 +36,9 @@ test("dificuldade cresce ao longo da campanha e Netuno 5 usa o limite configurad
     speedMultiplier: 1.46,
     speedLossMultiplier: 1.18,
     obstaclePenaltyMultiplier: 0.72,
-    obstacleIntervalMs: 2300,
-    obstacleMinIntervalMs: 1250,
+    obstacleIntervalMs: 1900,
+    obstacleMinIntervalMs: 1000,
     obstacleSpeedMultiplier: 1.3,
-    maxActiveObstacles: 4,
+    maxActiveObstacles: 5,
   });
 });

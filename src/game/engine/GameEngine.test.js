@@ -95,8 +95,25 @@ function engineOptions(canvas, callbacks = {}, extras = {}) {
     onPauseRequest: callbacks.onPauseRequest,
     explosionImage: extras.explosionImage,
     bubbleImage: extras.bubbleImage,
+    initialQuestionDelayMs: extras.initialQuestionDelayMs ?? 0,
   };
 }
+
+test("primeira pergunta aparece três segundos após o início da fase", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas, {}, { initialQuestionDelayMs: 3000 }));
+    assert.equal(engine.getSnapshot().question, null);
+    assert.equal(engine.answers.length, 0);
+    engine.tick(0.1);
+    assert.equal(engine.getSnapshot().question, null);
+    tickFor(engine, 2750);
+    assert.equal(engine.getSnapshot().question, null);
+    tickFor(engine, 200);
+    assert.ok(engine.getSnapshot().question);
+    assert.equal(engine.answers.filter((answer) => answer.alive).length, 4);
+    engine.stop();
+  });
+});
 
 test("bolha protetora desenha a arte iridescente envolvendo o foguete", () => {
   withCanvasEnvironment(({ canvas, drawnImageCalls }) => {
@@ -812,7 +829,7 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
     const stage = planet.stages[4];
     const session = {
       planet,
-      stage: { ...stage, obstaclePenaltyMultiplier: 0.35 },
+    stage: { ...stage, durationMs: stage.durationMs + 10_000, obstaclePenaltyMultiplier: 0.35 },
       difficulty: { ...getPlanetDifficulty(planet.id), mathTier: stage.difficulty },
       obstacles: getObstaclesForPlanet(planet.id),
     };

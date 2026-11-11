@@ -29,7 +29,7 @@ function clamp(value, min, max) {
 }
 
 export class GameEngine {
-  constructor({ canvas, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, rng = Math.random, runId = makeRunId(), explosionImage, bubbleImage }) {
+  constructor({ canvas, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, rng = Math.random, runId = makeRunId(), explosionImage, bubbleImage, initialQuestionDelayMs = 3000 }) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.session = session;
@@ -89,6 +89,7 @@ export class GameEngine {
     this.obstacleAcc = 0;
     this.collectibleAcc = 0;
     this.interQuestionRemainingMs = 0;
+    this.initialQuestionRemainingMs = Math.max(0, initialQuestionDelayMs);
     this.roundNumber = 0;
     this.lastQuestionId = null;
     this.answerChoiceRemainingMs = QUESTION_TIMING.choiceWindowMs;
@@ -113,7 +114,7 @@ export class GameEngine {
     if (typeof document !== "undefined") document.addEventListener("visibilitychange", this.onVisibilityChange);
     this.resizeObserver.observe(canvas.parentElement ?? canvas);
     this.resize();
-    this.startNextQuestion();
+    if (this.initialQuestionRemainingMs === 0) this.startNextQuestion();
   }
 
   createExplosionImage() {
@@ -371,7 +372,11 @@ export class GameEngine {
   }
 
   updateQuestions(dt, frameMs) {
-    if (!this.currentRound) return;
+    if (!this.currentRound) {
+      this.initialQuestionRemainingMs = Math.max(0, this.initialQuestionRemainingMs - frameMs);
+      if (this.initialQuestionRemainingMs === 0) this.startNextQuestion();
+      return;
+    }
     if (this.currentRound.status === "awaiting-resolution") {
       for (const laser of this.answerLasers) {
         if (!laser.alive) continue;
