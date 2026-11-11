@@ -6,13 +6,36 @@ const TABS = [
   { id: "settings", label: "Configurações" },
   { id: "progress", label: "Progresso" },
   { id: "stages", label: "Fases" },
+  { id: "session", label: "Sessão" },
+  { id: "screens", label: "Telas" },
 ];
 
-export function DebugMenu({ progress, run, onClose, onChange, onGrant, onUnlockAll, onCompleteStage, onStartStage }) {
+const POWER_UPS = [
+  { id: "turbo", label: "Turbo" },
+  { id: "star", label: "Estrela" },
+  { id: "bubble", label: "Bolha" },
+  { id: "shrink", label: "Raio encolhedor" },
+];
+
+const DEBUG_SCREENS = [
+  { id: "menu", label: "Menu principal" },
+  { id: "planets", label: "Seleção de fases" },
+  { id: "command", label: "Laboratório" },
+  { id: "settings", label: "Configurações" },
+  { id: "playing", label: "Fase (jogando)" },
+  { id: "paused", label: "Fase (pausada)" },
+  { id: "victory", label: "Vitória" },
+  { id: "defeat", label: "Derrota" },
+];
+
+export function DebugMenu({ progress, run, controls, onClose, onChange, onGrant, onUnlockAll, onCompleteStage, onUncompleteStage, onStartStage,
+  onSetSpeed, onSetGodmode, onSetDuration, onGrantPowerUp, onNavigate }) {
   const ids = useId();
   const [activeTab, setActiveTab] = useState("settings");
   const [planetId, setPlanetId] = useState(run?.planetId ?? "earth");
   const [stageId, setStageId] = useState(run?.stageId ?? "earth-1");
+  const [powerUp, setPowerUp] = useState(POWER_UPS[0].id);
+  const [destination, setDestination] = useState(DEBUG_SCREENS[0].id);
   const tabRefs = useRef([]);
   const planet = PLANETS.find(({ id }) => id === planetId) ?? PLANETS[0];
   const stage = planet.stages.find(({ id }) => id === stageId) ?? planet.stages[0];
@@ -95,8 +118,29 @@ export function DebugMenu({ progress, run, onClose, onChange, onGrant, onUnlockA
             <p className="debug-menu__hint">Inicie qualquer fase direto ou marque uma fase como concluída.</p>
             <label className="debug-menu__field">Planeta<select value={planet.id} onChange={(event) => selectPlanet(event.currentTarget.value)}>{PLANETS.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
             <label className="debug-menu__field">Fase<select value={stage.id} onChange={(event) => setStageId(event.currentTarget.value)}>{planet.stages.map((item, index) => <option key={item.id} value={item.id}>Fase {index + 1}{progress.completedStageIds.includes(item.id) ? " · concluída" : ""}</option>)}</select></label>
-            <div className="debug-menu__actions"><button type="button" className="debug-menu__button debug-menu__button--primary" onClick={() => onStartStage(planet.id, stage.id)}>Iniciar esta fase</button><button type="button" className="debug-menu__button" onClick={() => onCompleteStage(planet.id, stage.id)}>Marcar fase como concluída</button></div>
+            <div className="debug-menu__actions"><button type="button" className="debug-menu__button debug-menu__button--primary" onClick={() => onStartStage(planet.id, stage.id)}>Iniciar esta fase</button><button type="button" className="debug-menu__button" onClick={() => onCompleteStage(planet.id, stage.id)}>Marcar fase como concluída</button><button type="button" className="debug-menu__button" disabled={!progress.completedStageIds.includes(stage.id)} onClick={() => onUncompleteStage(planet.id, stage.id)}>Desconcluir fase</button></div>
             <p className="debug-menu__hint">Fase atual: {run ? `${run.planetId} / ${run.stageId}` : "nenhuma"}</p>
+          </div>}
+
+          {activeTab === "session" && <div className="debug-menu__section">
+            <h2>Controles da fase atual</h2>
+            <p className="debug-menu__hint">Ajustes temporários da partida. Inicie uma fase para habilitar estes controles.</p>
+            <label className="debug-menu__setting debug-menu__setting--range"><span>Velocidade do foguete <b>{controls.speed} km/h</b></span>
+              <input type="range" min="0" max="320" step="1" value={controls.speed} disabled={!run} onChange={(event) => onSetSpeed(Number(event.currentTarget.value))} />
+            </label>
+            <label className="debug-menu__setting"><span>GODMODE</span><input type="checkbox" checked={controls.godmode} disabled={!run} onChange={(event) => onSetGodmode(event.currentTarget.checked)} /></label>
+            <label className="debug-menu__field">Duração da fase (segundos)<input type="number" min="0" max="3600" step="1" value={controls.stageDurationMs === null ? 0 : Number.isFinite(controls.stageDurationMs) ? controls.stageDurationMs / 1000 : 0} disabled={!run}
+              onChange={(event) => { const seconds = Number(event.currentTarget.value); if (Number.isFinite(seconds) && seconds >= 0 && seconds <= 3600) onSetDuration(seconds === 0 ? 0 : seconds * 1000); }} /></label>
+            <p className="debug-menu__hint">Use 0 para deixar a fase infinita.</p>
+            <label className="debug-menu__field">Powerup<select value={powerUp} onChange={(event) => setPowerUp(event.currentTarget.value)}>{POWER_UPS.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}</select></label>
+            <button type="button" className="debug-menu__button debug-menu__button--primary" disabled={!run} onClick={() => onGrantPowerUp(powerUp)}>Aplicar powerup</button>
+          </div>}
+
+          {activeTab === "screens" && <div className="debug-menu__section">
+            <h2>Navegação de telas</h2>
+            <p className="debug-menu__hint">Abra qualquer área do jogo para conferir o estado da interface.</p>
+            <label className="debug-menu__field">Tela<select value={destination} onChange={(event) => setDestination(event.currentTarget.value)}>{DEBUG_SCREENS.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}</select></label>
+            <button type="button" className="debug-menu__button debug-menu__button--primary" onClick={() => onNavigate(destination)}>Abrir tela</button>
           </div>}
         </div>
         <footer className="debug-menu__footer"><span>Atalho: <kbd>Q</kbd> + <kbd>P</kbd></span><span>Fechar: <kbd>Esc</kbd></span></footer>

@@ -132,6 +132,70 @@ test("a seleção pelo centro do foguete registra acerto uma vez e recompensa ap
   });
 });
 
+test("controles de debug ajustam velocidade e duração da fase, inclusive infinita", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+
+    engine.setDebugSpeed(275);
+    engine.setDebugDuration(15_000);
+    assert.equal(engine.getSnapshot().speed, 275);
+    assert.equal(engine.getSnapshot().stageDurationMs, 15_000);
+    assert.equal(engine.getSnapshot().stageProgress, 0);
+
+    engine.setDebugDuration(0);
+    engine.progressMs = 150_000;
+    assert.equal(engine.getSnapshot().stageDurationMs, Infinity);
+    assert.equal(engine.getSnapshot().stageProgress, 0);
+    engine.tick(0.05);
+    assert.equal(engine.ended, false);
+    engine.stop();
+  });
+});
+
+test("GODMODE blocks collision and answer penalties", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.setDebugGodmode(true);
+    const speedBeforePenalty = engine.speed;
+
+    assert.equal(engine.protectFromPenalty("obstacle"), true);
+    assert.equal(engine.protectFromPenalty("question"), true);
+    assert.equal(engine.speed, speedBeforePenalty);
+    assert.equal(engine.getSnapshot().godmode, true);
+    engine.setDebugGodmode(false);
+    assert.equal(engine.getSnapshot().godmode, false);
+    engine.stop();
+  });
+});
+
+test("GODMODE prevents speed-triggered defeat when speed is set to zero", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.setDebugGodmode(true);
+    engine.setDebugSpeed(0);
+
+    engine.tick(0.05);
+
+    assert.equal(engine.ended, false);
+    engine.stop();
+  });
+});
+
+test("debug grants every configured powerup immediately, including shrink", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    let shrinkMs = null;
+    engine.obstacles = [{ startShrink: (durationMs) => { shrinkMs = durationMs; } }];
+
+    for (const power of ["turbo", "star", "bubble", "shrink"]) engine.grantDebugPowerUp(power);
+
+    assert.deepEqual(engine.getSnapshot().powerUps.map(({ id }) => id), ["turbo", "star", "bubble", "shrink"]);
+    assert.equal(shrinkMs, 600);
+    assert.equal(engine.hazardClearRemainingMs, 3000);
+    engine.stop();
+  });
+});
+
 test("tocar um laser escolhe a alternativa da faixa sem causar dano", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));

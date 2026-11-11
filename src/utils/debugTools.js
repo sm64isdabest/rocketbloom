@@ -36,3 +36,13 @@ export function completeDebugStage(progress, planetId, stageId) {
     stageProgress: { ...(progress.stageProgress ?? {}), [stageId]: 1 },
   };
 }
+
+export function uncompleteDebugStage(progress, planetId, stageId) {
+  const planet = PLANETS.find(({ id }) => id === planetId);
+  if (!planet?.stages.some(({ id }) => id === stageId)) throw new Error("Fase de debug inválida.");
+  return {
+    ...progress,
+    completedStageIds: progress.completedStageIds.filter((id) => id !== stageId),
+    stageProgress: { ...(progress.stageProgress ?? {}), [stageId]: 0 },
+  };
+}

@@ -19,7 +19,7 @@ import { configureAudio, pauseMenuAudio, playGameSound, startMenuAudio } from ".
 import { hasLoadedAllImages, preloadImages } from "./utils/preloadImages.js";
 import { getSettingsReturnPage } from "./screens/menuModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
-import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets } from "./utils/debugTools.js";
+import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets, uncompleteDebugStage } from "./utils/debugTools.js";
 import { FullscreenButton } from "./components/FullscreenButton.jsx";
 import { getOutcomeReturn } from "./utils/outcomeFlow.js";
 
@@ -41,7 +41,10 @@ export default function App() {
   const [systemReducedMotion, setSystemReducedMotion] = useState(false);
   const [completionStageId, setCompletionStageId] = useState(null);
   const hudRef = useRef(null);
+  const debugEngineRef = useRef(null);
+  const setDebugEngineRef = useCallback((engine) => { debugEngineRef.current = engine; }, []);
   const [debugOpen, setDebugOpen] = useState(false);
+  const [debugControls, setDebugControls] = useState({ speed: 120, godmode: false, stageDurationMs: null });
   const debugReturnScreen = useRef(SCREEN.MENU);
   const pressedKeys = useRef(new Set());
 
@@ -73,6 +76,12 @@ export default function App() {
         return;
       }
       debugReturnScreen.current = screen;
+      const snapshot = debugEngineRef.current?.getSnapshot();
+      setDebugControls({
+        speed: snapshot?.speed ?? 120,
+        godmode: snapshot?.godmode ?? false,
+        stageDurationMs: snapshot?.stageDurationMs ?? null,
+      });
       if (screen === SCREEN.PLAYING) setScreen(SCREEN.PAUSED);
       setDebugOpen(true);
     };
@@ -81,7 +90,7 @@ export default function App() {
       const key = event.key.toLowerCase();
       if (key !== "q" && key !== "p") return;
       pressedKeys.current.add(key);
-      if (isDebugShortcut(pressedKeys.current) && progress && screen !== SCREEN.BOOT && screen !== SCREEN.ERROR) {
+      if (isDebugShortcut(pressedKeys.current) && progress) {
         event.preventDefault();
         openDebug();
       }
@@ -184,6 +193,13 @@ export default function App() {
       console.error(error);
     }
   };
+  const debugUncompleteStage = (planetId, stageId) => {
+    try {
+      debugUpdateProgress((current) => uncompleteDebugStage(current, planetId, stageId));
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const markPlanetSeen = useCallback((planetId) => {
     if (!progress || progress.seenPlanetIds?.includes(planetId)) return;
@@ -221,10 +237,60 @@ export default function App() {
     setMenuPage(SCREEN.SETTINGS);
   };
 
+  const closeDebug = () => {
+    setDebugOpen(false);
+    setScreen(debugReturnScreen.current);
+  };
+
+  const navigateDebugScreen = (destination) => {
+    setDebugOpen(false);
+    setPauseSettingsOpen(false);
+    setCompletionStageId(null);
+    if ([SCREEN.MENU, SCREEN.PLANETS, SCREEN.COMMAND, SCREEN.SETTINGS].includes(destination)) {
+      setRun(null);
+      setOutcomeSnapshot(null);
+      setMenuPage(destination);
+      if (destination === SCREEN.SETTINGS) setSettingsReturnPage(SCREEN.MENU);
+      setScreen(SCREEN.MENU);
+      return;
+    }
+    if (destination === SCREEN.PLAYING || destination === SCREEN.PAUSED) {
+      const nextRun = run ?? { planetId: "earth", stageId: "earth-1" };
+      if (screen === SCREEN.DEFEAT || screen === SCREEN.VICTORY) setRunKey((value) => value + 1);
+      setRun(nextRun);
+      setOutcomeSnapshot(null);
+      setScreen(destination);
+      return;
+    }
+    setRun((current) => current ?? { planetId: "earth", stageId: "earth-1" });
+    setOutcomeSnapshot(null);
+    setScreen(destination);
+  };
+
+  const debugMenu = debugOpen && progress ? (
+    <DebugMenu
+      progress={progress}
+      run={run}
+      controls={debugControls}
+      onClose={closeDebug}
+      onChange={patchSettings}
+      onGrant={(currency, amount) => debugUpdateProgress((current) => addDebugCurrency(current, currency, amount))}
+      onUnlockAll={() => debugUpdateProgress(unlockAllPlanets)}
+      onCompleteStage={debugCompleteStage}
+      onUncompleteStage={debugUncompleteStage}
+      onStartStage={startStage}
+      onSetSpeed={(speed) => { debugEngineRef.current?.setDebugSpeed(speed); setDebugControls((current) => ({ ...current, speed })); }}
+      onSetGodmode={(godmode) => { debugEngineRef.current?.setDebugGodmode(godmode); setDebugControls((current) => ({ ...current, godmode })); }}
+      onSetDuration={(durationMs) => { debugEngineRef.current?.setDebugDuration(durationMs); setDebugControls((current) => ({ ...current, stageDurationMs: durationMs || Infinity })); }}
+      onGrantPowerUp={(power) => debugEngineRef.current?.grantDebugPowerUp(power)}
+      onNavigate={navigateDebugScreen}
+    />
+  ) : null;
+
   if (fatal || screen === SCREEN.ERROR) {
-    return <><FullscreenButton /><ErrorScreen message={fatal || bootError || "Erro ao iniciar o RocketBloom."} onRetry={() => window.location.reload()} /></>;
+    return <><FullscreenButton /><ErrorScreen message={fatal || bootError || "Erro ao iniciar o RocketBloom."} onRetry={() => window.location.reload()} />{debugMenu}</>;
   }
-  if (!progress || screen === SCREEN.BOOT) return <><FullscreenButton /><BootScreen progress={assetProgress} baseUrl={APP_BASE} /></>;
+  if (!progress || screen === SCREEN.BOOT) return <><FullscreenButton /><BootScreen progress={assetProgress} baseUrl={APP_BASE} />{debugMenu}</>;
 
   const planet = run ? getPlanetById(run.planetId) : null;
   return (
@@ -274,6 +340,7 @@ export default function App() {
           onPause={onPause}
           onHudRef={hudRef}
           onOutcome={onOutcome}
+          onEngineRef={setDebugEngineRef}
         />
       ) : null}
       {screen === SCREEN.PAUSED ? (
@@ -299,18 +366,7 @@ export default function App() {
           }}
         />
       ) : null}
-      {debugOpen ? (
-        <DebugMenu
-          progress={progress}
-          run={run}
-          onClose={() => { setDebugOpen(false); setScreen(debugReturnScreen.current); }}
-          onChange={patchSettings}
-          onGrant={(currency, amount) => debugUpdateProgress((current) => addDebugCurrency(current, currency, amount))}
-          onUnlockAll={() => debugUpdateProgress(unlockAllPlanets)}
-          onCompleteStage={debugCompleteStage}
-          onStartStage={startStage}
-        />
-      ) : null}
+      {debugMenu}
     </div>
     </>
   );

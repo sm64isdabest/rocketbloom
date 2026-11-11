@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { PLANETS } from "../game/data/planets.js";
 import { createDefaultProgress } from "./storage.js";
-import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets } from "./debugTools.js";
+import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets, uncompleteDebugStage } from "./debugTools.js";
 
 test("debug shortcut requires Q and P to be held together in either order", () => {
   assert.equal(isDebugShortcut(new Set(["q", "p"])), true);
@@ -39,4 +39,20 @@ test("debug completion advances the campaign and unlocks the next planet at the 
   };
   assert.deepEqual(completeDebugStage(atFinalEarthStage, "earth", "earth-5").unlockedPlanetIds, ["earth", "mars"]);
   assert.deepEqual(completeDebugStage(progress, "mars", "mars-1").unlockedPlanetIds, ["earth", "mars"]);
+});
+
+test("debug stage can be uncompleted without changing unlocked planets", () => {
+  const progress = {
+    ...createDefaultProgress(),
+    completedStageIds: ["earth-1", "earth-2"],
+    unlockedPlanetIds: ["earth", "mars"],
+    stageProgress: { "earth-1": 1, "earth-2": 0.6 },
+  };
+
+  const updated = uncompleteDebugStage(progress, "earth", "earth-2");
+
+  assert.deepEqual(updated.completedStageIds, ["earth-1"]);
+  assert.deepEqual(updated.unlockedPlanetIds, ["earth", "mars"]);
+  assert.deepEqual(updated.stageProgress, { "earth-1": 1, "earth-2": 0 });
+  assert.throws(() => uncompleteDebugStage(progress, "earth", "mars-1"), /Fase/);
 });

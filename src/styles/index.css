@@ -1096,6 +1096,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .debug-menu__setting--range b { color: #90efc2; font: 600 .75rem "DM Mono", monospace; }
 .debug-menu__setting--range input { width: 100%; accent-color: #56d69c; }
 .debug-menu__setting select, .debug-menu__field select { min-width: 150px; padding: 8px 10px; border: 1px solid rgba(190, 226, 221, .2); border-radius: 8px; background: #132a33; color: #effff9; }
+.debug-menu__field input[type="number"] { width: 100%; min-height: 38px; padding: 8px 10px; border: 1px solid rgba(190, 226, 221, .2); border-radius: 8px; background: #132a33; color: #effff9; }
 .debug-menu__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin: 16px 0; }
 .debug-menu__stats div { display: flex; min-height: 66px; flex-direction: column; justify-content: space-between; padding: 11px; border: 1px solid rgba(162, 225, 206, .14); border-radius: 11px; background: rgba(114, 208, 171, .055); }
 .debug-menu__stats span, .debug-menu__grant > span { color: #91aaa9; font-size: .72rem; }
@@ -1105,6 +1106,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .debug-menu__grant button, .debug-menu__button { min-height: 38px; padding: 8px 12px; border: 1px solid rgba(151, 224, 193, .24); border-radius: 9px; background: rgba(116, 220, 172, .09); color: #dcffed; font-weight: 700; cursor: pointer; }
 .debug-menu__button { margin-top: 14px; }
 .debug-menu__button--primary { border-color: rgba(133, 246, 188, .6); background: linear-gradient(135deg, #20825e, #165d53); }
+.debug-menu button:disabled, .debug-menu input:disabled { cursor: not-allowed; opacity: .5; }
 .debug-menu__field { display: flex; flex-direction: column; gap: 7px; margin: 16px 0; color: #a9c6bf; font-size: .78rem; }
 .debug-menu__field select { width: 100%; }
 .debug-menu__actions { display: flex; flex-wrap: wrap; gap: 8px; }

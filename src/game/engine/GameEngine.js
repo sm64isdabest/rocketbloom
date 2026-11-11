@@ -68,6 +68,8 @@ export class GameEngine {
     this.particles = [];
     this.entitySequence = 0;
     this.speed = SPEED.start;
+    this.stageDurationMs = session.stage.durationMs;
+    this.godmode = false;
     this.backgroundOffsetY = 0;
     this.elapsedMs = 0;
     this.progressMs = 0;
@@ -175,6 +177,38 @@ export class GameEngine {
 
   setControlMode(controlMode) {
     this.input.setControlMode(controlMode);
+  }
+
+  setDebugSpeed(speed) {
+    if (!Number.isFinite(speed)) return;
+    this.speed = clamp(speed, SPEED.min, SPEED.max);
+    this.emitHud(true);
+  }
+
+  setDebugGodmode(enabled) {
+    this.godmode = Boolean(enabled);
+    this.emitHud(true);
+  }
+
+  setDebugDuration(durationMs) {
+    if (durationMs === 0 || durationMs === Infinity) this.stageDurationMs = Infinity;
+    else if (Number.isFinite(durationMs) && durationMs > 0) this.stageDurationMs = durationMs;
+    else return;
+    this.emitHud(true);
+  }
+
+  grantDebugPowerUp(power) {
+    if (!Object.hasOwn(POWER_UPS, power)) throw new Error("Poder de debug inválido.");
+    if (power === "shrink") {
+      for (const obstacle of this.obstacles) obstacle.startShrink(POWER_UPS.shrink.shrinkMs);
+      this.hazardClearRemainingMs = POWER_UPS.shrink.durationMs;
+      this.shrinkFlashRemainingMs = 180;
+    } else {
+      this.powerUps = activatePowerUp(this.powerUps, power);
+    }
+    this.questionFeedback = ({ turbo: "TURBO!", star: "ESTRELA! Invencível", bubble: "Bolha ativada", shrink: "Raio encolhedor!" })[power];
+    this.feedbackTimerMs = 1200;
+    this.emitHud(true);
   }
 
   stop() {
@@ -291,13 +325,13 @@ export class GameEngine {
       return;
     }
 
-    if (this.speed <= SPEED.defeatAtOrBelow && !this.isQuestionResolving()) {
+    if (!this.godmode && this.speed <= SPEED.defeatAtOrBelow && !this.isQuestionResolving()) {
       this.pendingOutcome = "defeat";
       this.presentPendingOutcome();
       return;
     }
-    if (this.progressMs >= this.session.stage.durationMs && !this.isQuestionResolving()) {
-      this.progressMs = this.session.stage.durationMs;
+    if (Number.isFinite(this.stageDurationMs) && this.progressMs >= this.stageDurationMs && !this.isQuestionResolving()) {
+      this.progressMs = this.stageDurationMs;
       this.finish("victory");
       return;
     }
@@ -389,7 +423,7 @@ export class GameEngine {
     this.columnFlashRemainingMs = 0;
     this.interQuestionRemainingMs = sampleInterQuestionDelayMs(this.rng);
     this.questionFeedback = "";
-    if (this.speed <= SPEED.defeatAtOrBelow) this.pendingOutcome = "defeat";
+    if (!this.godmode && this.speed <= SPEED.defeatAtOrBelow) this.pendingOutcome = "defeat";
   }
 
   presentPendingOutcome() {
@@ -432,7 +466,7 @@ export class GameEngine {
   }
 
   updatePickupsAndHazards(dt, frameMs) {
-    const stageProgress = clamp(this.progressMs / this.session.stage.durationMs, 0, 1);
+    const stageProgress = Number.isFinite(this.stageDurationMs) ? clamp(this.progressMs / this.stageDurationMs, 0, 1) : 0;
     const spawnRate = this.session.difficulty.spawnRateMultiplier;
     const baseInterval = this.session.stage.obstacleIntervalMs ?? SPAWN.obstacleIntervalMs / spawnRate;
     const minInterval = this.session.stage.obstacleMinIntervalMs ?? SPAWN.obstacleMinIntervalMs;
@@ -464,7 +498,7 @@ export class GameEngine {
 
     for (const obstacle of this.obstacles) {
       if (!obstacle.alive) continue;
-      const stageProgress = clamp(this.progressMs / this.session.stage.durationMs, 0, 1);
+      const stageProgress = Number.isFinite(this.stageDurationMs) ? clamp(this.progressMs / this.stageDurationMs, 0, 1) : 0;
       obstacle.speed = this.getEntitySpeed(SPAWN.obstacleFallSpeed)
         * (this.session.stage.speedMultiplier ?? this.session.difficulty.speedMultiplier ?? 1)
         * (this.session.stage.obstacleSpeedMultiplier ?? 1)
@@ -529,7 +563,7 @@ export class GameEngine {
       this.feedbackTimerMs -= frameMs;
       if (this.feedbackTimerMs <= 0) this.questionFeedback = "";
     }
-    if (this.speed <= SPEED.defeatAtOrBelow && !this.isQuestionResolving()) this.pendingOutcome = "defeat";
+    if (!this.godmode && this.speed <= SPEED.defeatAtOrBelow && !this.isQuestionResolving()) this.pendingOutcome = "defeat";
   }
 
   getEntitySpeed(baseSpeed) {
@@ -553,6 +587,7 @@ export class GameEngine {
 
   protectFromPenalty(source) {
     // A estrela sempre protege primeiro; a bolha só é consumida se a estrela estiver inativa.
+    if (this.godmode) return true;
     if (this.powerUps.starMs > 0) return true;
     if (!this.powerUps.bubble) return false;
     this.powerUps = activatePowerUp(this.powerUps, "consume-bubble");
@@ -591,7 +626,7 @@ export class GameEngine {
         || Math.abs(x - active.x) >= (obstacle.width + active.width) / 2 + SPAWN.obstacleSafeGap));
     const pool = safe.length ? safe : candidates;
     const x = pool[Math.floor(this.rng() * pool.length)];
-    const stageProgress = clamp(this.progressMs / this.session.stage.durationMs, 0, 1);
+    const stageProgress = Number.isFinite(this.stageDurationMs) ? clamp(this.progressMs / this.stageDurationMs, 0, 1) : 0;
     const speed = this.getEntitySpeed(SPAWN.obstacleFallSpeed)
       * (this.session.stage.speedMultiplier ?? this.session.difficulty.speedMultiplier ?? 1)
       * (this.session.stage.obstacleSpeedMultiplier ?? 1)
@@ -683,7 +718,9 @@ export class GameEngine {
       incorrectAnswers: this.incorrectAnswers,
       elapsedMs: this.elapsedMs,
       progressMs: this.progressMs,
-      stageProgress: clamp(this.progressMs / this.session.stage.durationMs, 0, 1),
+      stageProgress: Number.isFinite(this.stageDurationMs) ? clamp(this.progressMs / this.stageDurationMs, 0, 1) : 0,
+      stageDurationMs: this.stageDurationMs,
+      godmode: this.godmode,
       planetId: this.session.planet.id,
       stageId: this.session.stage.id,
       question: this.currentRound?.status === "waiting-next-question" ? null : this.currentRound?.question ?? null,
