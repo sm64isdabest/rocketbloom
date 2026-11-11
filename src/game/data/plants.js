@@ -1,7 +1,7 @@
 export const PLANTS = [
   {
     id: "victoria-amazonica",
-    name: "Vitória-régia",
+    name: "Girassol terrestre",
     planetId: "earth",
     moneyReward: 50,
     sustainabilityPoints: 25,
@@ -11,7 +11,7 @@ export const PLANTS = [
   },
   {
     id: "mars-lichen",
-    name: "Líquen marciano",
+    name: "Flor carmesim marciana",
     planetId: "mars",
     moneyReward: 70,
     sustainabilityPoints: 35,
@@ -21,7 +21,7 @@ export const PLANTS = [
   },
   {
     id: "ring-fern",
-    name: "Samambaia dos anéis",
+    name: "Flor dourada dos anéis",
     planetId: "saturn",
     moneyReward: 90,
     sustainabilityPoints: 45,
@@ -31,7 +31,7 @@ export const PLANTS = [
   },
   {
     id: "ice-orchid",
-    name: "Orquídea de gelo",
+    name: "Flor cristalina de Netuno",
     planetId: "neptune",
     moneyReward: 120,
     sustainabilityPoints: 60,

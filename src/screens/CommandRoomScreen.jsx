@@ -1,53 +1,61 @@
+import { useState } from "react";
 import { PLANETS } from "../game/data/planets.js";
 import { PLANTS } from "../game/data/plants.js";
-import { PlantGrowthArt } from "../components/PlantGrowthArt.jsx";
+import { getLaboratoryPlantImage, getNextPlanetIndex } from "./laboratoryModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
+const asset = (path) => `${APP_BASE}${path}`;
 
-export function CommandRoomScreen({ progress, onBack }) {
-  const rescuedCount = progress.rescuedPlantIds.length;
+export function CommandRoomScreen({ progress, onBack, onSettings }) {
+  const [planetIndex, setPlanetIndex] = useState(0);
+  const planet = PLANETS[planetIndex];
+  const plant = PLANTS.find((entry) => entry.id === planet.plantId);
+  const rescued = progress.rescuedPlantIds.includes(plant.id);
+  const growthStage = rescued
+    ? Math.min(plant.growthStages.length - 1, progress.plantGrowthStages?.[plant.id] ?? 0)
+    : 0;
+  const plantImage = getLaboratoryPlantImage(planet.id, growthStage, APP_BASE);
+  const changePlanet = (direction) => setPlanetIndex((index) => getNextPlanetIndex(index, direction, PLANETS.length));
+
   return (
-    <main className="screen screen--section laboratory-screen">
-      <header className="section-head">
-        <button type="button" className="btn btn--back" onClick={onBack}>← Base</button>
-        <div><p className="eyebrow">Laboratório orbital · biodiversidade</p><h1>Jardim de resgate</h1><p className="muted">Acompanhe as espécies salvas e veja a vida crescer a cada missão.</p></div>
+    <main className={`laboratory-scene laboratory-scene--${planet.id}`} aria-label="Laboratório orbital">
+      <img className="laboratory-scene__background" src={asset("assets/laboratory/laboratory-background.png")} alt="" aria-hidden="true" />
+
+      <header className="laboratory-scene__topbar">
+        <button type="button" className="laboratory-scene__icon-button" onClick={onBack} aria-label="Voltar à base">
+          <span aria-hidden="true">↩</span>
+        </button>
+        <span className="laboratory-scene__title">Laboratório orbital</span>
+        <button type="button" className="laboratory-scene__icon-button" onClick={onSettings} aria-label="Abrir configurações">
+          <img src={asset("assets/menu/settings.png")} alt="" aria-hidden="true" />
+        </button>
       </header>
 
-      <section className="command-summary laboratory-summary" aria-label="Progresso sustentável e recursos">
-        <div><span className="eyebrow">Impacto sustentável</span><strong>{progress.sustainabilityPoints ?? 0}</strong><span>pontos ecológicos</span></div>
-        <div><span className="eyebrow">Reserva de expedição</span><strong><i className="resource-coin">●</i> {progress.coins}</strong><span>moedas</span></div>
-        <div><span className="eyebrow">Amostras raras</span><strong><img className="resource-diamond-icon" src={`${APP_BASE}assets/ui/diamond.png`} alt="" aria-hidden="true" /> {progress.diamonds}</strong><span>diamantes</span></div>
-        <div><span className="eyebrow">Pesquisa financiada</span><strong>{progress.money}</strong><span>créditos científicos</span></div>
-      </section>
+      <div className="laboratory-specimen" aria-live="polite" key={planet.id}>
+        <img
+          className="laboratory-specimen__plant"
+          src={plantImage}
+          alt={`${plant.name}, ${planet.name}${rescued ? `, ${plant.growthStages[growthStage]}` : ", muda"}`}
+        />
+      </div>
 
-      <section className="command-log laboratory-garden" aria-labelledby="garden-title">
-        <div className="command-log__head"><div><p className="eyebrow">Coleção da missão</p><h2 id="garden-title">Espécies resgatadas</h2></div><span>{rescuedCount} de {PLANTS.length} florescendo</span></div>
-        <div className="plant-list">
-          {PLANETS.map((planet) => {
-            const plant = PLANTS.find((entry) => entry.id === planet.plantId);
-            if (!plant) return null;
-            const rescued = progress.rescuedPlantIds.includes(plant.id);
-            const unlocked = progress.unlockedPlanetIds.includes(planet.id);
-            const growthStage = rescued ? Math.min(plant.growthStages.length - 1, progress.plantGrowthStages?.[plant.id] ?? 0) : 0;
-            const growthLabel = rescued ? plant.growthStages[growthStage] : unlocked ? "Missão em andamento" : "Planeta ainda bloqueado";
-            return (
-              <article key={plant.id} className={`plant-entry plant-specimen ${rescued ? "is-rescued" : "is-undiscovered"}`} style={{ "--plant-leaf": plant.palette.leaf, "--plant-flower": plant.palette.flower }}>
-                <div className="plant-entry__art"><PlantGrowthArt plant={plant} stage={growthStage} locked={!rescued} /></div>
-                <div className="plant-specimen__details">
-                  <span className="eyebrow">Origem · {planet.name}</span>
-                  <h3>{plant.name}</h3>
-                  <p>{rescued ? `Estágio de crescimento: ${growthLabel}` : `${growthLabel}. Conclua a campanha de ${planet.name} para resgatá-la.`}</p>
-                  <div className="growth-track" role="img" aria-label={`${rescued ? growthStage + 1 : 0} de ${plant.growthStages.length} estágios de crescimento`}>
-                    {plant.growthStages.map((label, index) => <span key={label} className={rescued && index <= growthStage ? "is-grown" : ""} />)}
-                  </div>
-                  <small className="growth-caption">{rescued ? `${growthStage + 1}/${plant.growthStages.length} · ${plant.growthStages.length - growthStage - 1} estágio(s) até a maturidade` : `Recompensa de resgate: ${plant.moneyReward} créditos + ${plant.sustainabilityPoints} pontos ecológicos`}</small>
-                </div>
-                <span className={`plant-entry__status ${rescued ? "" : "plant-entry__status--pending"}`}>{rescued ? "Resgatada" : unlocked ? "Aguardando resgate" : "A descobrir"}</span>
-              </article>
-            );
-          })}
+      <nav className="laboratory-planet-navigation" aria-label="Plantas por planeta">
+        <button type="button" className="laboratory-planet-navigation__arrow" onClick={() => changePlanet(-1)} aria-label="Planta do planeta anterior">
+          <span aria-hidden="true">◀</span>
+        </button>
+        <div className="laboratory-planet-display">
+          <img src={asset(`assets/ui/planets/${planet.id}-icon.png`)} alt="" aria-hidden="true" />
         </div>
-      </section>
+        <button type="button" className="laboratory-planet-navigation__arrow" onClick={() => changePlanet(1)} aria-label="Planta do próximo planeta">
+          <span aria-hidden="true">▶</span>
+        </button>
+      </nav>
+
+      <footer className="laboratory-plant-caption" aria-live="polite">
+        <span className="laboratory-plant-caption__eyebrow">{rescued ? `Estágio ${growthStage + 1} de ${plant.growthStages.length}` : "Amostra botânica"}</span>
+        <h1>{plant.name}</h1>
+        <p>Planeta {planet.name}</p>
+      </footer>
     </main>
   );
 }

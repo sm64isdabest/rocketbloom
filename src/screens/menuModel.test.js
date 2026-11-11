@@ -9,6 +9,10 @@ test("settings opened from phase selection returns to phase selection", () => {
   assert.equal(getSettingsReturnPage(SCREEN.PLANETS, SCREEN), SCREEN.PLANETS);
 });
 
+test("settings opened from the laboratory returns to the laboratory", () => {
+  assert.equal(getSettingsReturnPage(SCREEN.COMMAND, SCREEN), SCREEN.COMMAND);
+});
+
 test("settings opened from the home menu returns to the home menu", () => {
   assert.equal(getSettingsReturnPage(SCREEN.MENU, SCREEN), SCREEN.MENU);
 });

@@ -153,6 +153,41 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 .plant-specimen__details h3 { margin: 2px 0 4px; color: var(--ink); font-size: 1rem; }
 .plant-specimen__details p { margin: 0 0 9px; color: var(--muted); font-size: .69rem; line-height: 1.45; }
 
+/* Single-plant orbital laboratory */
+.laboratory-scene {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  min-height: 520px;
+  overflow: hidden;
+  isolation: isolate;
+  background: #101c45;
+}
+.laboratory-scene__background { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.laboratory-scene::after { position: absolute; z-index: 1; inset: 0; content: ""; pointer-events: none; background: linear-gradient(180deg, rgba(8, 12, 37, .24), transparent 23%, transparent 72%, rgba(8, 12, 37, .34)); }
+.laboratory-scene__topbar { position: absolute; z-index: 4; top: max(10px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); left: max(12px, env(safe-area-inset-left)); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.laboratory-scene__title { color: rgba(226, 245, 255, .84); font-size: clamp(.66rem, 2.4vw, .9rem); font-weight: 800; letter-spacing: .12em; text-shadow: 0 2px 4px #0a1740; text-transform: uppercase; }
+.laboratory-scene__icon-button { display: grid; width: clamp(37px, 9vw, 50px); height: clamp(37px, 9vw, 50px); place-items: center; padding: 5px; border: 2px solid #0872c6; border-radius: 12px; color: #fff; background: linear-gradient(180deg, #0c4f9b, #07285e); box-shadow: inset 0 0 0 2px rgba(27, 180, 255, .3), 0 2px 0 #071b45, 0 0 16px rgba(0, 183, 255, .35); cursor: pointer; font-size: 1.65rem; font-weight: 900; line-height: 1; text-shadow: 1px 2px 1px #061331; }
+.laboratory-scene__icon-button img { width: 100%; height: 100%; object-fit: contain; }
+.laboratory-specimen { position: absolute; z-index: 2; right: 0; bottom: 47.5%; left: 0; display: flex; justify-content: center; pointer-events: none; }
+.laboratory-specimen__plant { display: block; width: min(53vw, 27svh, 320px); max-height: 27svh; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(3, 11, 32, .46)); transform-origin: 50% 94%; animation: laboratory-plant-sway 3.8s ease-in-out infinite; }
+@keyframes laboratory-plant-sway { 0%, 100% { transform: rotate(-2deg) translateY(0); } 50% { transform: rotate(2.2deg) translateY(-3px); } }
+.laboratory-planet-navigation { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
+.laboratory-planet-navigation__arrow { position: absolute; top: 51%; display: grid; width: clamp(38px, 10vw, 54px); height: clamp(38px, 10vw, 54px); place-items: center; border: 2px solid rgba(32, 38, 60, .8); border-radius: 9px; color: #263044; background: linear-gradient(145deg, #fff, #aeb8c8); box-shadow: inset 0 1px 0 #fff, 0 3px 0 #4a4d5d, 0 3px 8px rgba(0, 0, 0, .42); cursor: pointer; pointer-events: auto; font-size: clamp(1.05rem, 4.5vw, 1.5rem); text-shadow: 0 1px #fff; }
+.laboratory-planet-navigation__arrow:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.laboratory-planet-navigation__arrow:first-child { left: max(12px, env(safe-area-inset-left)); }
+.laboratory-planet-navigation__arrow:last-child { right: max(12px, env(safe-area-inset-right)); }
+.laboratory-planet-display { position: absolute; top: 61%; left: 50%; display: grid; width: clamp(38px, 10vw, 57px); aspect-ratio: 1; place-items: center; transform: translateX(-50%); }
+.laboratory-planet-display img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 5px rgba(13, 34, 91, .65)); }
+.laboratory-plant-caption { position: absolute; z-index: 4; right: 12px; bottom: max(14px, env(safe-area-inset-bottom)); left: 12px; width: max-content; max-width: calc(100% - 24px); margin: 0 auto; padding: 9px 20px 10px; border: 1px solid rgba(101, 208, 255, .58); border-radius: 13px; background: linear-gradient(180deg, rgba(10, 42, 91, .91), rgba(6, 27, 69, .94)); box-shadow: inset 0 1px rgba(255,255,255,.22), 0 3px 0 rgba(5, 23, 63, .8), 0 0 20px rgba(0, 168, 255, .2); text-align: center; text-shadow: 0 1px 3px #081735; }
+.laboratory-plant-caption__eyebrow { display: block; margin-bottom: 2px; color: #9de8ff; font-size: .55rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+.laboratory-plant-caption h1 { margin: 0; color: white; font-size: clamp(1rem, 4.4vw, 1.45rem); line-height: 1.1; letter-spacing: -.015em; }
+.laboratory-plant-caption p { margin: 3px 0 0; color: #d3efff; font-size: clamp(.67rem, 2.6vw, .84rem); font-weight: 700; }
+.motion-reduced .laboratory-specimen__plant { animation: none; }
+@media (max-width: 520px) { .laboratory-scene { min-height: 460px; }.laboratory-scene__background { object-position: 50% center; }.laboratory-plant-caption { padding: 8px 15px 9px; } }
+@media (max-height: 570px) { .laboratory-scene { min-height: 0; }.laboratory-specimen { bottom: 43%; }.laboratory-specimen__plant { width: min(30vw, 24svh, 330px); max-height: 24svh; }.laboratory-planet-navigation__arrow { top: 49%; }.laboratory-planet-display { top: 62%; }.laboratory-plant-caption { bottom: 5px; padding: 5px 14px; }.laboratory-plant-caption__eyebrow { display: none; } }
+@media (prefers-reduced-motion: reduce) { .laboratory-specimen__plant { animation: none; } }
+
 /* RocketBloom supplied-art main menu */
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
 .menu.screen--home {

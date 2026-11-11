@@ -4,5 +4,5 @@ export function getMenuAssetUrl(filename, basePath = "/") {
 }
 
 export function getSettingsReturnPage(currentPage, pages) {
-  return currentPage === pages.PLANETS ? pages.PLANETS : pages.MENU;
+  return currentPage === pages.PLANETS || currentPage === pages.COMMAND ? currentPage : pages.MENU;
 }

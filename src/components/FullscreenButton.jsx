@@ -21,7 +21,7 @@ function savePosition(position) {
   }
 }
 
-export function FullscreenButton() {
+export function FullscreenButton({ hidden = false }) {
   const [position, setPosition] = useState(() => getSavedPosition() ?? {
     x: Math.max(EDGE_GAP, window.innerWidth - BUTTON_SIZE - EDGE_GAP),
     y: EDGE_GAP,
@@ -87,6 +87,8 @@ export function FullscreenButton() {
       // Fullscreen can be unavailable or denied by the browser.
     }
   };
+
+  if (hidden) return null;
 
   return (
     <button

@@ -229,7 +229,7 @@ export default function App() {
   const planet = run ? getPlanetById(run.planetId) : null;
   return (
     <>
-    <FullscreenButton />
+    <FullscreenButton hidden={screen === SCREEN.MENU && menuPage === SCREEN.COMMAND} />
     <div className={`app-shell ${progress.settings.reducedMotion || systemReducedMotion ? "motion-reduced" : ""}`}>
       {screen === SCREEN.MENU && (menuPage === SCREEN.MENU || menuPage === SCREEN.SETTINGS) ? (
         <MenuScreen
@@ -254,7 +254,11 @@ export default function App() {
         <SettingsScreen progress={progress} onBack={() => setMenuPage(settingsReturnPage)} onChange={patchSettings} />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.COMMAND ? (
-        <CommandRoomScreen progress={progress} onBack={() => setMenuPage(SCREEN.MENU)} />
+        <CommandRoomScreen
+          progress={progress}
+          onBack={() => setMenuPage(SCREEN.MENU)}
+          onSettings={openSettings}
+        />
       ) : null}
 
       {run && (screen === SCREEN.PLAYING || screen === SCREEN.PAUSED || screen === SCREEN.DEFEAT) ? (
