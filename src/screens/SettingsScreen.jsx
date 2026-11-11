@@ -60,7 +60,7 @@ export function SettingsScreen({ progress, onBack, onChange }) {
       <section className="settings-popup" role="dialog" aria-modal="true" aria-labelledby={`${ids}-title`}>
         <h1 id={`${ids}-title`} className="sr-only">Configurações</h1>
         <button type="button" className="settings-popup__close" onClick={onBack} aria-label="Fechar configurações" autoFocus>
-          <img src={getMenuAssetUrl("close.png", APP_BASE)} alt="" />
+          <img src={getMenuAssetUrl("close.webp", APP_BASE)} alt="" />
         </button>
 
         <div className="settings-popup__content">

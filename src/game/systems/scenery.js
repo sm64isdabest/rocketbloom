@@ -1,9 +1,9 @@
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const BACKGROUND_FILES = {
-  earth: "terra_background.png",
-  mars: "marte_background.png",
-  saturn: "saturno_background.png",
-  neptune: "netuno_background.png",
+  earth: "terra_background.webp",
+  mars: "marte_background.webp",
+  saturn: "saturno_background.webp",
+  neptune: "netuno_background.webp",
 };
 const backgroundImages = new Map();
 let leafImage;
@@ -12,7 +12,7 @@ export function getLeafImage() {
   if (typeof Image === "undefined") return null;
   if (!leafImage) {
     leafImage = new Image();
-    leafImage.src = `${APP_BASE}assets/folha-verde-cartunesca-brilhante.png`;
+    leafImage.src = `${APP_BASE}assets/folha-verde-cartunesca-brilhante.webp`;
   }
   return leafImage;
 }

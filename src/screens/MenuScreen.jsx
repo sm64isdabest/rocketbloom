@@ -32,25 +32,25 @@ export function MenuScreen({ warning, onPlay, onSettings }) {
     <main
       className="screen menu screen--home"
       aria-labelledby="game-title"
-      style={{ "--menu-background": `url("${menuAsset("background.png")}")` }}
+      style={{ "--menu-background": `url("${menuAsset("background.webp")}")` }}
     >
       <MenuSpaceBackground />
       <button type="button" className="menu__settings" onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
-        <img src={menuAsset("settings.png")} alt="" />
+        <img src={menuAsset("settings.webp")} alt="" />
       </button>
 
       <section className="menu__layout">
         <h1 id="game-title" className="sr-only">RocketBloom</h1>
-        <img className="menu__logo" src={menuAsset("logo.png")} alt="RocketBloom" />
+        <img className="menu__logo" src={menuAsset("logo.webp")} alt="RocketBloom" />
 
         <nav className="menu__buttons" aria-label="Menu principal">
           <button type="button" className="menu__play" onClick={() => { playGameSound("menuClick"); onPlay(); }}>
-            <img src={menuAsset("play.png")} alt="" />
+            <img src={menuAsset("play.webp")} alt="" />
             <span>Jogar</span>
           </button>
 
           <button type="button" className="menu__option menu__option--shop" onClick={() => setNotice("shop")}>
-            <img src={menuAsset("shop.png")} alt="" />
+            <img src={menuAsset("shop.webp")} alt="" />
             <span>Loja</span>
           </button>
         </nav>

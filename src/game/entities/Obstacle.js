@@ -1,5 +1,5 @@
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
-const SPRITE_FILES = { plane: "plane.png", helicopter: "helicopter.png", balloon: "balloon.png" };
+const SPRITE_FILES = { plane: "plane.webp", helicopter: "helicopter.webp", balloon: "balloon.webp" };
 const SPRITE_IMAGES = new Map();
 
 function getSprite(obstacleId) {

@@ -98,7 +98,7 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
       >
         <img
           className="phase-selection-background"
-          src={`${APP_BASE}assets/ui/planets/${planet.id}.png`}
+          src={`${APP_BASE}assets/ui/planets/${planet.id}.webp`}
           alt=""
           draggable="false"
           aria-hidden="true"
@@ -135,20 +135,20 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
         </button>
 
         <button type="button" className="phase-selection-settings" onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
-          <img src={getMenuAssetUrl("settings.png", APP_BASE)} alt="" aria-hidden="true" />
+          <img src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" aria-hidden="true" />
         </button>
 
         <header className="phase-selection-header" aria-label="Planeta e recursos">
           <div className="phase-selection-wallet" aria-label={`${numberFormat.format(progress.coins ?? 0)} moedas`}>
-            <img src={`${APP_BASE}assets/ui/coin.png`} alt="" aria-hidden="true" />
+            <img src={`${APP_BASE}assets/ui/coin.webp`} alt="" aria-hidden="true" />
             <span>{numberFormat.format(progress.coins ?? 0)}</span>
           </div>
           <div className="phase-selection-planet-name">
-            <img src={`${APP_BASE}assets/ui/planets/${planet.id}-icon.png`} alt="" aria-hidden="true" />
+            <img src={`${APP_BASE}assets/ui/planets/${planet.id}-icon.webp`} alt="" aria-hidden="true" />
             <span>{planet.name}</span>
           </div>
           <div className="phase-selection-wallet" aria-label={`${numberFormat.format(progress.diamonds ?? 0)} diamantes`}>
-            <img src={`${APP_BASE}assets/ui/diamond.png`} alt="" aria-hidden="true" />
+            <img src={`${APP_BASE}assets/ui/diamond.webp`} alt="" aria-hidden="true" />
             <span>{numberFormat.format(progress.diamonds ?? 0)}</span>
           </div>
         </header>
@@ -178,7 +178,7 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
                 >
                   <img
                     className="phase-selection-stage__frame"
-                    src={`${APP_BASE}assets/ui/level-frames/${FRAME_BY_PLANET[planet.id]}.png`}
+                    src={`${APP_BASE}assets/ui/level-frames/${FRAME_BY_PLANET[planet.id]}.webp`}
                     alt=""
                     aria-hidden="true"
                     draggable="false"
@@ -201,7 +201,7 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
           onClick={() => previousPlanet && selectPlanet(previousPlanet.id)}
           aria-label={canGoBack ? `Planeta anterior: ${previousPlanet.name}` : "Não há planeta anterior desbloqueado"}
         >
-          <img src={`${APP_BASE}assets/ui/level-frames/arrow-left.png`} alt="" aria-hidden="true" draggable="false" />
+          <img src={`${APP_BASE}assets/ui/level-frames/arrow-left.webp`} alt="" aria-hidden="true" draggable="false" />
         </button>
         <button
           type="button"
@@ -210,10 +210,10 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
           onClick={() => nextPlanet && canGoForward && selectPlanet(nextPlanet.id)}
           aria-label={canGoForward ? `Próximo planeta: ${nextPlanet.name}` : "Conclua todas as fases para desbloquear o próximo planeta"}
         >
-          <img src={`${APP_BASE}assets/ui/level-frames/arrow-right.png`} alt="" aria-hidden="true" draggable="false" />
+          <img src={`${APP_BASE}assets/ui/level-frames/arrow-right.webp`} alt="" aria-hidden="true" draggable="false" />
         </button>
         <button type="button" className="phase-selection-laboratory" onClick={onCommandRoom} aria-label="Abrir Laboratório">
-          <img src={getMenuAssetUrl("laboratory.png", APP_BASE)} alt="" aria-hidden="true" />
+          <img src={getMenuAssetUrl("laboratory.webp", APP_BASE)} alt="" aria-hidden="true" />
           <span>Laboratório</span>
         </button>
         {completedStageId && planet.stages.some((stage) => stage.id === completedStageId) ? (

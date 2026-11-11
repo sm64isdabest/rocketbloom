@@ -8,12 +8,12 @@ const FLAME_FRAME_DURATION_MS = 80;
 
 export function getRocketImageUrl(basePath = import.meta.env?.BASE_URL ?? "/") {
   const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;
-  return `${normalizedBase}assets/rocket.png`;
+  return `${normalizedBase}assets/rocket.webp`;
 }
 
 export function getFlameImageUrl(frameIndex, basePath = import.meta.env?.BASE_URL ?? "/") {
   const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;
-  const filename = `chama_${String(frameIndex + 1).padStart(2, "0")}.png`;
+  const filename = `chama_${String(frameIndex + 1).padStart(2, "0")}.webp`;
   return `${normalizedBase}assets/flames/${filename}`;
 }
 

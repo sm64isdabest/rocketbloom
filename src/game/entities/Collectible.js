@@ -1,5 +1,5 @@
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
-const SPRITE_FILES = { coin: "coin.png", diamond: "diamond.png" };
+const SPRITE_FILES = { coin: "coin.webp", diamond: "diamond.webp" };
 const SPRITE_IMAGES = new Map();
 
 function getSprite(kind) {

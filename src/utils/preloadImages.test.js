@@ -32,7 +32,7 @@ async function findImages(directory) {
 test("pré-carrega cada imagem única e reporta progresso mesmo em caso de falha", async () => {
   MockImage.instances = [];
   const progress = [];
-  const result = await preloadImages(["/rocket.png", "/broken.png", "/rocket.png"], {
+  const result = await preloadImages(["/rocket.webp", "/broken.webp", "/rocket.webp"], {
     ImageConstructor: MockImage,
     onProgress: (value) => progress.push(value),
   });

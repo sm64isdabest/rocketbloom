@@ -11,7 +11,7 @@ export function getLaboratoryPlantImage(planetId, growthStage = 0, baseUrl = "/"
 
   const stage = Math.max(0, Math.min(stages.length - 1, Math.floor(Number(growthStage) || 0)));
   const base = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  return `${base}assets/laboratory/plant-${String(stages[stage]).padStart(2, "0")}.png`;
+  return `${base}assets/laboratory/plant-${String(stages[stage]).padStart(2, "0")}.webp`;
 }
 
 export function getNextPlanetIndex(currentIndex, direction, planetCount) {

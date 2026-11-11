@@ -6,7 +6,7 @@ let mysteryBoxImage;
 function getMysteryBoxImage() {
   if (mysteryBoxImage || typeof Image === "undefined") return mysteryBoxImage ?? null;
   mysteryBoxImage = new Image();
-  mysteryBoxImage.src = `${APP_BASE}assets/powerups/mystery-box.png`;
+  mysteryBoxImage.src = `${APP_BASE}assets/powerups/mystery-box.webp`;
   return mysteryBoxImage;
 }
 

@@ -19,15 +19,15 @@ export function CommandRoomScreen({ progress, onBack, onSettings }) {
 
   return (
     <main className={`laboratory-scene laboratory-scene--${planet.id}`} aria-label="Laboratório orbital">
-      <img className="laboratory-scene__background" src={asset("assets/laboratory/laboratory-background.png")} alt="" aria-hidden="true" />
+      <img className="laboratory-scene__background" src={asset("assets/laboratory/laboratory-background.webp")} alt="" aria-hidden="true" />
 
       <header className="laboratory-scene__topbar">
         <button type="button" className="laboratory-scene__icon-button" onClick={onBack} aria-label="Voltar à base">
-          <img className="laboratory-scene__back-icon" src={asset("assets/laboratory/back.png")} alt="" aria-hidden="true" />
+          <img className="laboratory-scene__back-icon" src={asset("assets/laboratory/back.webp")} alt="" aria-hidden="true" />
         </button>
         <span className="laboratory-scene__title">Laboratório orbital</span>
         <button type="button" className="laboratory-scene__icon-button laboratory-scene__icon-button--settings" onClick={onSettings} aria-label="Abrir configurações">
-          <img src={asset("assets/menu/settings.png")} alt="" aria-hidden="true" />
+          <img src={asset("assets/menu/settings.webp")} alt="" aria-hidden="true" />
         </button>
       </header>
 
@@ -43,13 +43,13 @@ export function CommandRoomScreen({ progress, onBack, onSettings }) {
 
       <nav className="laboratory-planet-navigation" aria-label="Plantas por planeta">
         <button type="button" className="laboratory-planet-navigation__arrow" onClick={() => changePlanet(-1)} aria-label="Planta do planeta anterior">
-          <img src={asset("assets/laboratory/arrow-left.png")} alt="" aria-hidden="true" />
+          <img src={asset("assets/laboratory/arrow-left.webp")} alt="" aria-hidden="true" />
         </button>
         <div className="laboratory-planet-display">
-          <img src={asset(`assets/ui/planets/${planet.id}-icon.png`)} alt="" aria-hidden="true" />
+          <img src={asset(`assets/ui/planets/${planet.id}-icon.webp`)} alt="" aria-hidden="true" />
         </div>
         <button type="button" className="laboratory-planet-navigation__arrow" onClick={() => changePlanet(1)} aria-label="Planta do próximo planeta">
-          <img src={asset("assets/laboratory/arrow-right.png")} alt="" aria-hidden="true" />
+          <img src={asset("assets/laboratory/arrow-right.webp")} alt="" aria-hidden="true" />
         </button>
       </nav>
 

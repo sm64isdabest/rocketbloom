@@ -12,7 +12,7 @@ function loadLaserFrames(basePath = import.meta.env?.BASE_URL ?? "/") {
   const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;
   return Array.from({ length: 8 }, (_, index) => {
     const image = new Image();
-    image.src = `${normalizedBase}assets/lasers/idle/frame_${String(index + 1).padStart(2, "0")}.png`;
+    image.src = `${normalizedBase}assets/lasers/idle/frame_${String(index + 1).padStart(2, "0")}.webp`;
     return image;
   });
 }

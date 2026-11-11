@@ -4,12 +4,12 @@ import test from "node:test";
 import { getFlameImageUrl, getRocketImageUrl, Rocket } from "./Rocket.js";
 
 test("rocket image URL includes the configured application base path", () => {
-  assert.equal(getRocketImageUrl("/rocketbloom/"), "/rocketbloom/assets/rocket.png");
+  assert.equal(getRocketImageUrl("/rocketbloom/"), "/rocketbloom/assets/rocket.webp");
 });
 
 test("the eight flame assets exist and their URLs include the configured base path", () => {
   for (let frame = 0; frame < 8; frame += 1) {
-    const filename = `chama_${String(frame + 1).padStart(2, "0")}.png`;
+    const filename = `chama_${String(frame + 1).padStart(2, "0")}.webp`;
     assert.equal(getFlameImageUrl(frame, "/rocketbloom"), `/rocketbloom/assets/flames/${filename}`);
     assert.equal(existsSync(new URL(`../../../public/assets/flames/${filename}`, import.meta.url)), true, `${filename} should be publicly available`);
   }

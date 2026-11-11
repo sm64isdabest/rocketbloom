@@ -121,7 +121,7 @@ export class GameEngine {
     if (typeof Image === "undefined") return null;
     const image = new Image();
     const basePath = import.meta.env?.BASE_URL ?? "/";
-    image.src = `${basePath.endsWith("/") ? basePath : `${basePath}/`}assets/explosion.png`;
+    image.src = `${basePath.endsWith("/") ? basePath : `${basePath}/`}assets/explosion.webp`;
     return image;
   }
 
@@ -129,7 +129,7 @@ export class GameEngine {
     if (typeof Image === "undefined") return null;
     const image = new Image();
     const basePath = import.meta.env?.BASE_URL ?? "/";
-    image.src = `${basePath.endsWith("/") ? basePath : `${basePath}/`}assets/powerups/bubble-shield.png`;
+    image.src = `${basePath.endsWith("/") ? basePath : `${basePath}/`}assets/powerups/bubble-shield.webp`;
     return image;
   }
 
@@ -139,7 +139,7 @@ export class GameEngine {
     const base = basePath.endsWith("/") ? basePath : `${basePath}/`;
     return Object.fromEntries(Object.keys(POWER_UPS).map((power) => {
       const image = new Image();
-      image.src = `${base}assets/powerups/${power}.png`;
+      image.src = `${base}assets/powerups/${power}.webp`;
       return [power, image];
     }));
   }

@@ -22,7 +22,7 @@ export function PauseOverlay({ onResume, onQuit, onSettings, onTapRocket, reduce
         >
           <img
             key={reaction}
-            src={getPauseAssetUrl("rocket-newspaper.png", APP_BASE)}
+            src={getPauseAssetUrl("rocket-newspaper.webp", APP_BASE)}
             alt="Foguete lendo um jornal"
           />
         </button>

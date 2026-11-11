@@ -17,21 +17,21 @@ test("exibe o enunciado da rodada ativa", () => {
 });
 
 test("monta caminhos de ícones da HUD respeitando o caminho base do app", () => {
-  assert.equal(getHudAssetUrl("coin.png", "/rocketbloom/"), "/rocketbloom/assets/ui/coin.png");
-  assert.equal(getHudAssetUrl("diamond.png", "/"), "/assets/ui/diamond.png");
+  assert.equal(getHudAssetUrl("coin.webp", "/rocketbloom/"), "/rocketbloom/assets/ui/coin.webp");
+  assert.equal(getHudAssetUrl("diamond.webp", "/"), "/assets/ui/diamond.webp");
 });
 
 test("mapeia cada poder para seu ícone próprio no caminho base do app", () => {
-  assert.equal(getPowerUpAssetUrl("turbo", "/rocketbloom/"), "/rocketbloom/assets/powerups/turbo.png");
-  assert.equal(getPowerUpAssetUrl("star", "/"), "/assets/powerups/star.png");
-  assert.equal(getPowerUpAssetUrl("shrink", "/"), "/assets/powerups/shrink.png");
-  assert.equal(getPowerUpAssetUrl("bubble", "/"), "/assets/powerups/bubble.png");
+  assert.equal(getPowerUpAssetUrl("turbo", "/rocketbloom/"), "/rocketbloom/assets/powerups/turbo.webp");
+  assert.equal(getPowerUpAssetUrl("star", "/"), "/assets/powerups/star.webp");
+  assert.equal(getPowerUpAssetUrl("shrink", "/"), "/assets/powerups/shrink.webp");
+  assert.equal(getPowerUpAssetUrl("bubble", "/"), "/assets/powerups/bubble.webp");
 });
 
 test("os ícones de moeda, diamante e poderes existem nos assets públicos", () => {
-  assert.equal(existsSync(`${hudAssetsDirectory}/coin.png`), true);
-  assert.equal(existsSync(`${hudAssetsDirectory}/diamond.png`), true);
-  for (const asset of ["turbo.png", "star.png", "shrink.png", "bubble.png"]) {
+  assert.equal(existsSync(`${hudAssetsDirectory}/coin.webp`), true);
+  assert.equal(existsSync(`${hudAssetsDirectory}/diamond.webp`), true);
+  for (const asset of ["turbo.webp", "star.webp", "shrink.webp", "bubble.webp"]) {
     assert.equal(existsSync(`${powerUpAssetsDirectory}/${asset}`), true, `${asset} deve existir`);
   }
 });

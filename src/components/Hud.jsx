@@ -9,11 +9,11 @@ export function Hud({ snapshot, onPause }) {
     <div className="hud" aria-label="Indicadores da fase">
       <div className="hud__cluster">
         <span className="hud__stat hud__stat--coins" role="img" aria-label={`${snapshot?.coins ?? 0} moedas coletadas`}>
-          <img className="hud__resource-icon hud__resource-icon--coin" src={getHudAssetUrl("coin.png", APP_BASE)} alt="" aria-hidden="true" />
+          <img className="hud__resource-icon hud__resource-icon--coin" src={getHudAssetUrl("coin.webp", APP_BASE)} alt="" aria-hidden="true" />
           <b>{String(snapshot?.coins ?? 0).padStart(2, "0")}</b>
         </span>
         <span className="hud__stat hud__stat--diamonds" role="img" aria-label={`${snapshot?.diamonds ?? 0} diamantes coletados`}>
-          <img className="hud__resource-icon hud__resource-icon--diamond" src={getHudAssetUrl("diamond.png", APP_BASE)} alt="" aria-hidden="true" />
+          <img className="hud__resource-icon hud__resource-icon--diamond" src={getHudAssetUrl("diamond.webp", APP_BASE)} alt="" aria-hidden="true" />
           <b>{String(snapshot?.diamonds ?? 0).padStart(2, "0")}</b>
         </span>
         <span className="hud__stat hud__stat--speed" aria-label={`Velocidade ${snapshot?.speed ?? 0} quilômetros por hora`}>
