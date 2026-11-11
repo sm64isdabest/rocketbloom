@@ -1,8 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { PLANETS } from "../game/data/planets.js";
 import { playGameSound } from "../game/audio/audioManager.js";
 import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetIdForStage, getPlanetSelectorModel } from "./planetSelectorModel.js";
 import { getMenuAssetUrl } from "./menuModel.js";
+import { setOrbitTargetElement } from "./rocketOrbit.js";
+
+const OrbitalRocket = lazy(() => import("./OrbitalRocket.jsx").then((module) => ({ default: module.OrbitalRocket })));
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const PANEL_WIDTH = 472;
@@ -32,7 +35,12 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
   const initialPlanetId = getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const [selectedPlanetId, setSelectedPlanetId] = useState(initialPlanetId);
   const [revealingPlanetId, setRevealingPlanetId] = useState(null);
+  const [hoveredSelector, setHoveredSelector] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const [selectionPulse, setSelectionPulse] = useState(0);
   const discoveryHandled = useRef(new Set(progress.seenPlanetIds ?? []));
+  const activeStageElementRef = useRef(null);
+  const launchTimeoutRef = useRef(null);
   const planet = PLANETS.find(({ id }) => id === selectedPlanetId) ?? PLANETS[0];
   const model = getPlanetSelectorModel(planet, progress);
   const planetIndex = PLANETS.findIndex(({ id }) => id === planet.id);
@@ -48,14 +56,41 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
     playGameSound("discovery");
   }, [model.unlocked, onMarkPlanetSeen, planet]);
 
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setReducedMotion(preference.matches);
+    preference.addEventListener?.("change", updatePreference);
+    return () => {
+      preference.removeEventListener?.("change", updatePreference);
+      if (launchTimeoutRef.current !== null) window.clearTimeout(launchTimeoutRef.current);
+    };
+  }, []);
+
   const canGoBack = previousPlanet && canNavigateToPlanet(planet.id, previousPlanet.id, progress);
   const canGoForward = nextPlanet && canNavigateToPlanet(planet.id, nextPlanet.id, progress);
   const activeStage = model.stages.find((stage) => stage.available && !stage.completed);
+  const orbitStage = activeStage ?? model.stages.find((stage) => !stage.completed) ?? model.stages.at(-1);
   const baseClass = `phase-selection-canvas phase-selection-canvas--${planet.id}${revealingPlanetId === planet.id ? " is-revealing" : ""}`;
+
+  const launchStage = (stageId, targetElement) => {
+    setOrbitTargetElement(activeStageElementRef, targetElement);
+    setSelectionPulse((pulse) => pulse + 1);
+    if (launchTimeoutRef.current !== null) window.clearTimeout(launchTimeoutRef.current);
+    const delay = reducedMotion ? 0 : 260;
+    launchTimeoutRef.current = window.setTimeout(() => {
+      launchTimeoutRef.current = null;
+      onPlay(planet.id, stageId);
+    }, delay);
+  };
 
   return (
     <main className="phase-selection-screen" aria-label={`Seleção de fases: ${planet.name}`}>
-      <div className={baseClass} onAnimationEnd={() => setRevealingPlanetId(null)}>
+      <div
+        className={baseClass}
+        onAnimationEnd={() => setRevealingPlanetId(null)}
+        onPointerEnter={() => setHoveredSelector(true)}
+        onPointerLeave={() => setHoveredSelector(false)}
+      >
         <img
           className="phase-selection-background"
           src={`${APP_BASE}assets/ui/planets/${planet.id}.png`}
@@ -79,6 +114,17 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
             strokeLinejoin="round"
           />
         </svg>
+        {orbitStage && (
+          <Suspense fallback={null}>
+            <OrbitalRocket
+              targetRef={activeStageElementRef}
+              targetKey={`${planet.id}:${orbitStage.id}`}
+              hovered={hoveredSelector}
+              reducedMotion={reducedMotion}
+              selectionPulse={selectionPulse}
+            />
+          </Suspense>
+        )}
 
         <button type="button" className="phase-selection-back" onClick={onBack} aria-label="Voltar ao menu">
           <span aria-hidden="true">‹</span><span>Menu</span>
@@ -117,12 +163,13 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
                 }}
               >
                 <button
+                  ref={stage.id === orbitStage?.id ? activeStageElementRef : undefined}
                   type="button"
                   className="phase-selection-stage__button"
                   disabled={!stage.available}
                   aria-current={current ? "step" : undefined}
                   aria-label={`${planet.name}, fase ${stageIndex + 1}, ${stageStatusLabel(stage)}`}
-                  onClick={() => onPlay(planet.id, stage.id)}
+                  onClick={(event) => launchStage(stage.id, event.currentTarget)}
                 >
                   <img
                     className="phase-selection-stage__frame"
