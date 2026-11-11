@@ -45,4 +45,5 @@
 ### Task 3: Verify and publish on main
 
 - [x] Inspect the diff and run tests and production build.
-- [ ] Commit the finished change on `main` and push `main`.
+- [x] Commit the finished change on `main`.
+- [x] Push `main` to `origin`.
