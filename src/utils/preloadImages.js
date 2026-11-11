@@ -1,3 +1,9 @@
+export function hasLoadedAllImages(result) {
+  return result.completed === result.total
+    && result.loaded === result.total
+    && result.failed === 0;
+}
+
 export function preloadImages(urls, { ImageConstructor = globalThis.Image, onProgress = () => {} } = {}) {
   const uniqueUrls = [...new Set(urls)];
   const result = { total: uniqueUrls.length, loaded: 0, failed: 0, completed: 0 };

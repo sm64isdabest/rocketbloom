@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { join, relative } from "node:path";
 import test from "node:test";
 import { PROJECT_IMAGES } from "../game/data/projectImages.js";
-import { preloadImages } from "./preloadImages.js";
+import { hasLoadedAllImages, preloadImages } from "./preloadImages.js";
 
 class MockImage {
   static instances = [];
@@ -40,6 +40,12 @@ test("pré-carrega cada imagem única e reporta progresso mesmo em caso de falha
   assert.deepEqual(result, { total: 2, loaded: 1, failed: 1, completed: 2 });
   assert.equal(MockImage.instances.length, 2);
   assert.deepEqual(progress.map(({ completed }) => completed), [1, 2]);
+});
+
+test("só considera as imagens prontas quando todas carregaram", () => {
+  assert.equal(hasLoadedAllImages({ total: 2, loaded: 2, failed: 0, completed: 2 }), true);
+  assert.equal(hasLoadedAllImages({ total: 2, loaded: 1, failed: 1, completed: 2 }), false);
+  assert.equal(hasLoadedAllImages({ total: 2, loaded: 1, failed: 0, completed: 1 }), false);
 });
 
 test("manifesto contém todas as imagens de public/assets", async () => {

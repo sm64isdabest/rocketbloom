@@ -16,7 +16,7 @@ import { PauseOverlay } from "./screens/PauseOverlay.jsx";
 import { VictoryScreen } from "./screens/VictoryScreen.jsx";
 import { DefeatScreen } from "./screens/DefeatScreen.jsx";
 import { configureAudio, pauseMenuAudio, playGameSound, startMenuAudio } from "./game/audio/audioManager.js";
-import { preloadImages } from "./utils/preloadImages.js";
+import { hasLoadedAllImages, preloadImages } from "./utils/preloadImages.js";
 import { getSettingsReturnPage } from "./screens/menuModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
 import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets } from "./utils/debugTools.js";
@@ -51,8 +51,14 @@ export default function App() {
       onProgress: (nextProgress) => {
         if (active) setAssetProgress(nextProgress);
       },
-    }).then(() => {
-      if (active) setAssetsReady(true);
+    }).then((result) => {
+      if (!active) return;
+      if (!hasLoadedAllImages(result)) {
+        setBootError(`${result.failed} imagem(ns) não puderam ser carregadas. Verifique sua conexão e tente novamente.`);
+        setScreen(SCREEN.ERROR);
+        return;
+      }
+      setAssetsReady(true);
     });
     return () => { active = false; };
   }, []);
