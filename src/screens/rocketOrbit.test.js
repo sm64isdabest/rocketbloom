@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ORBIT_PERIOD_SECONDS, getRocketOrbitPose, smoothTarget } from "./rocketOrbit.js";
+import { ORBIT_PERIOD_SECONDS, getRocketOrbitPose, setOrbitTargetElement, smoothTarget } from "./rocketOrbit.js";
 
 test("rocket completes an elliptical orbit in six seconds with front and back depth", () => {
   assert.equal(ORBIT_PERIOD_SECONDS, 6);
@@ -18,11 +18,20 @@ test("rocket completes an elliptical orbit in six seconds with front and back de
 
 test("rocket orientation follows the orbit tangent rather than spinning in place", () => {
   const target = { x: 0, y: 0 };
-  const eastbound = getRocketOrbitPose(0, target, { radiusX: 50, radiusY: 30 });
-  const northbound = getRocketOrbitPose(1.5, target, { radiusX: 50, radiusY: 30 });
+  for (const elapsedSeconds of [0, 0.75, 1.5, 2.25, 3.75, 5.25]) {
+    const pose = getRocketOrbitPose(elapsedSeconds, target, { radiusX: 50, radiusY: 30 });
+    const angle = (elapsedSeconds / ORBIT_PERIOD_SECONDS) * Math.PI * 2;
+    const tangentX = -50 * Math.sin(angle);
+    const tangentY = -30 * Math.cos(angle);
+    const tangentZ = 23 * Math.cos(angle);
+    const tangentLength = Math.hypot(tangentX, tangentY, tangentZ);
+    const { x, y, z, w } = pose.quaternion;
+    const noseX = 2 * (x * y - z * w);
+    const noseY = 1 - 2 * (x * x + z * z);
+    const noseZ = 2 * (y * z + x * w);
 
-  assert.notEqual(eastbound.rotationZ, northbound.rotationZ);
-  assert.ok(Math.abs(eastbound.rotationZ) < 1e-8);
+    assert.ok(noseX * tangentX / tangentLength + noseY * tangentY / tangentLength + noseZ * tangentZ / tangentLength > 0.999999);
+  }
 });
 
 test("target changes ease smoothly and reduced motion can freeze the orbit", () => {
@@ -35,6 +44,17 @@ test("target changes ease smoothly and reduced motion can freeze the orbit", () 
   assert.ok(halfway.y > 0 && halfway.y < destination.y);
   assert.equal(frozen.x, destination.x + 50);
   assert.equal(frozen.y, destination.y);
-  assert.equal(frozen.rotationZ, 0);
+  assert.deepEqual(frozen.quaternion, { x: 0, y: 0, z: 0, w: 1 });
   assert.equal(frozen.scale, 1);
+});
+
+test("selecting a replayable phase makes its button the next orbital target", () => {
+  const activeButton = { id: "earth-2", isConnected: true };
+  const clickedButton = { id: "earth-1", isConnected: true };
+  const targetRef = { current: activeButton };
+
+  assert.equal(setOrbitTargetElement(targetRef, clickedButton), true);
+  assert.equal(targetRef.current, clickedButton);
+  assert.equal(setOrbitTargetElement(targetRef, null), false);
+  assert.equal(targetRef.current, clickedButton);
 });

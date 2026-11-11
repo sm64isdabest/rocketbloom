@@ -135,7 +135,7 @@ export function OrbitalRocket({ targetRef, targetKey, hovered = false, reducedMo
       const modelSize = Math.max(10, Math.min(nextTarget.width, nextTarget.height) * 0.2) * (1 + pulse * 0.3);
 
       rocket.position.set(worldX, worldY, worldDepth);
-      rocket.rotation.set(pose.rotationX, pose.rotationY, pose.rotationZ);
+      rocket.quaternion.set(pose.quaternion.x, pose.quaternion.y, pose.quaternion.z, pose.quaternion.w);
       rocket.scale.setScalar(modelSize * pose.scale);
       rimLight.position.set(worldX - 4, worldY + 7, worldDepth + 7);
       if (layer) layer.style.zIndex = pose.depth < -0.08 ? "2" : "4";

@@ -3,6 +3,7 @@ import { PLANETS } from "../game/data/planets.js";
 import { playGameSound } from "../game/audio/audioManager.js";
 import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetIdForStage, getPlanetSelectorModel } from "./planetSelectorModel.js";
 import { getMenuAssetUrl } from "./menuModel.js";
+import { setOrbitTargetElement } from "./rocketOrbit.js";
 
 const OrbitalRocket = lazy(() => import("./OrbitalRocket.jsx").then((module) => ({ default: module.OrbitalRocket })));
 
@@ -71,7 +72,8 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
   const orbitStage = activeStage ?? model.stages.find((stage) => !stage.completed) ?? model.stages.at(-1);
   const baseClass = `phase-selection-canvas phase-selection-canvas--${planet.id}${revealingPlanetId === planet.id ? " is-revealing" : ""}`;
 
-  const launchStage = (stageId) => {
+  const launchStage = (stageId, targetElement) => {
+    setOrbitTargetElement(activeStageElementRef, targetElement);
     setSelectionPulse((pulse) => pulse + 1);
     if (launchTimeoutRef.current !== null) window.clearTimeout(launchTimeoutRef.current);
     const delay = reducedMotion ? 0 : 260;
@@ -167,7 +169,7 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
                   disabled={!stage.available}
                   aria-current={current ? "step" : undefined}
                   aria-label={`${planet.name}, fase ${stageIndex + 1}, ${stageStatusLabel(stage)}`}
-                  onClick={() => launchStage(stage.id)}
+                  onClick={(event) => launchStage(stage.id, event.currentTarget)}
                 >
                   <img
                     className="phase-selection-stage__frame"

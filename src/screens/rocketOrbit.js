@@ -9,6 +9,12 @@ export function smoothTarget(current, destination, deltaSeconds, easing = 4.5) {
   };
 }
 
+export function setOrbitTargetElement(targetRef, element) {
+  if (!targetRef || !element?.isConnected) return false;
+  targetRef.current = element;
+  return true;
+}
+
 export function getRocketOrbitPose(elapsedSeconds, target, options = {}) {
   const {
     radiusX = 48,
@@ -26,15 +32,20 @@ export function getRocketOrbitPose(elapsedSeconds, target, options = {}) {
   const velocityX = -radiusX * sin * angularSpeed;
   const velocityY = radiusY * cos * angularSpeed;
   const depthVelocity = cos * angularSpeed;
-  const rotationZ = Math.atan2(velocityY, velocityX) - Math.PI / 2;
+  const worldVelocityY = -velocityY;
+  const worldVelocityZ = depthVelocity * 23;
+  const velocityLength = Math.hypot(velocityX, worldVelocityY, worldVelocityZ) || 1;
+  let quaternion = { x: worldVelocityZ / velocityLength, y: 0, z: -velocityX / velocityLength, w: 1 + worldVelocityY / velocityLength };
+  const quaternionLength = Math.hypot(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+  quaternion = reducedMotion || quaternionLength < 1e-8
+    ? { x: 0, y: 0, z: 0, w: 1 }
+    : Object.fromEntries(Object.entries(quaternion).map(([key, value]) => [key, value / quaternionLength]));
 
   return {
     x: center.x + radiusX * cos,
     y: center.y + radiusY * sin,
     depth: sin,
     scale: 1 + sin * 0.12,
-    rotationX: reducedMotion ? 0 : Math.atan2(depthVelocity, Math.hypot(velocityX, velocityY)) * 0.45,
-    rotationY: reducedMotion ? 0 : cos * 0.28,
-    rotationZ: reducedMotion ? 0 : rotationZ,
+    quaternion,
   };
 }
