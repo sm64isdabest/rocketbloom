@@ -21,6 +21,7 @@ import { fitCanvasToContainer } from "./resize.js";
 import { finishGameAudio, pauseGameAudio, playGameSound, startGameAudio } from "../audio/audioManager.js";
 import { activatePowerUp, createPowerUpState, getNextMysteryBoxDelay, getRandomPowerUp, tickPowerUps } from "../systems/powerUps.js";
 import { isSpecialQuestionDue, resolveSpecialAnswer } from "../systems/specialQuestion.js";
+import { createCollisionImpactState, getCollisionImpactSpeedFactor, tickCollisionImpact, triggerCollisionImpact } from "../systems/collisionImpact.js";
 
 function makeRunId() {
   return globalThis.crypto?.randomUUID?.() ?? `run-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -73,6 +74,9 @@ export class GameEngine {
     this.particles = [];
     this.entitySequence = 0;
     this.speed = SPEED.start;
+    this.collisionImpact = createCollisionImpactState();
+    this.collisionAlertRemainingMs = 0;
+    this.collisionAlertSequence = 0;
     this.stageDurationMs = session.stage.durationMs;
     this.godmode = false;
     this.backgroundOffsetY = 0;
@@ -304,6 +308,8 @@ export class GameEngine {
     if (!frameSeconds) return;
     const frameMs = frameSeconds * 1000;
     this.elapsedMs += frameMs;
+    this.collisionImpact = tickCollisionImpact(this.collisionImpact, frameMs, true);
+    this.collisionAlertRemainingMs = Math.max(0, this.collisionAlertRemainingMs - frameMs);
     // Os temporizadores avançam somente dentro do loop ativo; em pausa, tick retorna acima.
     const rouletteWasActive = this.powerUps.rouletteMs > 0;
     this.powerUps = tickPowerUps(this.powerUps, frameMs);
@@ -328,7 +334,7 @@ export class GameEngine {
     this.rocket.updateDamageFeedback(frameSeconds);
 
     const progressMultiplier = clamp(
-      this.speed / SPEED.start,
+      this.getEffectiveSpeed() / SPEED.start,
       SPEED.minProgressMultiplier,
       SPEED.maxProgressMultiplier,
     );
@@ -339,7 +345,7 @@ export class GameEngine {
       (0.35 + progressMultiplier * 0.58) * this.turboSpeedFactor, this.visualRng);
     if (!this.reducedMotion) {
       updateSpeedStreaks(this.speedStreaks, frameSeconds, this.view.width, this.view.height,
-        this.speed * this.turboSpeedFactor, this.visualRng);
+        this.getEffectiveSpeed() * this.turboSpeedFactor, this.visualRng);
     }
 
     this.updateQuestions(frameSeconds, frameMs);
@@ -598,9 +604,13 @@ export class GameEngine {
         const protectedByPower = this.protectFromPenalty("obstacle");
         if (!protectedByPower) {
           this.rocket.triggerDamageFeedback();
-          this.speed = clamp(this.speed - SPEED.obstaclePenalty
+          const obstaclePenalty = SPEED.obstaclePenalty
             * (this.session.stage.speedLossMultiplier ?? 1)
-            * (this.session.stage.obstaclePenaltyMultiplier ?? 1), SPEED.min, SPEED.max);
+            * (this.session.stage.obstaclePenaltyMultiplier ?? 1);
+          const impactFactor = clamp(1 - obstaclePenalty / Math.max(1, this.speed), 0.32, 1);
+          this.collisionImpact = triggerCollisionImpact(impactFactor);
+          this.collisionAlertRemainingMs = 1500;
+          this.collisionAlertSequence += 1;
           this.questionFeedback = "Impacto! Velocidade reduzida";
           this.feedbackTimerMs = 900;
           playGameSound("collision");
@@ -656,8 +666,12 @@ export class GameEngine {
   }
 
   getEntitySpeed(baseSpeed) {
-    const factor = clamp(this.speed / SPEED.start, 0.65, 1.8);
+    const factor = clamp(this.getEffectiveSpeed() / SPEED.start, 0.65, 1.8);
     return baseSpeed * factor * this.turboSpeedFactor;
+  }
+
+  getEffectiveSpeed() {
+    return this.speed * getCollisionImpactSpeedFactor(this.collisionImpact);
   }
 
   spawnMysteryBox() {
@@ -801,7 +815,9 @@ export class GameEngine {
   getSnapshot() {
     return {
       runId: this.runId,
-      speed: Math.round(this.speed),
+      speed: Math.round(this.getEffectiveSpeed()),
+      collisionAlertRemainingMs: this.collisionAlertRemainingMs,
+      collisionAlertSequence: this.collisionAlertSequence,
       coins: this.coins,
       diamonds: this.diamonds,
       score: this.score,
@@ -845,7 +861,7 @@ export class GameEngine {
       renderPlanetScenery(ctx, view, session.planet, this.progressMs);
     }
     if (!this.reducedMotion) {
-      renderSpeedStreaks(ctx, this.speedStreaks, session.planet.theme.accent, this.speed * this.turboSpeedFactor);
+      renderSpeedStreaks(ctx, this.speedStreaks, session.planet.theme.accent, this.getEffectiveSpeed() * this.turboSpeedFactor);
     }
     const flashAlpha = this.columnFlashRemainingMs > 0
       ? 0.3 + Math.max(0, Math.sin(this.elapsedMs * 0.025)) * 0.15

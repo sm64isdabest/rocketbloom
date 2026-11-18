@@ -137,7 +137,7 @@ test("desafio especial pausa a aventura, dá recompensa no acerto e não pune o 
     const scoreBeforeCorrect = engine.score;
     assert.equal(engine.answerSpecialQuestion(engine.specialQuestion.correctAnswer), true);
     assert.ok(engine.score > scoreBeforeCorrect);
-    assert.equal(engine.specialQuestion.result.message, "Muito bem, explorador!");
+    assert.equal(engine.specialQuestion, null, "o desafio correto fecha após aplicar a recompensa");
     engine.stop();
   });
 });
@@ -594,7 +594,7 @@ test("intervalo após resolução esconde opções, respeita pausa e não duplic
   });
 });
 
-test("obstáculo aplica uma penalidade por colisão e a pausa congela perigos e efeitos", () => {
+test("colisão com obstáculo ativa efeitos temporários e a pausa congela os perigos", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
     const hazard = new Obstacle({ id: "asteroid", x: engine.rocket.x, y: engine.rocket.y, width: 44, height: 44 });
@@ -602,7 +602,11 @@ test("obstáculo aplica uma penalidade por colisão e a pausa congela perigos e 
     const initialSpeed = engine.speed;
     engine.tick(0.016);
     engine.tick(0.016);
-    assert.equal(engine.speed, initialSpeed - 44);
+    assert.equal(engine.speed, initialSpeed, "a colisão não altera a velocidade-base da partida");
+    assert.equal(engine.getSnapshot().speed, 76, "o medidor mostra a velocidade temporariamente reduzida");
+    assert.ok(engine.getSnapshot().collisionAlertRemainingMs > 1450, "o alerta permanece ativo por cerca de 1,5 segundo");
+    assert.equal(engine.getSnapshot().collisionAlertSequence, 1);
+    assert.equal(engine.getEntitySpeed(100), 65, "o deslocamento dos perigos também diminui temporariamente");
     assert.equal(hazard.alive, false);
     assert.ok(engine.rocket.damageFeedbackRemainingMs > 0);
     assert.equal(engine.particles.length, 24, "a collision should create one localized burst of 24 particles");
@@ -615,6 +619,41 @@ test("obstáculo aplica uma penalidade por colisão e a pausa congela perigos e 
     engine.tick(0.5);
     assert.equal(pausedHazard.y, y);
     assert.equal(engine.rocket.damageFeedbackRemainingMs, damageRemaining);
+    assert.equal(engine.getSnapshot().collisionAlertSequence, 1, "a colisão protegida não dispara um novo alerta");
+    engine.stop();
+  });
+});
+
+test("a velocidade recupera o valor-base depois da janela e da recuperação do impacto", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.obstacles.push(new Obstacle({ id: "asteroid", x: engine.rocket.x, y: engine.rocket.y, width: 44, height: 44 }));
+    engine.tick(0.016);
+
+    tickFor(engine, 2600);
+    assert.equal(engine.getSnapshot().collisionAlertRemainingMs, 0, "o alerta visual termina antes da recuperação completa da velocidade");
+    assert.equal(engine.getSnapshot().speed, 98, "a recuperação gradual continua perceptível a meio do percurso");
+    tickFor(engine, 600);
+    assert.equal(engine.getSnapshot().speed, 120, "a velocidade retorna ao valor atualizado da partida");
+    engine.stop();
+  });
+});
+
+test("uma nova colisão reinicia o alerta e a redução temporária sem acumular", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.obstacles.push(new Obstacle({ id: "asteroid", x: engine.rocket.x, y: engine.rocket.y, width: 44, height: 44 }));
+    engine.tick(0.016);
+    tickFor(engine, 1000);
+    assert.ok(engine.getSnapshot().collisionAlertRemainingMs < 600);
+
+    engine.obstacles.push(new Obstacle({ id: "comet", x: engine.rocket.x, y: engine.rocket.y, width: 44, height: 44 }));
+    engine.tick(0.016);
+
+    assert.equal(engine.getSnapshot().collisionAlertSequence, 2);
+    assert.ok(engine.getSnapshot().collisionAlertRemainingMs > 1450);
+    assert.equal(engine.speed, 120, "a velocidade-base não acumula penalidades");
+    assert.equal(engine.getSnapshot().speed, 76, "a nova colisão retoma a redução pelo mesmo nível");
     engine.stop();
   });
 });
@@ -639,7 +678,7 @@ test("partículas de folha não aparecem nas fases da Terra nem em outros planet
   });
 });
 
-test("impacto fatal espera o fade do foguete antes de exibir a derrota", () => {
+test("redução temporária do impacto preserva movimento e não causa derrota", () => {
   withCanvasEnvironment(({ canvas }) => {
     const outcomes = [];
     const engine = new GameEngine(engineOptions(canvas, { onOutcome: (outcome) => outcomes.push(outcome) }));
@@ -648,14 +687,15 @@ test("impacto fatal espera o fade do foguete antes de exibir a derrota", () => {
 
     engine.tick(0.016);
 
-    assert.equal(engine.ended, false, "the game should present the fatal impact before switching screens");
-    assert.equal(engine.pendingOutcome, "defeat");
+    assert.equal(engine.ended, false);
+    assert.equal(engine.pendingOutcome, null, "a redução temporária não deve derrotar o jogador");
+    assert.equal(engine.getSnapshot().speed, 6, "a velocidade segue positiva após a colisão");
     assert.equal(engine.particles.length, 24);
     assert.ok(engine.rocket.damageFeedbackRemainingMs > 0);
 
     tickFor(engine, 1000);
-    assert.equal(engine.ended, true);
-    assert.deepEqual(outcomes, ["defeat"]);
+    assert.equal(engine.ended, false);
+    assert.deepEqual(outcomes, []);
     engine.stop();
   });
 });

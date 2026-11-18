@@ -48,6 +48,7 @@ export const PROJECT_IMAGES = [
   "/assets/powerups/turbo.webp",
   "/assets/ui/coin.webp",
   "/assets/ui/diamond.webp",
+  "/assets/ui/warning-alert.png",
   "/assets/ui/selection-rocket.webp",
   "/assets/ui/level-frames/arrow-left.webp",
   "/assets/ui/level-frames/arrow-right.webp",

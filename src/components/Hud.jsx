@@ -17,9 +17,18 @@ export function Hud({ snapshot, onPause, onSpecialAnswer, onSpecialContinue }) {
           <img className="hud__resource-icon hud__resource-icon--diamond" src={getHudAssetUrl("diamond.webp", APP_BASE)} alt="" aria-hidden="true" />
           <b>{String(snapshot?.diamonds ?? 0).padStart(2, "0")}</b>
         </span>
-        <span className="hud__stat hud__stat--speed" aria-label={`Velocidade ${snapshot?.speed ?? 0} quilômetros por hora`}>
-          <small>VELOCIDADE</small><b>{snapshot?.speed ?? 0}<i> km/h</i></b>
-        </span>
+        <div className="hud__speed-group">
+          <span className="hud__stat hud__stat--speed" aria-label={`Velocidade ${snapshot?.speed ?? 0} quilômetros por hora`}>
+            <small>VELOCIDADE</small><b>{snapshot?.speed ?? 0}<i> km/h</i></b>
+          </span>
+          {snapshot?.collisionAlertRemainingMs > 0 ? <img
+            key={snapshot.collisionAlertSequence}
+            className="hud__impact-alert"
+            src={getHudAssetUrl("warning-alert.png", APP_BASE)}
+            alt=""
+            aria-hidden="true"
+          /> : null}
+        </div>
       </div>
       {snapshot?.powerUps?.length ? <div className="hud__powerups" aria-label="Poderes ativos">
         {snapshot.powerUps.map((power) => <div key={power.id} className={`hud__powerup hud__powerup--${power.id}`}
