@@ -12,13 +12,16 @@ function getAssetFiles(directory) {
   });
 }
 
-test("assets raster usam WebP, preservando o alerta PNG transparente", () => {
+test("assets raster usam WebP, preservando PNG nos sprites com transparência", () => {
   const rasterAssets = getAssetFiles(assetsDirectory).filter((path) => /\.(png|jpe?g|gif|bmp|tiff?|avif)$/i.test(path));
 
-  assert.deepEqual(rasterAssets.map((path) => path.split(/[\\/]/).at(-1)), ["warning-alert.png"], "apenas o sprite com transparência preservada pode usar PNG");
-  const warningSprite = readFileSync(rasterAssets[0]);
-  assert.equal(warningSprite.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", "o sprite de alerta deve ser PNG válido");
-  assert.equal(warningSprite[25], 6, "o sprite deve preservar o canal alfa ao remover o fundo");
+  const pngAssets = rasterAssets.map((path) => path.split(/[\\/]/).at(-1)).sort();
+  assert.deepEqual(pngAssets, ["helicopter.png", "plane.png", "warning-alert.png"], "somente assets que precisam preservar transparência devem usar PNG");
+  for (const path of rasterAssets) {
+    const png = readFileSync(path);
+    assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", `${path} deve ser PNG válido`);
+    assert.equal(png[25], 6, `${path} deve preservar o canal alfa`);
+  }
 
   const webpAssets = getAssetFiles(assetsDirectory).filter((path) => path.endsWith(".webp"));
   assert.ok(webpAssets.length > 0, "assets WebP devem existir");

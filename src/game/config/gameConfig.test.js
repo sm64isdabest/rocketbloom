@@ -26,7 +26,7 @@ test("elementos de fase ficam maiores sem alterar o tamanho do foguete", async (
   assert.equal(MYSTERY_BOX.size, 55);
   assert.deepEqual(COLLECTIBLES.map(({ width, height }) => [width, height]), [[38, 38], [43, 50]]);
   assert.deepEqual(OBSTACLES.map(({ width, height }) => [width, height]), [
-    [119, 64], [88, 63], [55, 73], [60, 60], [96, 46], [44, 55],
+    [90, 85], [64, 86], [55, 73], [60, 60], [96, 46], [44, 55],
   ]);
 });
 
