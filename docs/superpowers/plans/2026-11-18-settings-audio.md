@@ -83,4 +83,4 @@
 
 - [x] **Step 1: Run `npm test` and `npm run build`** after review fixes; 183 tests passed and Vite build succeeded.
 - [x] **Step 2: Inspect `git diff` and `git status`** to ensure only intended changes are included.
-- [ ] **Step 3: Commit the review fixes** with a focused message, then push the completed commits to the configured upstream.
+- [x] **Step 3: Commit the review fixes** with a focused message, then push the completed commits to the configured upstream (`origin/main`, through `aef37ea`).
