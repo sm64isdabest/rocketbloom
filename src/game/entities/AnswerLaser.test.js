@@ -22,6 +22,34 @@ test("laser desce lentamente e avança os quadros da animação", () => {
   assert.equal(laser.color, "#FFFF00");
 });
 
+test("laser atingido desaparece gradualmente durante o fade-out", () => {
+  const calls = [];
+  const state = { globalAlpha: 1 };
+  const stack = [];
+  const ctx = new Proxy(state, {
+    get(target, method) {
+      if (method === "save") return () => stack.push(target.globalAlpha);
+      if (method === "restore") return () => { target.globalAlpha = stack.pop(); };
+      return method in target ? target[method] : (...args) => calls.push({ method, args });
+    },
+    set(target, property, value) { target[property] = value; return true; },
+  });
+  const frame = { complete: true, naturalWidth: 100, naturalHeight: 40 };
+  const laser = new AnswerLaser({ lane: 0, x: 0, y: 0, width: 80, color: "#00FFFF", frames: [frame] });
+
+  laser.beginFadeOut();
+  laser.update(0.1);
+  laser.render(ctx);
+
+  assert.equal(laser.alive, true);
+  assert.ok(laser.opacity > 0 && laser.opacity < 1);
+  assert.equal(ctx.globalAlpha, 1, "rendering restores the canvas alpha");
+  assert.ok(calls.some(({ method }) => method === "drawImage"));
+
+  laser.update(0.2);
+  assert.equal(laser.alive, false);
+});
+
 test("laser renderiza o quadro atual com a cor da faixa", () => {
   const calls = [];
   const ctx = new Proxy({ filter: "none" }, {

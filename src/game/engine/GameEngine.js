@@ -275,7 +275,7 @@ export class GameEngine {
       return new AnswerLaser({
         lane: answer.lane,
         x: left + 6,
-        y: answer.y + answer.height + 12,
+        y: 0,
         width: Math.max(20, width - 12),
         color: LANE_COLORS[answer.lane],
         speed: 90,
@@ -376,6 +376,9 @@ export class GameEngine {
   }
 
   updateQuestions(dt, frameMs) {
+    for (const laser of this.answerLasers) {
+      if (laser.alive && laser.fadeOutElapsedMs !== null) laser.update(dt);
+    }
     if (!this.currentRound) {
       this.initialQuestionRemainingMs = Math.max(0, this.initialQuestionRemainingMs - frameMs);
       if (this.initialQuestionRemainingMs === 0) this.startNextQuestion();
@@ -383,7 +386,7 @@ export class GameEngine {
     }
     if (this.currentRound.status === "awaiting-resolution") {
       for (const laser of this.answerLasers) {
-        if (!laser.alive) continue;
+        if (!laser.alive || laser.fadeOutElapsedMs !== null) continue;
         laser.update(dt);
         const answer = this.currentRound.answers.find((candidate) => candidate.lane === laser.lane);
         if (answer) {
@@ -392,7 +395,7 @@ export class GameEngine {
         }
         if (aabbOverlaps(this.rocket, laser)) {
           const selected = answer;
-          laser.alive = false;
+          laser.beginFadeOut();
           this.spawnParticles(
             this.rocket.x + this.rocket.width / 2,
             this.rocket.y + this.rocket.height / 2,
@@ -860,8 +863,8 @@ export class GameEngine {
       this.currentRound.selectedAnswer?.renderPerspective(ctx, this.answerAnimationElapsedMs / QUESTION_TIMING.perspectiveAnimationMs, view.height);
     } else if (this.currentRound?.status === "awaiting-resolution") {
       for (const answer of this.answers) if (answer.alive) answer.render(ctx);
-      for (const laser of this.answerLasers) laser.render(ctx);
     }
+    for (const laser of this.answerLasers) laser.render(ctx);
     for (const particle of this.particles) {
       ctx.save(); ctx.globalAlpha = clamp(particle.life / particle.maxLife, 0, 1); ctx.fillStyle = particle.color;
       ctx.beginPath();

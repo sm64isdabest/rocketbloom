@@ -1,4 +1,5 @@
 const FRAME_DURATION_MS = 100;
+const FADE_OUT_DURATION_MS = 280;
 
 const LASER_FILTERS = {
   "#00FFFF": "hue-rotate(180deg) saturate(1.35)",
@@ -37,10 +38,23 @@ export class AnswerLaser {
     this.frameIndex = 0;
     this.frameElapsedMs = 0;
     this.alive = true;
+    this.opacity = 1;
+    this.fadeOutElapsedMs = null;
+  }
+
+  beginFadeOut() {
+    if (!this.alive || this.fadeOutElapsedMs !== null) return;
+    this.fadeOutElapsedMs = 0;
   }
 
   update(dt) {
     if (!this.alive) return;
+    if (this.fadeOutElapsedMs !== null) {
+      this.fadeOutElapsedMs += Math.max(0, dt) * 1000;
+      this.opacity = Math.max(0, 1 - this.fadeOutElapsedMs / FADE_OUT_DURATION_MS);
+      if (this.opacity === 0) this.alive = false;
+      return;
+    }
     this.y += this.speed * dt;
     if (!this.frames.length) return;
     this.frameElapsedMs += Math.max(0, dt) * 1000;
@@ -52,6 +66,7 @@ export class AnswerLaser {
     const frame = this.frames[this.frameIndex];
     if (!frame?.complete || frame.naturalWidth <= 0) return;
     ctx.save();
+    ctx.globalAlpha *= this.opacity;
     ctx.filter = LASER_FILTERS[this.color] ?? "none";
     ctx.shadowColor = this.color;
     ctx.shadowBlur = 9;

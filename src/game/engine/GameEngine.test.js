@@ -315,19 +315,21 @@ test("tocar um laser escolhe a alternativa da faixa sem causar dano", () => {
     assert.equal(engine.currentRound.result.lane, laser.lane);
     assert.ok(engine.particles.length > 0);
     assert.ok(engine.particles.every((particle) => particle.color === laser.color));
+    assert.equal(laser.alive, true, "laser remains visible while fading out");
     assert.equal(engine.rocket.damageFeedbackRemainingMs, 0);
     assert.equal(engine.speed, speedBeforeTouch);
+    engine.tick(0.14);
+    assert.ok(laser.opacity > 0 && laser.opacity < 1);
     engine.stop();
   });
 });
 
-test("quatro lasers aparecem uma vez por alternativa, abaixo dela e na cor da faixa", () => {
+test("quatro lasers aparecem no topo, um por alternativa e na cor da faixa", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
     assert.equal(engine.answerLasers.length, 4);
     for (const laser of engine.answerLasers) {
-      const answer = engine.currentRound.answers.find((candidate) => candidate.lane === laser.lane);
-      assert.ok(laser.y > answer.y + answer.height);
+      assert.equal(laser.y, 0);
       assert.equal(laser.color, ["#00FFFF", "#FF00FE", "#FFFF00", "#FFFFFF"][laser.lane]);
     }
     engine.stop();
@@ -343,7 +345,7 @@ test("respostas acompanham e ficam centralizadas sobre cada laser", () => {
     engine.tick(0.05);
     assert.equal(answer.x + answer.width / 2, laser.x + laser.width / 2);
     assert.equal(answer.y, laser.y - answer.height - 8);
-    assert.ok(answer.y > initialY);
+    assert.ok(answer.y < initialY, "answer cards enter from above with their lasers");
     engine.stop();
   });
 });
