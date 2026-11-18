@@ -42,6 +42,18 @@ test("arrastar com toque captura o ponteiro e continua atualizando a posição",
   });
 });
 
+test("converte o toque do viewport estreito para as coordenadas lógicas do jogo", () => {
+  withInputEnvironment(({ canvasListeners, target, canvas }) => {
+    const input = createInputController(target);
+    const rocket = new Rocket();
+    rocket.place(390, 640);
+    canvasListeners.get("pointermove")({ clientX: 260, pointerType: "mouse" });
+    input.apply(rocket, canvas, 0.05, 320 / 390);
+    assert.equal(rocket.targetX, 390 / 2 - rocket.width / 2);
+    input.destroy();
+  });
+});
+
 test("teclado continua controlando o foguete no modo mouse e toque", () => {
   withInputEnvironment(({ listeners, target, canvas }) => {
     const input = createInputController(target, "pointer");

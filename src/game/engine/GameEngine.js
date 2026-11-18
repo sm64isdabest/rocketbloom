@@ -322,7 +322,7 @@ export class GameEngine {
       this.presentPendingOutcome();
       return;
     }
-    this.input.apply(this.rocket, this.canvas, frameSeconds);
+    this.input.apply(this.rocket, this.canvas, frameSeconds, this.view.scale);
     this.rocket.clamp(this.view.width);
     this.rocket.update(frameSeconds);
     this.rocket.updateDamageFeedback(frameSeconds);

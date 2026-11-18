@@ -70,10 +70,10 @@ export function createInputController(target, controlMode = "pointer") {
         state.pointerActive = false;
       }
     },
-    apply(rocket, canvas, dt) {
+    apply(rocket, canvas, dt, scale = 1) {
       const rect = canvas.getBoundingClientRect();
       if (activeControlMode === "pointer" && state.pointerX != null) {
-        const localX = ((state.pointerX - rect.left) / rect.width) * canvas.clientWidth;
+        const localX = ((state.pointerX - rect.left) / rect.width) * canvas.clientWidth / scale;
         const nextX = localX - rocket.width / 2;
         if (Math.abs(nextX - rocket.x) > INPUT.pointerDeadZone) {
           rocket.targetX = nextX;

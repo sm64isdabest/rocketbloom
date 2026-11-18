@@ -763,7 +763,8 @@ test("movimento reduzido mantém a arte do resultado estática e opaca", () => {
 
     const revealIndex = drawnImageCalls.findLastIndex(([image]) => image.src?.endsWith("/assets/powerups/bubble.webp"));
     assert.ok(revealIndex >= 0, "a imagem do resultado deve continuar visível");
-    assert.ok(drawnImageCalls[revealIndex][3] > 55 && drawnImageCalls[revealIndex][3] < 57, "a arte deve manter seu tamanho original");
+    assert.equal(drawnImageCalls[revealIndex][3], Math.min(96, Math.max(64, engine.view.width * 0.23)) * 0.76,
+      "a arte deve usar o tamanho do espaço lógico do gameplay");
     assert.equal(drawnImageAlphas[revealIndex], 1, "a arte não deve desaparecer");
     engine.stop();
   });
@@ -820,14 +821,16 @@ test("raio encolhedor torna obstáculos inofensivos e pausa novos spawns por tr�
   });
 });
 
-test("caixa misteriosa acompanha o limite horizontal após redimensionar a tela", () => {
+test("a largura lógica permanece fixa ao redimensionar a tela", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
     const box = new MysteryBox({ x: 270, y: 200 });
     engine.mysteryBox = box;
     canvas.parentElement.getBoundingClientRect = () => ({ width: 200, height: 640 });
     engine.resize();
-    assert.equal(box.x, 145);
+    assert.equal(engine.view.width, 390);
+    assert.equal(engine.view.scale, 200 / 390);
+    assert.equal(box.x, 270);
     engine.stop();
   });
 });
