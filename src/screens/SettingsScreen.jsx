@@ -17,6 +17,8 @@ export function SettingsScreen({ progress, onBack, onChange }) {
   const fallbackEffects = progress.settings.soundEffects === false ? AUDIO.minVolume : AUDIO.defaultSoundEffectsVolume;
   const musicVolume = clampVolume(progress.settings.musicVolume ?? fallbackMusic);
   const soundEffectsVolume = clampVolume(progress.settings.soundEffectsVolume ?? fallbackEffects);
+  const interfaceSounds = progress.settings.interfaceSounds !== false;
+  const muteAll = progress.settings.muteAll === true;
   const reducedMotion = progress.settings.reducedMotion === true;
   const showHitboxes = progress.settings.showHitboxes === true;
 
@@ -86,35 +88,91 @@ export function SettingsScreen({ progress, onBack, onChange }) {
 
           <div id={`${ids}-panel`} className="settings-popup__tab-panel" role="tabpanel" aria-labelledby={`${ids}-tab-${activeTab}`} tabIndex={0}>
           {activeTab === "audio" ? <fieldset className="settings-popup__audio" aria-label="Áudio">
-            <label className="settings-popup__volume-label" htmlFor={`${ids}-music`}>Música</label>
-            <input
-              id={`${ids}-music`}
-              className="settings-popup__range"
-              type="range"
-              min={AUDIO.minVolume}
-              max={AUDIO.maxVolume}
-              step="1"
-              value={musicVolume}
-              style={{ "--range-progress": `${musicVolume}%` }}
-              aria-label="Volume da música"
-              aria-valuetext={`${musicVolume}%`}
-              onChange={(event) => changeVolume("musicVolume", event.currentTarget.value)}
-            />
+            <section className="settings-popup__audio-card" aria-labelledby={`${ids}-music-title`}>
+              <span className="settings-popup__audio-icon" aria-hidden="true">🎵</span>
+              <div className="settings-popup__audio-body">
+                <h2 id={`${ids}-music-title`} className="settings-popup__volume-label">
+                  Música <output htmlFor={`${ids}-music`}>{musicVolume}%</output>
+                </h2>
+                <p id={`${ids}-music-description`} className="settings-popup__description">Trilha ambiente das suas viagens espaciais.</p>
+                <input
+                  id={`${ids}-music`}
+                  className="settings-popup__range"
+                  type="range"
+                  min={AUDIO.minVolume}
+                  max={AUDIO.maxVolume}
+                  step="1"
+                  value={musicVolume}
+                  style={{ "--range-progress": `${musicVolume}%` }}
+                  aria-labelledby={`${ids}-music-title`}
+                  aria-describedby={`${ids}-music-description`}
+                  aria-valuetext={`${musicVolume}%`}
+                  onChange={(event) => changeVolume("musicVolume", event.currentTarget.value)}
+                />
+              </div>
+            </section>
 
-            <label className="settings-popup__volume-label" htmlFor={`${ids}-effects`}>Efeitos sonoros</label>
-            <input
-              id={`${ids}-effects`}
-              className="settings-popup__range"
-              type="range"
-              min={AUDIO.minVolume}
-              max={AUDIO.maxVolume}
-              step="1"
-              value={soundEffectsVolume}
-              style={{ "--range-progress": `${soundEffectsVolume}%` }}
-              aria-label="Volume dos efeitos sonoros"
-              aria-valuetext={`${soundEffectsVolume}%`}
-              onChange={(event) => changeVolume("soundEffectsVolume", event.currentTarget.value)}
-            />
+            <section className="settings-popup__audio-card" aria-labelledby={`${ids}-effects-title`}>
+              <span className="settings-popup__audio-icon" aria-hidden="true">✨</span>
+              <div className="settings-popup__audio-body">
+                <h2 id={`${ids}-effects-title`} className="settings-popup__volume-label">
+                  Efeitos sonoros <output htmlFor={`${ids}-effects`}>{soundEffectsVolume}%</output>
+                </h2>
+                <p id={`${ids}-effects-description`} className="settings-popup__description">Moedas, obstáculos, poderes e conquistas.</p>
+                <input
+                  id={`${ids}-effects`}
+                  className="settings-popup__range"
+                  type="range"
+                  min={AUDIO.minVolume}
+                  max={AUDIO.maxVolume}
+                  step="1"
+                  value={soundEffectsVolume}
+                  style={{ "--range-progress": `${soundEffectsVolume}%` }}
+                  aria-labelledby={`${ids}-effects-title`}
+                  aria-describedby={`${ids}-effects-description`}
+                  aria-valuetext={`${soundEffectsVolume}%`}
+                  onChange={(event) => changeVolume("soundEffectsVolume", event.currentTarget.value)}
+                />
+              </div>
+            </section>
+
+            <section className="settings-popup__audio-card settings-popup__audio-card--switch" aria-labelledby={`${ids}-interface-title`}>
+              <span className="settings-popup__audio-icon" aria-hidden="true">🖱️</span>
+              <div className="settings-popup__audio-body">
+                <h2 id={`${ids}-interface-title`} className="settings-popup__volume-label">Sons da interface</h2>
+                <p id={`${ids}-interface-description`} className="settings-popup__description">Cliques, seleções e botões do jogo.</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={interfaceSounds}
+                aria-labelledby={`${ids}-interface-title`}
+                aria-describedby={`${ids}-interface-description`}
+                className={`settings-popup__audio-switch ${interfaceSounds ? "is-on" : ""}`}
+                onClick={() => onChange({ interfaceSounds: !interfaceSounds })}
+              >
+                <span aria-hidden="true" />{interfaceSounds ? "Ligados" : "Desligados"}
+              </button>
+            </section>
+
+            <section className="settings-popup__audio-card settings-popup__audio-card--switch" aria-labelledby={`${ids}-mute-title`}>
+              <span className="settings-popup__audio-icon" aria-hidden="true">🔇</span>
+              <div className="settings-popup__audio-body">
+                <h2 id={`${ids}-mute-title`} className="settings-popup__volume-label">Silenciar todos</h2>
+                <p id={`${ids}-mute-description`} className="settings-popup__description">Pausa todos os sons sem perder seus volumes.</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={muteAll}
+                aria-labelledby={`${ids}-mute-title`}
+                aria-describedby={`${ids}-mute-description`}
+                className={`settings-popup__audio-switch ${muteAll ? "is-on" : ""}`}
+                onClick={() => onChange({ muteAll: !muteAll })}
+              >
+                <span aria-hidden="true" />{muteAll ? "Silenciado" : "Ativado"}
+              </button>
+            </section>
           </fieldset> : null}
 
           {activeTab === "gameplay" ? <section className="settings-popup__group" aria-labelledby={`${ids}-controls`}>

@@ -15,7 +15,7 @@ import { PlayScreen } from "./screens/PlayScreen.jsx";
 import { PauseOverlay } from "./screens/PauseOverlay.jsx";
 import { VictoryScreen } from "./screens/VictoryScreen.jsx";
 import { DefeatScreen } from "./screens/DefeatScreen.jsx";
-import { configureAudio, pauseMenuAudio, playGameSound, startMenuAudio } from "./game/audio/audioManager.js";
+import { configureAudio, pauseMenuAudio, playGameSound, playInterfaceSound, startMenuAudio } from "./game/audio/audioManager.js";
 import { hasLoadedAllImages, preloadImages } from "./utils/preloadImages.js";
 import { getSettingsReturnPage } from "./screens/menuModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
@@ -156,6 +156,8 @@ export default function App() {
     progress?.settings?.soundEffects,
     progress?.settings?.musicVolume,
     progress?.settings?.soundEffectsVolume,
+    progress?.settings?.interfaceSounds,
+    progress?.settings?.muteAll,
   ]);
 
   useEffect(() => {
@@ -296,7 +298,12 @@ export default function App() {
   return (
     <>
     <FullscreenButton hidden={screen === SCREEN.MENU && menuPage === SCREEN.COMMAND} />
-    <div className={`app-shell ${progress.settings.reducedMotion || systemReducedMotion ? "motion-reduced" : ""}`}>
+    <div
+      className={`app-shell ${progress.settings.reducedMotion || systemReducedMotion ? "motion-reduced" : ""}`}
+      onClickCapture={(event) => {
+        if (event.target.closest?.("button")) playInterfaceSound("menuClick");
+      }}
+    >
       {screen === SCREEN.MENU && (menuPage === SCREEN.MENU || menuPage === SCREEN.SETTINGS) ? (
         <MenuScreen
           progress={progress}

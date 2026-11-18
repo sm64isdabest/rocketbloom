@@ -75,7 +75,7 @@ test("defeat plays a short low explosive burst through the configured effects vo
   }
 });
 
-test("menu play click plays a short interface sound through the configured effects volume", async () => {
+test("menu play click uses the independent interface-sound channel", async () => {
   const frequencies = [];
   class FakeAudioContext {
     currentTime = 1;
@@ -98,13 +98,91 @@ test("menu play click plays a short interface sound through the configured effec
   const priorWindow = globalThis.window;
   globalThis.window = { AudioContext: FakeAudioContext, addEventListener() {} };
   try {
-    const { configureAudio, playGameSound } = await import("./audioManager.js?menu-click");
-    configureAudio({ soundEffects: true, soundEffectsVolume: 100 });
-    playGameSound("menuClick");
+    const { configureAudio, playInterfaceSound } = await import("./audioManager.js?menu-click");
+    configureAudio({ interfaceSounds: true, soundEffects: false });
+    playInterfaceSound("menuClick");
     assert.deepEqual(frequencies, [659.25, 880]);
   } finally {
     if (priorWindow === undefined) delete globalThis.window;
     else globalThis.window = priorWindow;
+  }
+});
+
+test("interface sounds stay independent from gameplay effects", async () => {
+  const frequencies = [];
+  class FakeAudioContext {
+    currentTime = 1;
+    state = "running";
+    destination = {};
+    createOscillator() {
+      return { type: "sine", frequency: { setValueAtTime: (frequency) => frequencies.push(frequency) }, connect() {}, start() {}, stop() {} };
+    }
+    createGain() { return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} }; }
+  }
+
+  const priorWindow = globalThis.window;
+  globalThis.window = { AudioContext: FakeAudioContext, addEventListener() {} };
+  try {
+    const { configureAudio, playGameSound, playInterfaceSound } = await import("./audioManager.js?independent-interface-sounds");
+    configureAudio({ music: false, soundEffects: false, interfaceSounds: true, muteAll: false });
+    playGameSound("coin");
+    playInterfaceSound("menuClick");
+    assert.deepEqual(frequencies, [659.25, 880]);
+
+    frequencies.length = 0;
+    configureAudio({ soundEffects: true, interfaceSounds: false });
+    playInterfaceSound("menuClick");
+    playGameSound("coin");
+    assert.deepEqual(frequencies, [783.99, 1046.5]);
+  } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+  }
+});
+
+test("silenciar todos pausa os canais sem perder seus volumes e permite restaurá-los", async () => {
+  const frequencies = [];
+  class FakeAudioContext {
+    currentTime = 1;
+    state = "running";
+    destination = {};
+    createOscillator() {
+      return { type: "sine", frequency: { setValueAtTime: (frequency) => frequencies.push(frequency) }, connect() {}, start() {}, stop() {} };
+    }
+    createGain() { return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} }; }
+  }
+  const tracks = [];
+  class FakeAudio {
+    constructor(url) { this.url = url; this.volume = 1; this.paused = false; tracks.push(this); }
+    play() { this.paused = false; return Promise.resolve(); }
+    pause() { this.paused = true; }
+  }
+
+  const priorWindow = globalThis.window;
+  const priorAudio = globalThis.Audio;
+  globalThis.window = { AudioContext: FakeAudioContext, addEventListener() {} };
+  globalThis.Audio = FakeAudio;
+  try {
+    const { configureAudio, playGameSound, playInterfaceSound, startMenuAudio } = await import("./audioManager.js?restore-after-global-mute");
+    configureAudio({ music: true, musicVolume: 40, soundEffects: true, soundEffectsVolume: 80, interfaceSounds: true, muteAll: true });
+    startMenuAudio();
+    playGameSound("coin");
+    playInterfaceSound("menuClick");
+    assert.equal(tracks.length, 0);
+    assert.deepEqual(frequencies, []);
+
+    configureAudio({ muteAll: false });
+    startMenuAudio();
+    playGameSound("coin");
+    playInterfaceSound("menuClick");
+    assert.equal(tracks.length, 1);
+    assert.equal(tracks[0].volume, 0.4);
+    assert.deepEqual(frequencies, [783.99, 1046.5, 659.25, 880]);
+  } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+    if (priorAudio === undefined) delete globalThis.Audio;
+    else globalThis.Audio = priorAudio;
   }
 });
 

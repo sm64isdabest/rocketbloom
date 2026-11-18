@@ -22,6 +22,8 @@ test("progresso inicial não inventa planetas desbloqueados", () => {
   assert.deepEqual(progress.rescuedPlantIds, []);
   assert.equal(progress.settings.musicVolume, 35);
   assert.equal(progress.settings.soundEffectsVolume, 55);
+  assert.equal(progress.settings.interfaceSounds, true);
+  assert.equal(progress.settings.muteAll, false);
   assert.deepEqual(progress.seenPlanetIds, []);
 });
 
@@ -46,6 +48,29 @@ test("visualização das áreas de colisão começa desligada e continua desliga
   const loaded = loadProgress(memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) })).progress;
 
   assert.equal(loaded.settings.showHitboxes, false);
+});
+
+test("preferências antigas recebem sons da interface ligados e silêncio geral desligado", () => {
+  const legacy = {
+    ...createDefaultProgress(),
+    settings: { music: true, soundEffects: true, musicVolume: 35, soundEffectsVolume: 55 },
+  };
+  const settings = loadProgress(memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) })).progress.settings;
+
+  assert.equal(settings.interfaceSounds, true);
+  assert.equal(settings.muteAll, false);
+});
+
+test("preferências dos sons da interface e do silêncio geral preservam estados salvos", () => {
+  const profile = {
+    ...createDefaultProgress(),
+    settings: { ...createDefaultProgress().settings, interfaceSounds: false, muteAll: true },
+  };
+  const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(profile) });
+  const settings = loadProgress(storage).progress.settings;
+
+  assert.equal(settings.interfaceSounds, false);
+  assert.equal(settings.muteAll, true);
 });
 
 test("volumes salvos são limitados e convertem preferências antigas", () => {

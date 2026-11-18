@@ -1,7 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { MenuSpaceBackground } from "./MenuSpaceBackground.jsx";
 import { getMenuAssetUrl } from "./menuModel.js";
-import { playGameSound } from "../game/audio/audioManager.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const menuAsset = (filename) => getMenuAssetUrl(filename, APP_BASE);
@@ -44,7 +43,7 @@ export function MenuScreen({ warning, onPlay, onSettings }) {
         <img className="menu__logo" src={menuAsset("logo.webp")} alt="RocketBloom" />
 
         <nav className="menu__buttons" aria-label="Menu principal">
-          <button type="button" className="menu__play" onClick={() => { playGameSound("menuClick"); onPlay(); }}>
+          <button type="button" className="menu__play" onClick={onPlay}>
             <img src={menuAsset("play.webp")} alt="" />
             <span>Jogar</span>
           </button>

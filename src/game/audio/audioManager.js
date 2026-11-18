@@ -10,6 +10,8 @@ let preferences = {
   soundEffects: true,
   musicVolume: AUDIO.defaultMusicVolume,
   soundEffectsVolume: AUDIO.defaultSoundEffectsVolume,
+  interfaceSounds: true,
+  muteAll: false,
 };
 
 export function scaleAudioVolume(sourceVolume, volumePercent) {
@@ -22,7 +24,6 @@ export function scaleAudioVolume(sourceVolume, volumePercent) {
 const GAMEPLAY_MUSIC_URL = new URL("../../assets/gameplay-space-loop.wav", import.meta.url).href;
 const MENU_MUSIC_URL = new URL("../../assets/menu-space-loop.wav", import.meta.url).href;
 const SOUND_NOTES = {
-  menuClick: { notes: [659.25, 880], duration: 0.07, wave: "sine", volume: 0.1 },
   correct: { notes: [523.25, 659.25, 783.99], duration: 0.11, wave: "sine", volume: 0.12 },
   incorrect: { notes: [293.66, 246.94], duration: 0.14, wave: "triangle", volume: 0.12 },
   collision: { notes: [130.81, 98], duration: 0.1, wave: "sawtooth", volume: 0.1 },
@@ -32,6 +33,9 @@ const SOUND_NOTES = {
   victory: { notes: [523.25, 659.25, 783.99, 1046.5], duration: 0.2, wave: "triangle", volume: 0.12 },
   discovery: { notes: [523.25, 659.25, 783.99, 1046.5, 1318.51], duration: 0.16, wave: "sine", volume: 0.12 },
   defeat: { notes: [130.81, 65.41, 32.7], duration: 0.3, wave: "sawtooth", volume: 0.14, spacing: 0.045 },
+};
+const INTERFACE_SOUNDS = {
+  menuClick: { notes: [659.25, 880], duration: 0.07, wave: "sine", volume: 0.1 },
 };
 
 function getContext() {
@@ -84,7 +88,7 @@ function stopMenuMusic() {
 }
 
 function startMusic() {
-  if (!gameAudioActive || !preferences.music || preferences.musicVolume <= AUDIO.minVolume) return;
+  if (!gameAudioActive || preferences.muteAll || !preferences.music || preferences.musicVolume <= AUDIO.minVolume) return;
   if (typeof Audio === "undefined") return;
   if (!gameplayMusic) {
     try {
@@ -101,7 +105,7 @@ function startMusic() {
 }
 
 function startMenuTrack() {
-  if (!menuAudioActive || !preferences.music || preferences.musicVolume <= AUDIO.minVolume) return;
+  if (!menuAudioActive || preferences.muteAll || !preferences.music || preferences.musicVolume <= AUDIO.minVolume) return;
   if (typeof Audio === "undefined") return;
   if (!menuMusic) {
     try {
@@ -121,7 +125,7 @@ export function configureAudio(nextPreferences = {}) {
   preferences = { ...preferences, ...nextPreferences };
   if (gameplayMusic) gameplayMusic.volume = scaleAudioVolume(1, preferences.musicVolume);
   if (menuMusic) menuMusic.volume = scaleAudioVolume(1, preferences.musicVolume);
-  if (!preferences.music || preferences.musicVolume <= AUDIO.minVolume) {
+  if (preferences.muteAll || !preferences.music || preferences.musicVolume <= AUDIO.minVolume) {
     stopMusic();
     stopMenuMusic();
   } else if (gameAudioActive) startMusic();
@@ -156,7 +160,13 @@ export function finishGameAudio(outcome) {
 }
 
 export function playGameSound(name) {
-  if (!preferences.soundEffects || preferences.soundEffectsVolume <= AUDIO.minVolume) return;
+  if (preferences.muteAll || !preferences.soundEffects || preferences.soundEffectsVolume <= AUDIO.minVolume) return;
   const sound = SOUND_NOTES[name];
   if (sound) playSequence(sound.notes, sound.duration, sound.wave, scaleAudioVolume(sound.volume, preferences.soundEffectsVolume), sound.spacing);
+}
+
+export function playInterfaceSound(name) {
+  if (preferences.muteAll || !preferences.interfaceSounds) return;
+  const sound = INTERFACE_SOUNDS[name];
+  if (sound) playSequence(sound.notes, sound.duration, sound.wave, sound.volume, sound.spacing);
 }
