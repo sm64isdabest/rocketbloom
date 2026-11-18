@@ -316,10 +316,12 @@ test("tocar um laser escolhe a alternativa da faixa sem causar dano", () => {
     assert.ok(engine.particles.length > 0);
     assert.ok(engine.particles.every((particle) => particle.color === laser.color));
     assert.equal(laser.alive, true, "laser remains visible while fading out");
+    assert.ok(engine.answerLasers.every((answerLaser) => answerLaser.fadeOutElapsedMs === 0), "all lasers start fading on the same frame");
     assert.equal(engine.rocket.damageFeedbackRemainingMs, 0);
     assert.equal(engine.speed, speedBeforeTouch);
     engine.tick(0.14);
-    assert.ok(laser.opacity > 0 && laser.opacity < 1);
+    assert.ok(engine.answerLasers.every((answerLaser) => answerLaser.opacity > 0 && answerLaser.opacity < 1));
+    assert.equal(new Set(engine.answerLasers.map((answerLaser) => answerLaser.opacity)).size, 1, "all lasers fade at the same rate");
     engine.stop();
   });
 });

@@ -401,7 +401,7 @@ export class GameEngine {
         }
         if (aabbOverlaps(this.rocket, laser)) {
           const selected = answer;
-          laser.beginFadeOut();
+          for (const answerLaser of this.answerLasers) answerLaser.beginFadeOut();
           this.spawnParticles(
             this.rocket.x + this.rocket.width / 2,
             this.rocket.y + this.rocket.height / 2,
