@@ -426,13 +426,16 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 .settings-popup__accessibility .toggle { white-space: nowrap; }
 @media (max-width: 360px) {
   .settings-popup { width: calc(100vw - 24px); border-radius: 18px; }
-  .settings-popup__content { padding-right: 24px; padding-left: 24px; }
+  .settings-popup__content { padding-right: 16px; padding-left: 16px; }
   .settings-popup__close { top: 12px; left: 12px; width: 52px; height: 52px; }
   .settings-popup__control-options { grid-template-columns: 1fr; }
   .settings-popup__control-options .control-option { min-height: 72px; }
   .settings-popup__accessibility { grid-template-columns: 1fr; }
 }
 @media (max-width: 540px) {
+  .settings-popup__content { padding-right: 20px; padding-left: 20px; }
+  .settings-popup__tabs { gap: 3px; }
+  .settings-popup__tab { padding-right: 2px; padding-left: 2px; font-size: clamp(.43rem, 2.1vw, .55rem); }
   .settings-popup__audio-card--switch { grid-template-columns: 30px minmax(0, 1fr); }
   .settings-popup__audio-switch { grid-column: 2; justify-self: start; }
 }

@@ -1,12 +1,9 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { AUDIO } from "../game/config/gameConfig.js";
 import { getMenuAssetUrl } from "./menuModel.js";
+import { clampAudioVolume, getAudioVolumeChange } from "./settingsModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
-
-function clampVolume(value) {
-  return Math.max(AUDIO.minVolume, Math.min(AUDIO.maxVolume, value));
-}
 
 export function SettingsScreen({ progress, onBack, onChange }) {
   const ids = useId();
@@ -15,8 +12,8 @@ export function SettingsScreen({ progress, onBack, onChange }) {
   const controlMode = progress.settings.controlMode ?? "pointer";
   const fallbackMusic = progress.settings.music === false ? AUDIO.minVolume : AUDIO.defaultMusicVolume;
   const fallbackEffects = progress.settings.soundEffects === false ? AUDIO.minVolume : AUDIO.defaultSoundEffectsVolume;
-  const musicVolume = clampVolume(progress.settings.musicVolume ?? fallbackMusic);
-  const soundEffectsVolume = clampVolume(progress.settings.soundEffectsVolume ?? fallbackEffects);
+  const musicVolume = clampAudioVolume(progress.settings.musicVolume ?? fallbackMusic);
+  const soundEffectsVolume = clampAudioVolume(progress.settings.soundEffectsVolume ?? fallbackEffects);
   const interfaceSounds = progress.settings.interfaceSounds !== false;
   const muteAll = progress.settings.muteAll === true;
   const reducedMotion = progress.settings.reducedMotion === true;
@@ -31,9 +28,7 @@ export function SettingsScreen({ progress, onBack, onChange }) {
   }, [onBack]);
 
   const changeVolume = (settingName, value) => {
-    const volume = clampVolume(Number(value));
-    const isMusic = settingName === "musicVolume";
-    onChange({ [settingName]: volume, [isMusic ? "music" : "soundEffects"]: volume > AUDIO.minVolume });
+    onChange(getAudioVolumeChange(settingName, value));
   };
 
   const tabs = [
@@ -92,7 +87,7 @@ export function SettingsScreen({ progress, onBack, onChange }) {
               <span className="settings-popup__audio-icon" aria-hidden="true">🎵</span>
               <div className="settings-popup__audio-body">
                 <h2 id={`${ids}-music-title`} className="settings-popup__volume-label">
-                  Música <output htmlFor={`${ids}-music`}>{musicVolume}%</output>
+                  <span id={`${ids}-music-label`}>Música</span> <output htmlFor={`${ids}-music`}>{musicVolume}%</output>
                 </h2>
                 <p id={`${ids}-music-description`} className="settings-popup__description">Trilha ambiente das suas viagens espaciais.</p>
                 <input
@@ -104,7 +99,7 @@ export function SettingsScreen({ progress, onBack, onChange }) {
                   step="1"
                   value={musicVolume}
                   style={{ "--range-progress": `${musicVolume}%` }}
-                  aria-labelledby={`${ids}-music-title`}
+                  aria-labelledby={`${ids}-music-label`}
                   aria-describedby={`${ids}-music-description`}
                   aria-valuetext={`${musicVolume}%`}
                   onChange={(event) => changeVolume("musicVolume", event.currentTarget.value)}
@@ -116,7 +111,7 @@ export function SettingsScreen({ progress, onBack, onChange }) {
               <span className="settings-popup__audio-icon" aria-hidden="true">✨</span>
               <div className="settings-popup__audio-body">
                 <h2 id={`${ids}-effects-title`} className="settings-popup__volume-label">
-                  Efeitos sonoros <output htmlFor={`${ids}-effects`}>{soundEffectsVolume}%</output>
+                  <span id={`${ids}-effects-label`}>Efeitos sonoros</span> <output htmlFor={`${ids}-effects`}>{soundEffectsVolume}%</output>
                 </h2>
                 <p id={`${ids}-effects-description`} className="settings-popup__description">Moedas, obstáculos, poderes e conquistas.</p>
                 <input
@@ -128,7 +123,7 @@ export function SettingsScreen({ progress, onBack, onChange }) {
                   step="1"
                   value={soundEffectsVolume}
                   style={{ "--range-progress": `${soundEffectsVolume}%` }}
-                  aria-labelledby={`${ids}-effects-title`}
+                  aria-labelledby={`${ids}-effects-label`}
                   aria-describedby={`${ids}-effects-description`}
                   aria-valuetext={`${soundEffectsVolume}%`}
                   onChange={(event) => changeVolume("soundEffectsVolume", event.currentTarget.value)}
@@ -170,7 +165,7 @@ export function SettingsScreen({ progress, onBack, onChange }) {
                 className={`settings-popup__audio-switch ${muteAll ? "is-on" : ""}`}
                 onClick={() => onChange({ muteAll: !muteAll })}
               >
-                <span aria-hidden="true" />{muteAll ? "Silenciado" : "Ativado"}
+                <span aria-hidden="true" />{muteAll ? "Ligado" : "Desligado"}
               </button>
             </section>
           </fieldset> : null}

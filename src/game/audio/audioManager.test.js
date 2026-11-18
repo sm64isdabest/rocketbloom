@@ -186,6 +186,37 @@ test("silenciar todos pausa os canais sem perder seus volumes e permite restaurÃ
   }
 });
 
+test("silenciar todos corta um som de interface que jÃ¡ estava agendado", async () => {
+  const gainChanges = [];
+  const oscillatorStopTimes = [];
+  class FakeAudioContext {
+    currentTime = 1;
+    state = "running";
+    destination = {};
+    createOscillator() {
+      return { type: "sine", frequency: { setValueAtTime() {} }, connect() {}, start() {}, stop: (time) => oscillatorStopTimes.push(time) };
+    }
+    createGain() {
+      return { gain: { setValueAtTime: (value) => gainChanges.push(value), exponentialRampToValueAtTime() {} }, connect() {} };
+    }
+  }
+
+  const priorWindow = globalThis.window;
+  globalThis.window = { AudioContext: FakeAudioContext, addEventListener() {} };
+  try {
+    const { configureAudio, playInterfaceSound } = await import("./audioManager.js?mute-interrupts-pending-sounds");
+    configureAudio({ interfaceSounds: true, muteAll: false });
+    playInterfaceSound("menuClick");
+    configureAudio({ muteAll: true });
+
+    assert.ok(gainChanges.includes(0), "the shared audio output should be cut immediately");
+    assert.equal(oscillatorStopTimes.filter((time) => time === 1).length, 2, "already scheduled interface tones should be canceled now");
+  } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+  }
+});
+
 test("angry rocket touch plays a low, short effect through the configured sound volume", async () => {
   const frequencies = [];
   class FakeAudioContext {

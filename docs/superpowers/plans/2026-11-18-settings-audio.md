@@ -61,7 +61,10 @@
 
 **Files:**
 - Modify: `src/screens/SettingsScreen.jsx`
+- Create: `src/screens/settingsModel.js`
+- Test: `src/screens/settingsModel.test.js`
 - Modify: `src/styles/index.css`
+- Test: `src/styles/settingsResponsive.test.js`
 - Inspect call sites: `src/App.jsx`, menu/tab controls that trigger click audio
 
 **Interfaces:**
@@ -70,7 +73,7 @@
 
 - [x] **Step 1: Implement semantic audio control markup** with labels, descriptions, accessible slider values, switch state, and spacing classes.
 - [x] **Step 2: Implement responsive styling** for balanced card spacing, subtle separators, brighter selected tab, and narrow screens while preserving the modal shell.
-- [x] **Step 3: Run `npm test`** and confirm the full unit suite passes (178 tests).
+- [x] **Step 3: Run `npm test`** and confirm the full unit suite passes (183 tests after review fixes).
 - [x] **Step 4: Run `npm run build`** and confirm Vite builds without errors.
 - [x] **Step 5: Present the audio tab** at desktop and mobile sizes for visual review. Browser preview was blocked by the local-address policy, so matching desktop and mobile SVG mockups are included as deliverables.
 
@@ -78,6 +81,6 @@
 
 **Files:** all files above plus the approved spec and plan.
 
-- [x] **Step 1: Run `npm test` and `npm run build`** after visual changes; 178 tests passed and Vite build succeeded.
-- [ ] **Step 2: Inspect `git diff` and `git status`** to ensure only intended changes are included.
-- [ ] **Step 3: Commit the completed change** with a focused message, then push the current branch if its configured upstream is available and the working tree is ready.
+- [x] **Step 1: Run `npm test` and `npm run build`** after review fixes; 183 tests passed and Vite build succeeded.
+- [x] **Step 2: Inspect `git diff` and `git status`** to ensure only intended changes are included.
+- [ ] **Step 3: Commit the review fixes** with a focused message, then push the completed commits to the configured upstream.

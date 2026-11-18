@@ -5,6 +5,8 @@ let gameAudioActive = false;
 let menuAudioActive = false;
 let gameplayMusic = null;
 let menuMusic = null;
+let masterGain = null;
+const activeOscillators = new Set();
 let preferences = {
   music: true,
   soundEffects: true,
@@ -45,6 +47,9 @@ function getContext() {
   if (!AudioContextClass) return null;
   try {
     audioContext = new AudioContextClass();
+    masterGain = audioContext.createGain();
+    masterGain.gain.setValueAtTime(preferences.muteAll ? 0 : 1, audioContext.currentTime);
+    masterGain.connect(audioContext.destination);
     const resume = () => { if (audioContext?.state === "suspended") audioContext.resume().catch(() => {}); };
     window.addEventListener("pointerdown", resume, { passive: true });
     window.addEventListener("keydown", resume);
@@ -66,8 +71,9 @@ function playTone(frequency, startAt, duration, wave, volume) {
   gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.018);
   gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
   oscillator.connect(gain);
-  gain.connect(context.destination);
-  oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+  gain.connect(masterGain ?? context.destination);
+  activeOscillators.add(oscillator);
+  oscillator.onended = () => { activeOscillators.delete(oscillator); oscillator.disconnect(); gain.disconnect(); };
   oscillator.start(startAt);
   oscillator.stop(startAt + duration + 0.02);
 }
@@ -122,7 +128,17 @@ function startMenuTrack() {
 }
 
 export function configureAudio(nextPreferences = {}) {
+  const wasMuted = preferences.muteAll;
   preferences = { ...preferences, ...nextPreferences };
+  if (masterGain && wasMuted !== preferences.muteAll) {
+    masterGain.gain.setValueAtTime(preferences.muteAll ? 0 : 1, audioContext.currentTime);
+  }
+  if (preferences.muteAll && !wasMuted && audioContext) {
+    for (const oscillator of activeOscillators) {
+      try { oscillator.stop(audioContext.currentTime); } catch { /* A tone may have ended during this update. */ }
+    }
+    activeOscillators.clear();
+  }
   if (gameplayMusic) gameplayMusic.volume = scaleAudioVolume(1, preferences.musicVolume);
   if (menuMusic) menuMusic.volume = scaleAudioVolume(1, preferences.musicVolume);
   if (preferences.muteAll || !preferences.music || preferences.musicVolume <= AUDIO.minVolume) {
