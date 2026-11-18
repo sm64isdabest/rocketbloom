@@ -12,16 +12,9 @@ function getAssetFiles(directory) {
   });
 }
 
-test("assets raster usam WebP, preservando PNG nos sprites com transparência", () => {
+test("assets raster usam WebP", () => {
   const rasterAssets = getAssetFiles(assetsDirectory).filter((path) => /\.(png|jpe?g|gif|bmp|tiff?|avif)$/i.test(path));
-
-  const pngAssets = rasterAssets.map((path) => path.split(/[\\/]/).at(-1)).sort();
-  assert.deepEqual(pngAssets, ["helicopter.png", "plane.png", "warning-alert.png"], "somente assets que precisam preservar transparência devem usar PNG");
-  for (const path of rasterAssets) {
-    const png = readFileSync(path);
-    assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", `${path} deve ser PNG válido`);
-    assert.equal(png[25], 6, `${path} deve preservar o canal alfa`);
-  }
+  assert.deepEqual(rasterAssets, [], "todos os assets raster devem usar WebP");
 
   const webpAssets = getAssetFiles(assetsDirectory).filter((path) => path.endsWith(".webp"));
   assert.ok(webpAssets.length > 0, "assets WebP devem existir");

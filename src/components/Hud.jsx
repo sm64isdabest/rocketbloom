@@ -24,7 +24,7 @@ export function Hud({ snapshot, onPause, onSpecialAnswer, onSpecialContinue }) {
           {snapshot?.collisionAlertRemainingMs > 0 ? <img
             key={snapshot.collisionAlertSequence}
             className="hud__impact-alert"
-            src={getHudAssetUrl("warning-alert.png", APP_BASE)}
+            src={getHudAssetUrl("warning-alert.webp", APP_BASE)}
             alt=""
             aria-hidden="true"
           /> : null}

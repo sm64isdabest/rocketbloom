@@ -19,7 +19,7 @@ test("exibe o enunciado da rodada ativa", () => {
 test("monta caminhos de ícones da HUD respeitando o caminho base do app", () => {
   assert.equal(getHudAssetUrl("coin.webp", "/rocketbloom/"), "/rocketbloom/assets/ui/coin.webp");
   assert.equal(getHudAssetUrl("diamond.webp", "/"), "/assets/ui/diamond.webp");
-  assert.equal(getHudAssetUrl("warning-alert.png", "/rocketbloom/"), "/rocketbloom/assets/ui/warning-alert.png");
+  assert.equal(getHudAssetUrl("warning-alert.webp", "/rocketbloom/"), "/rocketbloom/assets/ui/warning-alert.webp");
 });
 
 test("mapeia cada poder para seu ícone próprio no caminho base do app", () => {
