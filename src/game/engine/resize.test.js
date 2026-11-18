@@ -15,16 +15,22 @@ function createCanvas(width, height) {
   return { canvas, transforms };
 }
 
-test("mantém a largura lógica do gameplay em telas estreitas e largas", () => {
+test("escala pela menor proporção para caber no viewport horizontal sem ampliar os assets", () => {
   const originalWindow = globalThis.window;
   globalThis.window = { devicePixelRatio: 1 };
   try {
-    for (const cssWidth of [320, 1080]) {
-      const { canvas } = createCanvas(cssWidth, 640);
+    for (const { width: cssWidth, height: cssHeight } of [
+      { width: 320, height: 640 },
+      { width: 1080, height: 656 },
+    ]) {
+      const { canvas, transforms } = createCanvas(cssWidth, cssHeight);
       const view = fitCanvasToContainer(canvas);
-      assert.equal(view.width, VIEW.designWidth);
-      assert.equal(view.scale, cssWidth / VIEW.designWidth);
-      assert.equal(view.height, 640 / view.scale);
+      const expectedScale = Math.min(cssWidth / VIEW.designWidth, cssHeight / VIEW.designHeight);
+      assert.equal(view.scale, expectedScale);
+      assert.equal(view.width, cssWidth / expectedScale);
+      assert.equal(view.height, cssHeight / expectedScale);
+      assert.ok(view.scale <= 1, "viewports menores que o design não podem ampliar os assets");
+      assert.deepEqual(transforms.at(-1), [expectedScale, 0, 0, expectedScale, 0, 0]);
     }
   } finally {
     globalThis.window = originalWindow;
@@ -38,9 +44,9 @@ test("aplica DPR à resolução do canvas sem alterar o espaço lógico", () => 
     const { canvas, transforms } = createCanvas(320, 640);
     const view = fitCanvasToContainer(canvas);
     assert.deepEqual([canvas.width, canvas.height], [640, 1280]);
-    assert.equal(view.width, VIEW.designWidth);
+    assert.equal(view.width, 320 / view.scale);
     assert.equal(view.dpr, 2);
-    assert.deepEqual(transforms.at(-1), [2 * (320 / VIEW.designWidth), 0, 0, 2 * (320 / VIEW.designWidth), 0, 0]);
+    assert.deepEqual(transforms.at(-1), [2 * view.scale, 0, 0, 2 * view.scale, 0, 0]);
   } finally {
     globalThis.window = originalWindow;
   }

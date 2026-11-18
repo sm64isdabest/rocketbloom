@@ -823,14 +823,14 @@ test("raio encolhedor torna obstáculos inofensivos e pausa novos spawns por tr�
   });
 });
 
-test("a largura lógica permanece fixa ao redimensionar a tela", () => {
+test("escala e largura lógica acompanham o menor lado disponível ao redimensionar", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
     const box = new MysteryBox({ x: 270, y: 200 });
     engine.mysteryBox = box;
     canvas.parentElement.getBoundingClientRect = () => ({ width: 200, height: 640 });
     engine.resize();
-    assert.equal(engine.view.width, 390);
+    assert.ok(Math.abs(engine.view.width - 390) < 1e-9);
     assert.equal(engine.view.scale, 200 / 390);
     assert.equal(box.x, 270);
     engine.stop();
@@ -841,7 +841,7 @@ test("caixa adia uma tentativa bloqueada e reaparece quando existe uma posição
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
     const delay = engine.mysteryBoxDelayMs;
-    engine.obstacles.push(new Obstacle({ id: "asteroid", x: 0, y: 0, width: 320, height: 60 }));
+    engine.obstacles.push(new Obstacle({ id: "asteroid", x: 0, y: 0, width: engine.view.width, height: 60 }));
     engine.mysteryBoxAcc = delay;
     engine.tick(0.05);
     assert.equal(engine.mysteryBox, null);

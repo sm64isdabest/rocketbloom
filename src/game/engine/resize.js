@@ -6,7 +6,7 @@ export function fitCanvasToContainer(canvas) {
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   const cssWidth = Math.max(1, Math.floor(rect?.width ?? canvas.clientWidth));
   const cssHeight = Math.max(1, Math.floor(rect?.height ?? canvas.clientHeight));
-  const scale = cssWidth / VIEW.designWidth;
+  const scale = Math.min(cssWidth / VIEW.designWidth, cssHeight / VIEW.designHeight);
   const pixelWidth = Math.floor(cssWidth * dpr);
   const pixelHeight = Math.floor(cssHeight * dpr);
 
@@ -23,5 +23,5 @@ export function fitCanvasToContainer(canvas) {
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
 
-  return { width: VIEW.designWidth, height: cssHeight / scale, scale, dpr };
+  return { width: cssWidth / scale, height: cssHeight / scale, scale, dpr };
 }

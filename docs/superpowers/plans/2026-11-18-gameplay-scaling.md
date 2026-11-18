@@ -4,7 +4,7 @@
 
 **Goal:** Keep gameplay object sizes and interactions proportional across viewport widths.
 
-**Architecture:** Render the canvas in a fixed logical width (`VIEW.designWidth`) with a uniform CSS scale derived from viewport width. Keep the engine and collision math in logical coordinates and convert pointer positions at the input boundary.
+**Architecture:** Render the canvas with a uniform scale equal to the smaller viewport-to-design ratio (`VIEW.designWidth` × `VIEW.designHeight`). Keep the engine and collision math in logical coordinates and convert pointer positions at the input boundary.
 
 **Tech Stack:** JavaScript ES modules, Canvas 2D, Node test runner, Vite.
 
@@ -25,7 +25,7 @@
 
 **Files:** Modify `src/game/engine/resize.js`; test `src/game/engine/resize.test.js`.
 
-- [ ] Add tests for 320 px and 1080 px CSS widths retaining logical width 390, with scale 320/390 and 1080/390; assert DPR changes backing dimensions only.
+- [ ] Add tests for narrow and landscape viewports using the smaller width/height ratio; assert the logical viewport matches CSS dimensions divided by scale and DPR changes backing dimensions only.
 - [ ] Run the focused tests and confirm they fail for the missing scale behavior.
 - [ ] Implement scale-aware canvas sizing and logical dimensions in `fitCanvasToContainer`.
 - [ ] Run focused tests and confirm they pass.
