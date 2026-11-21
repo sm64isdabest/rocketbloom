@@ -1,9 +1,10 @@
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
+// Keep the original 941 px height as the scale reference; seamless tiles are 32 px shorter.
 const BACKGROUND_FILES = {
-  earth: "terra_background.webp",
-  mars: "marte_background.webp",
-  saturn: "saturno_background.webp",
-  neptune: "netuno_background.webp",
+  earth: { file: "terra_background_seamless.jpg", sourceHeight: 941 },
+  mars: { file: "marte_background_seamless.jpg", sourceHeight: 941 },
+  saturn: { file: "saturno_background_seamless.jpg", sourceHeight: 941 },
+  neptune: { file: "netuno_background_seamless.jpg", sourceHeight: 941 },
 };
 const backgroundImages = new Map();
 let leafImage;
@@ -18,11 +19,12 @@ export function getLeafImage() {
 }
 
 function getBackgroundImage(planetId) {
-  const filename = BACKGROUND_FILES[planetId];
-  if (!filename || typeof Image === "undefined") return null;
+  const background = BACKGROUND_FILES[planetId];
+  if (!background || typeof Image === "undefined") return null;
   if (!backgroundImages.has(planetId)) {
     const image = new Image();
-    image.src = `${APP_BASE}assets/backgrounds/${filename}`;
+    image.sourceHeight = background.sourceHeight;
+    image.src = `${APP_BASE}assets/backgrounds/${background.file}`;
     backgroundImages.set(planetId, image);
   }
   return backgroundImages.get(planetId);
@@ -32,18 +34,20 @@ export function renderPlanetBackground(ctx, view, planet, { offsetX = 0, offsetY
   const image = getBackgroundImage(planet.id);
   if (!image?.complete || image.naturalWidth === 0) return false;
 
-  const scale = Math.max(view.width / image.naturalWidth, view.height / image.naturalHeight);
+  const sourceHeight = image.sourceHeight ?? image.naturalHeight;
+  const scale = Math.max(view.width / image.naturalWidth, view.height / sourceHeight);
   const width = image.naturalWidth * scale;
-  const height = image.naturalHeight * scale;
+  const height = sourceHeight * scale;
+  const tileHeight = image.naturalHeight * scale;
   const maxOffsetX = Math.max(0, (width - view.width) / 2);
   const x = (view.width - width) / 2 + Math.max(-maxOffsetX, Math.min(maxOffsetX, offsetX));
   const baseY = (view.height - height) / 2;
-  const phase = ((offsetY % height) + height) % height;
+  const phase = ((offsetY % tileHeight) + tileHeight) % tileHeight;
   const firstY = baseY - phase;
-  const tilesToDraw = Math.ceil(view.height / height) + 2;
+  const tilesToDraw = Math.ceil(view.height / tileHeight) + 2;
   for (let index = -1; index <= tilesToDraw; index += 1) {
-    const tileY = firstY + index * height;
-    ctx.drawImage(image, x, tileY, width, height);
+    const tileY = firstY + index * tileHeight;
+    ctx.drawImage(image, x, tileY, width, tileHeight);
   }
   return true;
 }
