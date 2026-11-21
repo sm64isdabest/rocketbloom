@@ -2,9 +2,9 @@ const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 // Keep the original 941 px height as the scale reference; seamless tiles are 32 px shorter.
 const BACKGROUND_FILES = {
   earth: { file: "terra_background_seamless.jpg", sourceHeight: 941 },
-  mars: { file: "marte_background_seamless.jpg", sourceHeight: 941 },
+  mars: { file: "marte_new.png", sourceHeight: 855 },
   saturn: { file: "saturno_background_seamless.jpg", sourceHeight: 941 },
-  neptune: { file: "netuno_background_seamless.jpg", sourceHeight: 941 },
+  neptune: { file: "netuno_diamond_rain.png", sourceHeight: 901 },
 };
 const backgroundImages = new Map();
 let leafImage;

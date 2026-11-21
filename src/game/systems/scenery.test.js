@@ -13,7 +13,11 @@ test("o fundo repete verticalmente e desloca horizontalmente com a câmera", () 
     naturalWidth = 1600;
     naturalHeight = 909;
     constructor() { images.push(this); }
-    set src(value) { this.source = value; }
+    set src(value) {
+      this.source = value;
+      if (value.includes("netuno_diamond_rain")) this.naturalHeight = 901;
+      if (value.includes("marte_new")) this.naturalHeight = 855;
+    }
   };
   try {
     const ctx = {
@@ -39,10 +43,10 @@ test("o fundo repete verticalmente e desloca horizontalmente com a câmera", () 
     assert.ok(draws.every(([image]) => image === images[0]));
     assert.deepEqual(transforms, []);
 
-    for (const [id, filename] of [["mars", "marte_background_seamless.jpg"], ["saturn", "saturno_background_seamless.jpg"], ["neptune", "netuno_background_seamless.jpg"]]) {
+    for (const [id, filename, sourceHeight] of [["mars", "marte_new.png", 855], ["saturn", "saturno_background_seamless.jpg", 941], ["neptune", "netuno_diamond_rain.png", 901]]) {
       assert.equal(renderPlanetBackground(ctx, { width: 320, height: 640 }, { id }, { offsetY: -10_000 }), true);
       assert.equal(images.at(-1).source, `/assets/backgrounds/${filename}`);
-      assert.equal(images.at(-1).sourceHeight, 941, `${id} mantém a escala vertical original`);
+      assert.equal(images.at(-1).sourceHeight, sourceHeight, `${id} mantém sua escala vertical de referência`);
       assert.ok(draws.slice(-4).every(([image]) => image === images.at(-1)), `${id} repete sua própria imagem`);
     }
   } finally {
@@ -57,7 +61,11 @@ test("os 20 níveis mantêm a escala e a repetição em telas desktop e celular"
     complete = true;
     naturalWidth = 1600;
     naturalHeight = 909;
-    set src(value) { this.source = value; }
+    set src(value) {
+      this.source = value;
+      if (value.includes("netuno_diamond_rain")) this.naturalHeight = 901;
+      if (value.includes("marte_new")) this.naturalHeight = 855;
+    }
   };
   try {
     const ctx = { drawImage: (...args) => draws.push(args) };
@@ -70,8 +78,9 @@ test("os 20 níveis mantêm a escala e a repetição em telas desktop e celular"
           draws.length = 0;
           assert.equal(renderPlanetBackground(ctx, view, planet, { offsetY: -987_654.25 }), true);
           assert.ok(draws.length >= 2, `${stage.id} cobre o viewport ${view.width}x${view.height}`);
-          const scale = Math.max(view.width / 1600, view.height / 941);
-          const tileHeight = 909 * scale;
+          const sourceHeight = planet.id === "neptune" ? 901 : planet.id === "mars" ? 855 : 941;
+          const scale = Math.max(view.width / 1600, view.height / sourceHeight);
+          const tileHeight = (planet.id === "neptune" ? 901 : planet.id === "mars" ? 855 : 909) * scale;
           assert.ok(Math.abs(draws[0][4] - tileHeight) < 0.001, `${stage.id} preserva o tamanho dos elementos`);
           for (let index = 1; index < draws.length; index += 1) {
             assert.ok(Math.abs((draws[index][2] - draws[index - 1][2]) - tileHeight) < 0.001,
