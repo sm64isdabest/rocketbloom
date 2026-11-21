@@ -44,9 +44,7 @@ export function PlayScreen({ planetId, stageId, controlMode, reducedMotion, show
           onEngineRef={handleEngine}
         />
       </div>
-      {showHud ? <Hud snapshot={snapshot} onPause={onPause}
-        onSpecialAnswer={(answer) => engineRef.current?.answerSpecialQuestion(answer)}
-        onSpecialContinue={() => engineRef.current?.continueAfterSpecialQuestion()} /> : null}
+      {showHud ? <Hud snapshot={snapshot} onPause={onPause} /> : null}
     </section>
   );
 }
