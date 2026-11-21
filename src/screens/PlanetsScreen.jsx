@@ -10,19 +10,13 @@ const OrbitalRocket = lazy(() => import("./OrbitalRocket.jsx").then((module) => 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const PANEL_WIDTH = 472;
 const PANEL_HEIGHT = 310;
+const LEVEL_ASSET_PLANET = { earth: "terra", mars: "marte", saturn: "saturno", neptune: "netuno" };
 
 const STAGE_POSITIONS = {
   earth: [[59, 168], [153, 196], [251, 170], [345, 208], [426, 165]],
   mars: [[58, 166], [153, 205], [251, 177], [343, 213], [423, 169]],
   saturn: [[59, 169], [151, 197], [250, 169], [344, 211], [425, 171]],
   neptune: [[59, 168], [151, 197], [250, 170], [342, 213], [425, 168]],
-};
-
-const FRAME_BY_PLANET = {
-  earth: "blue",
-  mars: "orange",
-  saturn: "gold",
-  neptune: "blue",
 };
 
 const stageStatusLabel = (stage) => {
@@ -178,12 +172,11 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
                 >
                   <img
                     className="phase-selection-stage__frame"
-                    src={`${APP_BASE}assets/ui/level-frames/${FRAME_BY_PLANET[planet.id]}.webp`}
+                    src={`${APP_BASE}assets/levels/${LEVEL_ASSET_PLANET[planet.id]}/${LEVEL_ASSET_PLANET[planet.id]}_${stageIndex + 1}.png`}
                     alt=""
                     aria-hidden="true"
                     draggable="false"
                   />
-                  <span className="phase-selection-stage__number">{stageIndex + 1}</span>
                   {stage.completed && <span className="phase-selection-stage__check" aria-hidden="true">✓</span>}
                   {stage.progressPercent > 0 && !stage.completed && (
                     <span className="phase-selection-stage__progress" aria-hidden="true">{stage.progressPercent}%</span>

@@ -15,6 +15,9 @@ export const PROJECT_IMAGES = [
   "/assets/lasers/idle/frame_06.webp",
   "/assets/lasers/idle/frame_07.webp",
   "/assets/lasers/idle/frame_08.webp",
+  ...["terra", "marte", "saturno", "netuno"].flatMap((assetName) =>
+    Array.from({ length: 5 }, (_, index) => `/assets/levels/${assetName}/${assetName}_${index + 1}.png`),
+  ),
   "/assets/rocket.webp",
   "/assets/backgrounds/marte_background.webp",
   "/assets/backgrounds/netuno_background.webp",

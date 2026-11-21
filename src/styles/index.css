@@ -912,9 +912,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   pointer-events: auto;
 }
 .phase-selection-stage__frame { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; user-select: none; pointer-events: none; }
-.phase-selection-stage__number { position: relative; z-index: 1; font-size: 5.7cqw; font-weight: 500; line-height: 1; text-shadow: 0 2px 4px rgba(0, 0, 0, .75); }
 .phase-selection-stage.is-locked .phase-selection-stage__frame { filter: grayscale(1) brightness(.58); }
-.phase-selection-stage.is-locked .phase-selection-stage__number { color: #9ba8b6; }
 .phase-selection-stage.is-current .phase-selection-stage__frame { filter: drop-shadow(0 0 5px rgba(92, 218, 255, .9)); }
 .phase-selection-stage.is-selected::after {
   position: absolute;
@@ -1027,7 +1025,6 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   .phase-selection-planet-name img { width: 6cqw; height: 6cqw; }
   .phase-selection-back { font-size: 2cqw; }
   .phase-selection-stage { width: 17%; }
-  .phase-selection-stage__number { font-size: 6.6cqw; }
   .phase-selection-arrow { width: 8%; }
 }
 @media (orientation: portrait) {
@@ -1035,7 +1032,6 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   .phase-selection-background { object-fit: cover; object-position: center; }
   .phase-selection-stage { width: 17%; }
   .phase-selection-arrow { width: 10%; }
-  .phase-selection-stage__number { font-size: 6.5cqw; }
 }
 @media (prefers-reduced-motion: reduce) {
   .phase-selection-stage.is-selected::after { animation: none; }
