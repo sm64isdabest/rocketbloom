@@ -211,12 +211,12 @@ export default function App() {
     });
   }, [persist, progress]);
 
-  const goMenu = () => {
+  const exitLevel = () => {
     setCompletionStageId(null);
     setPauseSettingsOpen(false);
     setRun(null);
     setOutcomeSnapshot(null);
-    setMenuPage(SCREEN.MENU);
+    setMenuPage(SCREEN.PLANETS);
     setScreen(SCREEN.MENU);
   };
 
@@ -353,7 +353,7 @@ export default function App() {
       {screen === SCREEN.PAUSED ? (
         <PauseOverlay
           onResume={() => { setPauseSettingsOpen(false); setScreen(SCREEN.PLAYING); }}
-          onQuit={goMenu}
+          onQuit={exitLevel}
           onSettings={() => setPauseSettingsOpen(true)}
           onTapRocket={() => playGameSound("angryTouch")}
           reducedMotion={progress.settings.reducedMotion || systemReducedMotion}
