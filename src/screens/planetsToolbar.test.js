@@ -35,4 +35,7 @@ test("barra tem cores por planeta e reorganiza recursos e navegação em telas e
   }
   assert.match(stylesheet, /@media \(max-width: 620px\) \{[\s\S]*?\.phase-selection-header\s*\{[^}]*grid-template-rows:\s*auto auto/);
   assert.match(stylesheet, /\.phase-selection-resources\s*\{[^}]*grid-column:\s*1 \/ -1/);
+  assert.match(stylesheet, /\.phase-selection-identity__planet\s*\{\s*width:\s*clamp\(54px, 9cqw, 96px\)/);
+  assert.match(stylesheet, /\.phase-selection-wallet,[\s\S]*?\.phase-selection-planet-name\s*\{[^}]*position:\s*static[^}]*width:\s*auto[^}]*height:\s*auto[^}]*pointer-events:\s*auto/);
+  assert.match(stylesheet, /\.phase-selection-back\s*\{[^}]*border-radius:\s*\.65cqw/);
 });
