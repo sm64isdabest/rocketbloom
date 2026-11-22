@@ -3,17 +3,25 @@ import assert from "node:assert/strict";
 import { getLaboratoryPlantImage, getNextPlanetIndex, shouldShowLaboratoryPlant } from "./laboratoryModel.js";
 
 test("laboratory sprites follow each planet's seedling-to-mature artwork order", () => {
-  assert.equal(getLaboratoryPlantImage("earth", 0), "/assets/laboratory/plant-09.webp");
-  assert.equal(getLaboratoryPlantImage("earth", 1), "/assets/laboratory/plant-10.webp");
-  assert.equal(getLaboratoryPlantImage("earth", 4), "/assets/laboratory/plant-01.webp");
-  assert.equal(getLaboratoryPlantImage("mars", 2), "/assets/laboratory/plant-18.webp");
-  assert.equal(getLaboratoryPlantImage("saturn", 0), "/assets/laboratory/plant-06.webp");
-  assert.equal(getLaboratoryPlantImage("neptune", 3), "/assets/laboratory/plant-20.webp");
+  const expectedStages = {
+    earth: [1, 2, 3, 4, 5],
+    mars: [6, 7, 8, 9, 10],
+    neptune: [11, 12, 13, 14, 15],
+    saturn: [16, 17, 18, 19, 20],
+  };
+
+  for (const [planetId, stages] of Object.entries(expectedStages)) {
+    assert.deepEqual(
+      stages.map((_, index) => getLaboratoryPlantImage(planetId, index)),
+      stages.map((assetId) => `/assets/laboratory/plant-${String(assetId).padStart(2, "0")}.png`),
+      `${planetId} should use its five new sprites in growth order`,
+    );
+  }
 });
 
 test("laboratory sprite stage is clamped and supports a Vite base path", () => {
-  assert.equal(getLaboratoryPlantImage("earth", -3), "/assets/laboratory/plant-09.webp");
-  assert.equal(getLaboratoryPlantImage("earth", 99, "/rocketbloom/"), "/rocketbloom/assets/laboratory/plant-01.webp");
+  assert.equal(getLaboratoryPlantImage("earth", -3), "/assets/laboratory/plant-01.png");
+  assert.equal(getLaboratoryPlantImage("earth", 99, "/rocketbloom/"), "/rocketbloom/assets/laboratory/plant-05.png");
 });
 
 test("plant is hidden until the first stage of its planet is complete", () => {

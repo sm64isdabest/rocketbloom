@@ -3,7 +3,7 @@ export const PROJECT_IMAGES = [
   "/assets/laboratory/laboratory-background.webp",
   "/assets/laboratory/arrow-left.webp",
   "/assets/laboratory/arrow-right.webp",
-  ...Array.from({ length: 20 }, (_, index) => `/assets/laboratory/plant-${String(index + 1).padStart(2, "0")}.webp`),
+  ...Array.from({ length: 20 }, (_, index) => `/assets/laboratory/plant-${String(index + 1).padStart(2, "0")}.png`),
   "/assets/explosion.webp",
   "/assets/folha-verde-cartunesca-brilhante.webp",
   "/assets/lasers/idle/frame_01.webp",

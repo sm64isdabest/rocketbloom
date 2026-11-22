@@ -1,8 +1,8 @@
 const PLANT_STAGE_ASSETS = {
-  earth: [9, 10, 14, 3, 1],
-  mars: [8, 12, 18, 19, 4],
-  saturn: [6, 13, 16, 17, 5],
-  neptune: [7, 11, 15, 20, 2],
+  earth: [1, 2, 3, 4, 5],
+  mars: [6, 7, 8, 9, 10],
+  neptune: [11, 12, 13, 14, 15],
+  saturn: [16, 17, 18, 19, 20],
 };
 
 export function getLaboratoryPlantImage(planetId, growthStage = 0, baseUrl = "/") {
@@ -11,7 +11,7 @@ export function getLaboratoryPlantImage(planetId, growthStage = 0, baseUrl = "/"
 
   const stage = Math.max(0, Math.min(stages.length - 1, Math.floor(Number(growthStage) || 0)));
   const base = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  return `${base}assets/laboratory/plant-${String(stages[stage]).padStart(2, "0")}.webp`;
+  return `${base}assets/laboratory/plant-${String(stages[stage]).padStart(2, "0")}.png`;
 }
 
 export function getNextPlanetIndex(currentIndex, direction, planetCount) {
