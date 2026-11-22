@@ -39,3 +39,10 @@ test("barra tem cores por planeta e reorganiza recursos e navegação em telas e
   assert.match(stylesheet, /\.phase-selection-wallet,[\s\S]*?\.phase-selection-planet-name\s*\{[^}]*position:\s*static[^}]*width:\s*auto[^}]*height:\s*auto[^}]*pointer-events:\s*auto/);
   assert.match(stylesheet, /\.phase-selection-back\s*\{[^}]*border-radius:\s*\.65cqw/);
 });
+
+test("identidade verde da Terra não altera as paletas dos outros planetas", () => {
+  assert.match(stylesheet, /\.phase-selection-canvas--earth\s*\{\s*--selector-accent:\s*#34e58c;\s*--selector-glow:\s*rgba\(32, 220, 125, \.68\);\s*\}/);
+  assert.match(stylesheet, /\.phase-selection-canvas--mars\s*\{\s*--selector-accent:\s*#ff674e;\s*--selector-glow:\s*rgba\(255, 66, 49, \.64\);\s*\}/);
+  assert.match(stylesheet, /\.phase-selection-canvas--saturn\s*\{\s*--selector-accent:\s*#ffd36a;\s*--selector-glow:\s*rgba\(255, 180, 58, \.62\);\s*\}/);
+  assert.match(stylesheet, /\.phase-selection-canvas--neptune\s*\{\s*--selector-accent:\s*#48dfff;\s*--selector-glow:\s*rgba\(24, 142, 255, \.68\);\s*\}/);
+});

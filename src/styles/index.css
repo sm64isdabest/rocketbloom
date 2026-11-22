@@ -762,7 +762,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   background: #030817;
   box-shadow: 0 18px 48px rgba(0, 0, 0, .48);
 }
-.phase-selection-canvas--earth { --selector-accent: #35c8ff; --selector-glow: rgba(20, 155, 255, .68); }
+.phase-selection-canvas--earth { --selector-accent: #34e58c; --selector-glow: rgba(32, 220, 125, .68); }
 .phase-selection-canvas--mars { --selector-accent: #ff674e; --selector-glow: rgba(255, 66, 49, .64); }
 .phase-selection-canvas--saturn { --selector-accent: #ffd36a; --selector-glow: rgba(255, 180, 58, .62); }
 .phase-selection-canvas--neptune { --selector-accent: #48dfff; --selector-glow: rgba(24, 142, 255, .68); }
