@@ -6,6 +6,7 @@ import test from "node:test";
 const appSource = readFileSync(fileURLToPath(new URL("../App.jsx", import.meta.url)), "utf8");
 
 test("sair do nível encerra a sessão pausada e abre diretamente o seletor", () => {
+  assert.match(appSource, /dispatchNavigationContext\(\{ type: "start-run", planetId, stageId \}\)/);
   const exitHandler = appSource.match(/const exitLevel = \(\) => \{([\s\S]*?)\n  \};/)?.[1] ?? "";
   assert.match(exitHandler, /dispatchNavigationContext\(\{ type: "exit-run" \}\)/);
   assert.match(exitHandler, /setRun\(null\)/);

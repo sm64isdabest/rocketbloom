@@ -8,6 +8,13 @@ export function getStageClickAction(selectedStageId, clickedStageId) {
   return selectedStageId === clickedStageId ? "enter" : "select";
 }
 
+export function getOrbitStage(stages, selectedStageId) {
+  return stages.find((stage) => stage.id === selectedStageId)
+    ?? stages.find((stage) => stage.available && !stage.completed)
+    ?? stages.find((stage) => !stage.completed)
+    ?? stages.at(-1);
+}
+
 export function getInitialExpandedPlanetId(progress, planets = PLANETS) {
   const unlocked = planets.filter((planet) => progress.unlockedPlanetIds.includes(planet.id));
   const nextPlanet = unlocked.find((planet) => planet.stages.some((stage) => !progress.completedStageIds.includes(stage.id)));

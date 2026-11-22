@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { PLANETS } from "../game/data/planets.js";
 import { createDefaultProgress } from "../utils/storage.js";
-import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
+import { canNavigateToPlanet, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
 
 test("selector keeps five phase states per planet and respects the saved unlock order", () => {
   const progress = createDefaultProgress();
@@ -75,4 +75,14 @@ test("a phase needs a first click to select and a second click to enter", () => 
   assert.equal(getStageClickAction(null, "earth-1"), "select");
   assert.equal(getStageClickAction("earth-1", "earth-1"), "enter");
   assert.equal(getStageClickAction("earth-1", "earth-2"), "select");
+});
+
+test("the orbital rocket targets the restored selected phase by its ID", () => {
+  const stages = [
+    { id: "saturn-1", available: true, completed: false },
+    { id: "saturn-2", available: true, completed: false },
+    { id: "saturn-3", available: false, completed: false },
+  ];
+  assert.equal(getOrbitStage(stages, "saturn-2"), stages[1]);
+  assert.equal(getOrbitStage(stages, null), stages[0], "without a selection it keeps the existing active-phase fallback");
 });

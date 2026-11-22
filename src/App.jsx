@@ -180,7 +180,7 @@ export default function App() {
   }, []);
 
   const startStage = (planetId, stageId) => {
-    dispatchNavigationContext({ type: "start-run", planetId });
+    dispatchNavigationContext({ type: "start-run", planetId, stageId });
     setCompletionStageId(null);
     setDebugOpen(false);
     setPauseSettingsOpen(false);
@@ -224,8 +224,8 @@ export default function App() {
     setScreen(SCREEN.MENU);
   };
 
-  const enterLaboratory = (planetId) => {
-    dispatchNavigationContext({ type: "open-laboratory", planetId });
+  const enterLaboratory = (planetId, selectedStageId) => {
+    dispatchNavigationContext({ type: "open-laboratory", planetId, selectedStageId });
     setMenuPage(SCREEN.COMMAND);
   };
 
@@ -330,12 +330,14 @@ export default function App() {
         <PlanetsScreen
           progress={progress}
           completedStageId={completionStageId}
-          preferredPlanetId={navigationContext.selectorPlanetId}
+          preferredPlanetId={navigationContext.selector.planetId}
+          preferredStageId={navigationContext.selector.selectedStageId}
           onBack={() => setMenuPage(SCREEN.MENU)}
           onPlay={startStage}
           onMarkPlanetSeen={markPlanetSeen}
           onSettings={openSettings}
           onCommandRoom={enterLaboratory}
+          onSelectionChange={(planetId, selectedStageId) => dispatchNavigationContext({ type: "select-stage", planetId, selectedStageId })}
         />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.SETTINGS ? (

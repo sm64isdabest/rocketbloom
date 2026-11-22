@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { PLANETS } from "../game/data/planets.js";
 import { playGameSound } from "../game/audio/audioManager.js";
-import { canNavigateToPlanet, getInitialExpandedPlanetId, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
+import { canNavigateToPlanet, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
 import { getMenuAssetUrl } from "./menuModel.js";
 import { setOrbitTargetElement } from "./rocketOrbit.js";
 
@@ -25,11 +25,14 @@ const stageStatusLabel = (stage) => {
   return stage.available ? "fase atual, disponível" : "bloqueada";
 };
 
-export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, onBack, onPlay, onMarkPlanetSeen, onSettings, onCommandRoom }) {
+export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, preferredStageId, onBack, onPlay, onMarkPlanetSeen, onSettings, onCommandRoom, onSelectionChange }) {
   const validPreferredPlanetId = PLANETS.some(({ id }) => id === preferredPlanetId) ? preferredPlanetId : null;
-  const initialPlanetId = getPlanetIdForStage(completedStageId) ?? validPreferredPlanetId ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
+  const initialPlanetId = validPreferredPlanetId ?? getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
+  const initialStageId = PLANETS.find(({ id }) => id === initialPlanetId)?.stages.some(({ id }) => id === preferredStageId)
+    ? preferredStageId
+    : null;
   const [selectedPlanetId, setSelectedPlanetId] = useState(initialPlanetId);
-  const [selectedStageId, setSelectedStageId] = useState(null);
+  const [selectedStageId, setSelectedStageId] = useState(initialStageId);
   const [revealingPlanetId, setRevealingPlanetId] = useState(null);
   const [hoveredSelector, setHoveredSelector] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -63,16 +66,14 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, o
   const canGoBack = previousPlanet && canNavigateToPlanet(planet.id, previousPlanet.id, progress);
   const canGoForward = nextPlanet && canNavigateToPlanet(planet.id, nextPlanet.id, progress);
   const activeStage = model.stages.find((stage) => stage.available && !stage.completed);
-  const orbitStage = model.stages.find((stage) => stage.id === selectedStageId)
-    ?? activeStage
-    ?? model.stages.find((stage) => !stage.completed)
-    ?? model.stages.at(-1);
+  const orbitStage = getOrbitStage(model.stages, selectedStageId);
   const baseClass = `phase-selection-canvas phase-selection-canvas--${planet.id}${revealingPlanetId === planet.id ? " is-revealing" : ""}`;
 
   const launchStage = (stageId, targetElement) => {
     setOrbitTargetElement(activeStageElementRef, targetElement);
     if (getStageClickAction(selectedStageId, stageId) === "select") {
       setSelectedStageId(stageId);
+      onSelectionChange?.(planet.id, stageId);
       setSelectionPulse((pulse) => pulse + 1);
       return;
     }
@@ -81,6 +82,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, o
   const selectPlanet = (planetId) => {
     setSelectedStageId(null);
     setSelectedPlanetId(planetId);
+    onSelectionChange?.(planetId, null);
   };
 
   return (
@@ -206,7 +208,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, o
         >
           <img src={`${APP_BASE}assets/ui/level-frames/arrow-right.webp`} alt="" aria-hidden="true" draggable="false" />
         </button>
-        <button type="button" className="phase-selection-laboratory" onClick={() => onCommandRoom(planet.id)} aria-label="Abrir Laboratório">
+        <button type="button" className="phase-selection-laboratory" onClick={() => onCommandRoom(planet.id, selectedStageId)} aria-label="Abrir Laboratório">
           <img src={getMenuAssetUrl("laboratory.webp", APP_BASE)} alt="" aria-hidden="true" />
           <span>Laboratório</span>
         </button>
