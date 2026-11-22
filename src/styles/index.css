@@ -1100,19 +1100,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .boot__topline span:first-child { display: inline-flex; align-items: center; gap: 10px; }
 .boot__topline i, .boot__signal { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px rgba(131, 219, 154, .9); }
 .boot__content { display: flex; width: min(100%, 480px); flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 12px 0 28px; text-align: center; }
-.boot__scene { position: relative; display: grid; width: min(58vw, 270px); min-width: 190px; aspect-ratio: 1; place-items: center; margin: -5px 0 -18px; }
-.boot__orbit { position: absolute; display: block; border: 1px solid rgba(142, 226, 223, .17); border-radius: 50%; transform: rotate(-28deg); }
-.boot__orbit--outer { width: 100%; height: 38%; }
-.boot__orbit--inner { width: 72%; height: 27%; border-color: rgba(131, 219, 154, .18); transform: rotate(52deg); }
-.boot__planet { position: absolute; display: block; border-radius: 50%; }
-.boot__planet--green { top: 20%; right: 17%; width: 13px; height: 13px; background: radial-gradient(circle at 35% 30%, #d4ffd5, #64ca91 43%, #27644f 78%); box-shadow: 0 0 18px rgba(113, 222, 160, .58); }
-.boot__planet--blue { bottom: 27%; left: 11%; width: 8px; height: 8px; background: #82e2e8; box-shadow: 0 0 14px rgba(130, 226, 232, .9); }
-.boot__rocket { position: relative; z-index: 1; width: 43%; height: 62%; object-fit: contain; transform: rotate(35deg); filter: drop-shadow(0 14px 20px rgba(241, 115, 68, .2)); animation: boot-rocket-float 3.2s ease-in-out infinite; }
-.boot__spark { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #e2ffe7; box-shadow: 0 0 8px rgba(226, 255, 231, .9); }
-.boot__spark--one { top: 13%; left: 27%; }
-.boot__spark--two { right: 12%; bottom: 38%; width: 2px; height: 2px; }
-.boot__spark--three { bottom: 16%; left: 36%; width: 2px; height: 2px; }
-.boot__logo { width: min(55vw, 218px); max-height: 112px; object-fit: contain; margin: -4px 0 4px; filter: drop-shadow(0 6px 18px rgba(50, 195, 135, .12)); }
+.boot__logo { display: block; width: min(76vw, 310px); max-height: 155px; flex: none; object-fit: contain; margin: 0 0 12px; filter: drop-shadow(0 6px 18px rgba(50, 195, 135, .12)); }
 .boot__eyebrow { margin-bottom: 12px; color: var(--green); font-size: .61rem; }
 .boot__eyebrow span { padding: 0 4px; color: var(--amber); }
 .boot__title { margin: 0; font-size: clamp(1.65rem, 4vw, 2.25rem); line-height: 1.13; letter-spacing: -.04em; }
@@ -1131,19 +1119,17 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .boot__loading-foot strong { color: var(--green); font: 700 .75rem "DM Mono", monospace; }
 .boot__footer { color: rgba(109, 133, 141, .65); font-size: .55rem; letter-spacing: .1em; }
 .boot__footer i { color: var(--green); font-style: normal; }
-@keyframes boot-rocket-float { 0%, 100% { transform: translateY(3px) rotate(35deg); } 50% { transform: translateY(-7px) rotate(35deg); } }
 @keyframes boot-signal-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; box-shadow: 0 0 14px rgba(131, 219, 154, 1); } }
 @media (max-width: 520px) {
   .screen--boot { padding-right: 20px; padding-left: 20px; }
   .boot__topline { font-size: .54rem; }
   .boot__content { padding-bottom: 12px; }
-  .boot__scene { width: min(56vw, 220px); min-width: 170px; }
-  .boot__logo { width: min(52vw, 190px); }
+  .boot__logo { width: min(72vw, 260px); max-height: 130px; margin-bottom: 10px; }
   .boot__footer { justify-content: center; text-align: center; }
   .boot__footer span:last-child { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .boot__rocket, .boot__signal { animation: none; }
+  .boot__signal { animation: none; }
   .boot__progress-fill, .boot__progress-glow { transition: none; }
 }
 

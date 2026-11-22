@@ -9,17 +9,6 @@ export function BootScreen({ progress = { total: 0, completed: 0, loaded: 0, fai
       </div>
 
       <section className="boot__content">
-        <div className="boot__scene" aria-hidden="true">
-          <span className="boot__orbit boot__orbit--outer" />
-          <span className="boot__orbit boot__orbit--inner" />
-          <span className="boot__planet boot__planet--green" />
-          <span className="boot__planet boot__planet--blue" />
-          <img className="boot__rocket" src={`${baseUrl}assets/rocket.webp`} alt="" />
-          <span className="boot__spark boot__spark--one" />
-          <span className="boot__spark boot__spark--two" />
-          <span className="boot__spark boot__spark--three" />
-        </div>
-
         <img className="boot__logo" src={`${baseUrl}assets/menu/logo.webp`} alt="" />
         <p className="eyebrow boot__eyebrow">MISSÃO SUSTENTÁVEL <span>·</span> BASE DE LANÇAMENTO</p>
         <h1 id="boot-title" className="boot__title">Cultivando vida<br />entre as estrelas</h1>
