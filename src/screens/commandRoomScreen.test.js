@@ -14,6 +14,22 @@ test("laboratório usa o ícone compartilhado e mantém o retorno da base", () =
   assert.doesNotMatch(commandRoomSource, /laboratory\/back\.webp/);
 });
 
+test("laboratório empilha fundo, base, cúpula traseira, planta e frente do vidro", () => {
+  const layers = [
+    "laboratory-background-clean.png",
+    "laboratory-equipment-base.png",
+    "laboratory-dome-back.png",
+    "laboratory-specimen__plant",
+    "laboratory-dome-front.png",
+  ].map((layer) => commandRoomSource.indexOf(layer));
+
+  assert.ok(layers.every((index) => index >= 0));
+  assert.deepEqual([...layers].sort((left, right) => left - right), layers);
+  assert.match(commandRoomSource, /onClick=\{onSettings\} aria-label="Abrir configurações"/);
+  assert.match(commandRoomSource, /onClick=\{\(\) => changePlanet\(-1\)\}/);
+  assert.match(commandRoomSource, /onClick=\{\(\) => changePlanet\(1\)\}/);
+});
+
 test("laboratório retorna ao seletor de origem e atualiza sua referência ao entrar", () => {
   const commandRoomRoute = appSource.match(/<CommandRoomScreen([\s\S]*?)\/>/)?.[1] ?? "";
   assert.match(commandRoomRoute, /onBack=\{exitLaboratory\}/);

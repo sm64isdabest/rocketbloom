@@ -30,6 +30,14 @@ test("assets raster usam WebP", () => {
     assert.equal(png[25], 6, `${path} deve preservar o canal alfa`);
   }
 
+  const laboratoryCompositionSprites = assetFiles.filter((path) => path.includes("/laboratory/laboratory-") && /\.png$/i.test(path));
+  assert.equal(laboratoryCompositionSprites.length, 4, "o laboratório deve ter fundo, base e duas camadas transparentes da cúpula");
+  for (const path of laboratoryCompositionSprites) {
+    const png = readFileSync(path);
+    assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", `${path} deve ser um PNG válido`);
+    assert.equal(png[25], 6, `${path} deve preservar o canal alfa`);
+  }
+
   const seamlessBackgrounds = assetFiles.filter((path) => path.includes("/backgrounds/") && path.endsWith("_seamless.jpg"));
   assert.equal(seamlessBackgrounds.length, 4, "cada planeta deve ter uma cópia contínua do cenário");
   for (const path of seamlessBackgrounds) {
@@ -45,7 +53,8 @@ test("assets raster usam WebP", () => {
   }
 
   const rasterAssets = assetFiles.filter((path) => /\.(png|jpe?g|gif|bmp|tiff?|avif)$/i.test(path)
-    && !levelSprites.includes(path) && !plantSprites.includes(path) && !seamlessBackgrounds.includes(path) && !approvedPng.includes(path));
+    && !levelSprites.includes(path) && !plantSprites.includes(path) && !laboratoryCompositionSprites.includes(path)
+    && !seamlessBackgrounds.includes(path) && !approvedPng.includes(path));
   assert.deepEqual(rasterAssets, [], "os demais assets raster devem usar WebP");
 
   const webpAssets = assetFiles.filter((path) => path.endsWith(".webp"));

@@ -1,6 +1,10 @@
 // Keep this list in sync with the raster and vector images in public/assets.
 export const PROJECT_IMAGES = [
   "/assets/laboratory/laboratory-background.webp",
+  "/assets/laboratory/laboratory-background-clean.png",
+  "/assets/laboratory/laboratory-dome-back.png",
+  "/assets/laboratory/laboratory-dome-front.png",
+  "/assets/laboratory/laboratory-equipment-base.png",
   "/assets/laboratory/arrow-left.webp",
   "/assets/laboratory/arrow-right.webp",
   ...Array.from({ length: 20 }, (_, index) => `/assets/laboratory/plant-${String(index + 1).padStart(2, "0")}.png`),
