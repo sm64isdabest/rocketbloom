@@ -1,3 +1,5 @@
+export const RETURN_ICON_FILE = "return-portal.png";
+
 export function getPauseAssetUrl(filename, basePath = import.meta.env?.BASE_URL ?? "/") {
   const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;
   return `${normalizedBase}assets/ui/pause/${filename}`;
@@ -5,7 +7,7 @@ export function getPauseAssetUrl(filename, basePath = import.meta.env?.BASE_URL 
 
 export function getPauseActions({ onQuit, onResume, onSettings }) {
   return [
-    { id: "quit", label: "Sair da fase", asset: "return-portal.png", onClick: onQuit },
+    { id: "quit", label: "Sair da fase", asset: RETURN_ICON_FILE, onClick: onQuit },
     { id: "resume", label: "Continuar", asset: "continue.webp", onClick: onResume },
     { id: "settings", label: "Configurações", asset: "settings.webp", onClick: onSettings },
   ];

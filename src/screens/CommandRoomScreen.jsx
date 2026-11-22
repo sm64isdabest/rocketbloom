@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PLANETS } from "../game/data/planets.js";
 import { PLANTS } from "../game/data/plants.js";
 import { getLaboratoryPlantImage, getNextPlanetIndex, shouldShowLaboratoryPlant } from "./laboratoryModel.js";
+import { getPauseAssetUrl, RETURN_ICON_FILE } from "./pauseModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const asset = (path) => `${APP_BASE}${path}`;
@@ -23,7 +24,7 @@ export function CommandRoomScreen({ progress, onBack, onSettings }) {
 
       <header className="laboratory-scene__topbar">
         <button type="button" className="laboratory-scene__icon-button" onClick={onBack} aria-label="Voltar à base">
-          <img className="laboratory-scene__back-icon" src={asset("assets/laboratory/back.webp")} alt="" aria-hidden="true" />
+          <img className="laboratory-scene__back-icon" src={getPauseAssetUrl(RETURN_ICON_FILE, APP_BASE)} alt="" aria-hidden="true" />
         </button>
         <span className="laboratory-scene__title">Laboratório orbital</span>
         <button type="button" className="laboratory-scene__icon-button laboratory-scene__icon-button--settings" onClick={onSettings} aria-label="Abrir configurações">
