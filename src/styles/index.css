@@ -762,6 +762,10 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   background: #030817;
   box-shadow: 0 18px 48px rgba(0, 0, 0, .48);
 }
+.phase-selection-canvas--earth { --selector-accent: #35c8ff; --selector-glow: rgba(20, 155, 255, .68); }
+.phase-selection-canvas--mars { --selector-accent: #ff674e; --selector-glow: rgba(255, 66, 49, .64); }
+.phase-selection-canvas--saturn { --selector-accent: #ffd36a; --selector-glow: rgba(255, 180, 58, .62); }
+.phase-selection-canvas--neptune { --selector-accent: #48dfff; --selector-glow: rgba(24, 142, 255, .68); }
 .phase-selection-background {
   position: absolute;
   z-index: -1;
@@ -803,63 +807,69 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .phase-selection-header {
   position: absolute;
   z-index: 5;
-  top: 4.2%;
-  left: 50%;
-  display: flex;
+  top: 2.5%;
+  left: 2%;
+  display: grid;
+  width: 96%;
+  min-height: 14%;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) auto;
   align-items: center;
-  gap: 1.2cqw;
-  transform: translateX(-50%);
+  gap: 1.1cqw;
+  padding: .7cqw 1.3cqw;
+  border: max(1px, .24cqw) solid var(--selector-accent);
+  border-radius: 1.7cqw;
+  background: linear-gradient(180deg, rgba(5, 24, 61, .97), rgba(2, 10, 33, .98));
+  box-shadow: inset 0 0 1.1cqw var(--selector-glow), 0 0 1.4cqw var(--selector-glow), 0 .8cqw 1.4cqw rgba(0, 0, 0, .48);
   color: #f8fbff;
   font-family: Arial, "Segoe UI", sans-serif;
-  font-size: 1.65cqw;
+  font-size: 1.45cqw;
   font-weight: 700;
   text-shadow: 0 1px 4px rgba(0, 0, 0, .95);
   white-space: nowrap;
 }
+.phase-selection-identity { display: flex; min-width: 0; align-items: center; gap: 1cqw; }
+.phase-selection-identity__planet { width: clamp(34px, 7cqw, 74px); aspect-ratio: 1; flex: 0 0 auto; object-fit: contain; filter: drop-shadow(0 0 .65cqw var(--selector-glow)); }
+.phase-selection-identity__copy { display: grid; min-width: 0; gap: .35cqw; }
+.phase-selection-identity__name { overflow: hidden; color: #fff; font-size: 2.3cqw; font-weight: 900; line-height: 1; text-overflow: ellipsis; text-transform: uppercase; }
+.phase-selection-identity__subtitle { overflow: hidden; color: rgba(241, 248, 255, .96); font-size: 1.05cqw; font-style: italic; line-height: 1.15; text-overflow: ellipsis; }
+.phase-selection-resources { display: grid; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: .65cqw; padding: 0 1cqw; border-right: 1px solid var(--selector-accent); border-left: 1px solid var(--selector-accent); }
 .phase-selection-wallet,
 .phase-selection-planet-name {
-  position: static;
   display: inline-flex;
-  width: auto;
-  height: auto;
-  min-height: 7.5cqw;
+  min-width: 0;
+  min-height: 5.9cqw;
   align-items: center;
   justify-content: center;
-  gap: .7cqw;
-  padding: .5cqw 1.25cqw;
-  border: max(1px, .2cqw) solid rgba(54, 162, 255, .95);
-  border-radius: 1cqw;
-  background: linear-gradient(180deg, rgba(7, 30, 69, .97), rgba(1, 11, 31, .98));
-  box-shadow: inset 0 0 8px rgba(30, 134, 255, .32), 0 0 10px rgba(22, 137, 255, .38);
+  gap: .55cqw;
+  padding: .35cqw .8cqw;
+  border: 1px solid color-mix(in srgb, var(--selector-accent) 78%, transparent);
+  border-radius: 999px;
+  background: rgba(3, 17, 48, .82);
+  box-shadow: inset 0 0 .65cqw var(--selector-glow), 0 0 .65cqw color-mix(in srgb, var(--selector-glow) 65%, transparent);
 }
-.phase-selection-wallet img { width: 3.1cqw; height: 3.1cqw; object-fit: contain; }
+.phase-selection-wallet img { width: 3.2cqw; height: 3.2cqw; flex: 0 0 auto; object-fit: contain; }
+.phase-selection-wallet span { overflow: hidden; text-overflow: ellipsis; }
 .phase-selection-planet-name { padding-right: 1.7cqw; padding-left: 1.7cqw; font-size: 1.9cqw; }
 .phase-selection-planet-name img { width: 5cqw; height: 5cqw; object-fit: contain; }
+.phase-selection-navigation { display: flex; align-items: center; justify-content: flex-end; gap: .65cqw; }
 .phase-selection-back {
-  position: absolute;
-  z-index: 6;
-  top: 3.4%;
-  left: 2.2%;
   display: inline-flex;
-  width: auto;
-  height: auto;
+  min-height: 5.6cqw;
   align-items: center;
-  gap: .7cqw;
-  padding: .8cqw 1.2cqw;
-  border: 1px solid rgba(101, 191, 255, .55);
-  border-radius: .9cqw;
-  background: rgba(3, 17, 42, .88);
+  justify-content: center;
+  padding: .55cqw 1.25cqw;
+  border: 1px solid color-mix(in srgb, var(--selector-accent) 78%, transparent);
+  border-radius: 999px;
+  background: rgba(3, 17, 42, .9);
   color: #fff;
-  font-size: 1.4cqw;
+  font: 800 1.35cqw/1 Arial, "Segoe UI", sans-serif;
   cursor: pointer;
+  transition: filter .16s ease, transform .16s ease;
 }
+.phase-selection-back:hover { filter: brightness(1.2); transform: translateY(-1px); }
 .phase-selection-settings {
-  position: absolute;
-  z-index: 6;
-  top: 2.6%;
-  right: 2.2%;
   display: grid;
-  width: clamp(32px, 5.2cqw, 66px);
+  width: clamp(32px, 5.6cqw, 62px);
   aspect-ratio: 1;
   place-items: center;
   padding: 0;
@@ -871,26 +881,18 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .phase-selection-settings img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .phase-selection-settings:hover { filter: brightness(1.17); transform: rotate(8deg); }
 .phase-selection-laboratory {
-  position: absolute;
-  z-index: 6;
-  right: 2.5%;
-  bottom: 3.2%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .25cqw;
+  display: grid;
+  width: clamp(32px, 5.6cqw, 62px);
+  aspect-ratio: 1;
+  place-items: center;
   padding: 0;
   border: 0;
   background: transparent;
-  color: #fff;
-  font: 700 clamp(11px, 1.2cqw, 17px)/1.1 Arial, "Segoe UI", sans-serif;
-  text-shadow: 0 2px 4px rgba(0, 4, 18, .95);
   cursor: pointer;
   transition: filter .16s ease, transform .16s ease;
 }
-.phase-selection-laboratory img { display: block; width: clamp(34px, 5.5cqw, 72px); aspect-ratio: 1; object-fit: contain; }
+.phase-selection-laboratory img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .phase-selection-laboratory:hover { filter: brightness(1.17); transform: translateY(-2px); }
-.phase-selection-back span:first-child { font-size: 2.2cqw; line-height: .8; }
 .phase-selection-back:focus-visible,
 .phase-selection-settings:focus-visible,
 .phase-selection-laboratory:focus-visible,
@@ -1028,12 +1030,17 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .phase-selection-canvas--mars.is-revealing .phase-selection-stage__frame,
 .phase-selection-canvas--saturn.is-revealing .phase-selection-stage__frame { animation-name: planet-discovery-color; }
 @media (max-width: 620px) {
-  .phase-selection-header { gap: 1cqw; font-size: 2.2cqw; }
-  .phase-selection-wallet, .phase-selection-planet-name { min-height: 9cqw; padding: .7cqw 1.5cqw; }
-  .phase-selection-wallet img { width: 3.6cqw; height: 3.6cqw; }
-  .phase-selection-planet-name { gap: .5cqw; font-size: 2.5cqw; }
-  .phase-selection-planet-name img { width: 6cqw; height: 6cqw; }
-  .phase-selection-back { font-size: 2cqw; }
+  .phase-selection-header { top: max(2%, env(safe-area-inset-top)); min-height: 17%; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; gap: 1cqw .8cqw; padding: 1cqw 1.5cqw; border-radius: 2.4cqw; }
+  .phase-selection-identity { gap: 1.2cqw; }
+  .phase-selection-identity__planet { width: clamp(32px, 9cqw, 54px); }
+  .phase-selection-identity__name { font-size: clamp(14px, 4.3cqw, 22px); }
+  .phase-selection-identity__subtitle { font-size: clamp(8px, 2.2cqw, 11px); }
+  .phase-selection-resources { grid-column: 1 / -1; grid-row: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1cqw; padding: .8cqw 2cqw 0; border: 0; border-top: 1px solid var(--selector-accent); }
+  .phase-selection-wallet { min-height: 7cqw; gap: 1.2cqw; padding: .5cqw 1.5cqw; font-size: clamp(11px, 3cqw, 15px); }
+  .phase-selection-wallet img { width: 5cqw; height: 5cqw; }
+  .phase-selection-navigation { grid-column: 2; grid-row: 1; gap: .8cqw; }
+  .phase-selection-back { min-height: 8cqw; padding: 1.2cqw 2cqw; font-size: clamp(10px, 2.9cqw, 14px); }
+  .phase-selection-settings, .phase-selection-laboratory { width: clamp(30px, 8.4cqw, 44px); }
   .phase-selection-stage { width: 17%; }
   .phase-selection-arrow { width: 8%; }
 }

@@ -11,6 +11,12 @@ const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const PANEL_WIDTH = 472;
 const PANEL_HEIGHT = 310;
 const LEVEL_ASSET_PLANET = { earth: "terra", mars: "marte", saturn: "saturno", neptune: "netuno" };
+const PLANET_SUBTITLES = {
+  earth: "Explore o nosso planeta!",
+  mars: "Desvende os mistérios do planeta vermelho!",
+  saturn: "O gigante dos anéis!",
+  neptune: "O último desafio!",
+};
 
 const STAGE_POSITIONS = {
   earth: [[59, 168], [153, 196], [251, 170], [345, 208], [426, 165]],
@@ -127,27 +133,35 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           </Suspense>
         )}
 
-        <button type="button" className="phase-selection-back" onClick={onBack} aria-label="Voltar ao menu">
-          <span aria-hidden="true">‹</span><span>Menu</span>
-        </button>
+        <header className="phase-selection-header" aria-label="Planeta, recursos e navegação">
+          <div className="phase-selection-identity">
+            <img className="phase-selection-identity__planet" src={`${APP_BASE}assets/ui/planets/${planet.id}-icon.webp`} alt="" aria-hidden="true" />
+            <div className="phase-selection-identity__copy">
+              <span className="phase-selection-identity__name">{planet.name}</span>
+              <span className="phase-selection-identity__subtitle">{PLANET_SUBTITLES[planet.id]}</span>
+            </div>
+          </div>
 
-        <button type="button" className="phase-selection-settings" onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
-          <img src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" aria-hidden="true" />
-        </button>
+          <div className="phase-selection-resources" aria-label="Recursos do jogador">
+            <div className="phase-selection-wallet" aria-label={`${numberFormat.format(progress.coins ?? 0)} moedas`}>
+              <img src={`${APP_BASE}assets/ui/coin.webp`} alt="" aria-hidden="true" />
+              <span>{numberFormat.format(progress.coins ?? 0)}</span>
+            </div>
+            <div className="phase-selection-wallet" aria-label={`${numberFormat.format(progress.diamonds ?? 0)} diamantes`}>
+              <img src={`${APP_BASE}assets/ui/diamond.webp`} alt="" aria-hidden="true" />
+              <span>{numberFormat.format(progress.diamonds ?? 0)}</span>
+            </div>
+          </div>
 
-        <header className="phase-selection-header" aria-label="Planeta e recursos">
-          <div className="phase-selection-wallet" aria-label={`${numberFormat.format(progress.coins ?? 0)} moedas`}>
-            <img src={`${APP_BASE}assets/ui/coin.webp`} alt="" aria-hidden="true" />
-            <span>{numberFormat.format(progress.coins ?? 0)}</span>
-          </div>
-          <div className="phase-selection-planet-name">
-            <img src={`${APP_BASE}assets/ui/planets/${planet.id}-icon.webp`} alt="" aria-hidden="true" />
-            <span>{planet.name}</span>
-          </div>
-          <div className="phase-selection-wallet" aria-label={`${numberFormat.format(progress.diamonds ?? 0)} diamantes`}>
-            <img src={`${APP_BASE}assets/ui/diamond.webp`} alt="" aria-hidden="true" />
-            <span>{numberFormat.format(progress.diamonds ?? 0)}</span>
-          </div>
+          <nav className="phase-selection-navigation" aria-label="Navegação do seletor">
+            <button type="button" className="phase-selection-back" onClick={onBack} aria-label="Voltar ao menu">Menu</button>
+            <button type="button" className="phase-selection-settings" onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
+              <img src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" aria-hidden="true" />
+            </button>
+            <button type="button" className="phase-selection-laboratory" onClick={() => onCommandRoom(planet.id, selectedStageId)} aria-label="Abrir Laboratório" title="Laboratório">
+              <img src={getMenuAssetUrl("laboratory.webp", APP_BASE)} alt="" aria-hidden="true" />
+            </button>
+          </nav>
         </header>
 
         <ol className="phase-selection-stages" aria-label={`Fases de ${planet.name}`}>
@@ -207,10 +221,6 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           aria-label={canGoForward ? `Próximo planeta: ${nextPlanet.name}` : "Conclua todas as fases para desbloquear o próximo planeta"}
         >
           <img src={`${APP_BASE}assets/ui/level-frames/arrow-right.webp`} alt="" aria-hidden="true" draggable="false" />
-        </button>
-        <button type="button" className="phase-selection-laboratory" onClick={() => onCommandRoom(planet.id, selectedStageId)} aria-label="Abrir Laboratório">
-          <img src={getMenuAssetUrl("laboratory.webp", APP_BASE)} alt="" aria-hidden="true" />
-          <span>Laboratório</span>
         </button>
         {completedStageId && planet.stages.some((stage) => stage.id === completedStageId) ? (
           <p className="phase-completion-title" role="status" aria-live="polite">FASE CONCLUÍDA</p>
