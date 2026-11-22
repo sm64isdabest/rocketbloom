@@ -5,6 +5,7 @@ import test from "node:test";
 
 const commandRoomSource = readFileSync(fileURLToPath(new URL("./CommandRoomScreen.jsx", import.meta.url)), "utf8");
 const appSource = readFileSync(fileURLToPath(new URL("../App.jsx", import.meta.url)), "utf8");
+const planetsSource = readFileSync(fileURLToPath(new URL("./PlanetsScreen.jsx", import.meta.url)), "utf8");
 
 test("laboratório usa o ícone compartilhado e mantém o retorno da base", () => {
   assert.match(commandRoomSource, /getPauseAssetUrl, RETURN_ICON_FILE/);
@@ -13,8 +14,17 @@ test("laboratório usa o ícone compartilhado e mantém o retorno da base", () =
   assert.doesNotMatch(commandRoomSource, /laboratory\/back\.webp/);
 });
 
-test("voltar do laboratório abre o seletor sem limpar o estado da sessão", () => {
+test("laboratório retorna ao seletor de origem e atualiza sua referência ao entrar", () => {
   const commandRoomRoute = appSource.match(/<CommandRoomScreen([\s\S]*?)\/>/)?.[1] ?? "";
-  assert.match(commandRoomRoute, /onBack=\{\(\) => setMenuPage\(getLaboratoryReturnPage\(SCREEN\)\)\}/);
+  assert.match(commandRoomRoute, /onBack=\{exitLaboratory\}/);
   assert.doesNotMatch(commandRoomRoute, /setScreen|setRun|setOutcomeSnapshot/);
+  const exitHandler = appSource.match(/const exitLaboratory = \(\) => \{([\s\S]*?)\n  \};/)?.[1] ?? "";
+  assert.match(exitHandler, /dispatchNavigationContext\(\{ type: "exit-laboratory" \}\)/);
+  assert.match(exitHandler, /setMenuPage\(SCREEN\.PLANETS\)/);
+  assert.doesNotMatch(exitHandler, /setRun|persist\(/);
+  assert.match(planetsSource, /onCommandRoom\(planet\.id\)/);
+  assert.match(appSource, /onCommandRoom=\{enterLaboratory\}/);
+  assert.match(appSource, /type: "open-laboratory", planetId/);
+  assert.match(appSource, /preferredPlanetId=\{navigationContext\.selectorPlanetId\}/);
+  assert.match(planetsSource, /getPlanetIdForStage\(completedStageId\) \?\? validPreferredPlanetId/);
 });

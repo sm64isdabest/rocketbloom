@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
-import { getLaboratoryReturnPage, getMenuAssetUrl, getSettingsReturnPage } from "./menuModel.js";
+import { getMenuAssetUrl, getSettingsReturnPage } from "./menuModel.js";
 import { SCREEN } from "../utils/screenStates.js";
 
 test("settings opened from phase selection returns to phase selection", () => {
@@ -15,10 +15,6 @@ test("settings opened from the laboratory returns to the laboratory", () => {
 
 test("settings opened from the home menu returns to the home menu", () => {
   assert.equal(getSettingsReturnPage(SCREEN.MENU, SCREEN), SCREEN.MENU);
-});
-
-test("leaving the laboratory returns directly to the phase selector", () => {
-  assert.equal(getLaboratoryReturnPage(SCREEN), SCREEN.PLANETS);
 });
 
 test("menu assets respect the configured app base path", () => {

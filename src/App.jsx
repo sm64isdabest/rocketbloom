@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { SCREEN } from "./utils/screenStates.js";
 import { validateCatalog } from "./game/data/catalog.js";
 import { PROJECT_IMAGES } from "./game/data/projectImages.js";
@@ -17,11 +17,12 @@ import { VictoryScreen } from "./screens/VictoryScreen.jsx";
 import { DefeatScreen } from "./screens/DefeatScreen.jsx";
 import { configureAudio, pauseMenuAudio, playGameSound, playInterfaceSound, startMenuAudio } from "./game/audio/audioManager.js";
 import { hasLoadedAllImages, preloadImages } from "./utils/preloadImages.js";
-import { getLaboratoryReturnPage, getSettingsReturnPage } from "./screens/menuModel.js";
+import { getSettingsReturnPage } from "./screens/menuModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
 import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets, uncompleteDebugStage } from "./utils/debugTools.js";
 import { FullscreenButton } from "./components/FullscreenButton.jsx";
 import { getOutcomeReturn } from "./utils/outcomeFlow.js";
+import { initialNavigationContext, navigationContextReducer } from "./utils/navigationContext.js";
 
 const APP_BASE = import.meta.env.BASE_URL;
 const PROJECT_IMAGE_URLS = PROJECT_IMAGES.map((image) => `${APP_BASE}${image.slice(1)}`);
@@ -30,6 +31,7 @@ export default function App() {
   const { progress, warning, fatal, patchSettings, persist } = usePersistentProgress();
   const [screen, setScreen] = useState(SCREEN.BOOT);
   const [menuPage, setMenuPage] = useState(SCREEN.MENU);
+  const [navigationContext, dispatchNavigationContext] = useReducer(navigationContextReducer, initialNavigationContext);
   const [settingsReturnPage, setSettingsReturnPage] = useState(SCREEN.MENU);
   const [bootError, setBootError] = useState(null);
   const [assetProgress, setAssetProgress] = useState({ total: PROJECT_IMAGE_URLS.length, loaded: 0, failed: 0, completed: 0 });
@@ -178,6 +180,7 @@ export default function App() {
   }, []);
 
   const startStage = (planetId, stageId) => {
+    dispatchNavigationContext({ type: "start-run", planetId });
     setCompletionStageId(null);
     setDebugOpen(false);
     setPauseSettingsOpen(false);
@@ -212,12 +215,23 @@ export default function App() {
   }, [persist, progress]);
 
   const exitLevel = () => {
+    dispatchNavigationContext({ type: "exit-run" });
     setCompletionStageId(null);
     setPauseSettingsOpen(false);
     setRun(null);
     setOutcomeSnapshot(null);
     setMenuPage(SCREEN.PLANETS);
     setScreen(SCREEN.MENU);
+  };
+
+  const enterLaboratory = (planetId) => {
+    dispatchNavigationContext({ type: "open-laboratory", planetId });
+    setMenuPage(SCREEN.COMMAND);
+  };
+
+  const exitLaboratory = () => {
+    dispatchNavigationContext({ type: "exit-laboratory" });
+    setMenuPage(SCREEN.PLANETS);
   };
 
   const onPause = useCallback(() => {
@@ -316,11 +330,12 @@ export default function App() {
         <PlanetsScreen
           progress={progress}
           completedStageId={completionStageId}
+          preferredPlanetId={navigationContext.selectorPlanetId}
           onBack={() => setMenuPage(SCREEN.MENU)}
           onPlay={startStage}
           onMarkPlanetSeen={markPlanetSeen}
           onSettings={openSettings}
-          onCommandRoom={() => setMenuPage(SCREEN.COMMAND)}
+          onCommandRoom={enterLaboratory}
         />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.SETTINGS ? (
@@ -329,7 +344,7 @@ export default function App() {
       {screen === SCREEN.MENU && menuPage === SCREEN.COMMAND ? (
         <CommandRoomScreen
           progress={progress}
-          onBack={() => setMenuPage(getLaboratoryReturnPage(SCREEN))}
+          onBack={exitLaboratory}
           onSettings={openSettings}
         />
       ) : null}

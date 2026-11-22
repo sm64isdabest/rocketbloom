@@ -7,6 +7,7 @@ const appSource = readFileSync(fileURLToPath(new URL("../App.jsx", import.meta.u
 
 test("sair do nível encerra a sessão pausada e abre diretamente o seletor", () => {
   const exitHandler = appSource.match(/const exitLevel = \(\) => \{([\s\S]*?)\n  \};/)?.[1] ?? "";
+  assert.match(exitHandler, /dispatchNavigationContext\(\{ type: "exit-run" \}\)/);
   assert.match(exitHandler, /setRun\(null\)/);
   assert.match(exitHandler, /setOutcomeSnapshot\(null\)/);
   assert.match(exitHandler, /setMenuPage\(SCREEN\.PLANETS\)/);

@@ -25,8 +25,9 @@ const stageStatusLabel = (stage) => {
   return stage.available ? "fase atual, disponível" : "bloqueada";
 };
 
-export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMarkPlanetSeen, onSettings, onCommandRoom }) {
-  const initialPlanetId = getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
+export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, onBack, onPlay, onMarkPlanetSeen, onSettings, onCommandRoom }) {
+  const validPreferredPlanetId = PLANETS.some(({ id }) => id === preferredPlanetId) ? preferredPlanetId : null;
+  const initialPlanetId = getPlanetIdForStage(completedStageId) ?? validPreferredPlanetId ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const [selectedPlanetId, setSelectedPlanetId] = useState(initialPlanetId);
   const [selectedStageId, setSelectedStageId] = useState(null);
   const [revealingPlanetId, setRevealingPlanetId] = useState(null);
@@ -205,7 +206,7 @@ export function PlanetsScreen({ progress, completedStageId, onBack, onPlay, onMa
         >
           <img src={`${APP_BASE}assets/ui/level-frames/arrow-right.webp`} alt="" aria-hidden="true" draggable="false" />
         </button>
-        <button type="button" className="phase-selection-laboratory" onClick={onCommandRoom} aria-label="Abrir Laboratório">
+        <button type="button" className="phase-selection-laboratory" onClick={() => onCommandRoom(planet.id)} aria-label="Abrir Laboratório">
           <img src={getMenuAssetUrl("laboratory.webp", APP_BASE)} alt="" aria-hidden="true" />
           <span>Laboratório</span>
         </button>
