@@ -17,7 +17,7 @@ import { VictoryScreen } from "./screens/VictoryScreen.jsx";
 import { DefeatScreen } from "./screens/DefeatScreen.jsx";
 import { configureAudio, pauseMenuAudio, playGameSound, playInterfaceSound, startMenuAudio } from "./game/audio/audioManager.js";
 import { hasLoadedAllImages, preloadImages } from "./utils/preloadImages.js";
-import { getSettingsReturnPage } from "./screens/menuModel.js";
+import { getLaboratoryReturnPage, getSettingsReturnPage } from "./screens/menuModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
 import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets, uncompleteDebugStage } from "./utils/debugTools.js";
 import { FullscreenButton } from "./components/FullscreenButton.jsx";
@@ -329,7 +329,7 @@ export default function App() {
       {screen === SCREEN.MENU && menuPage === SCREEN.COMMAND ? (
         <CommandRoomScreen
           progress={progress}
-          onBack={() => setMenuPage(SCREEN.MENU)}
+          onBack={() => setMenuPage(getLaboratoryReturnPage(SCREEN))}
           onSettings={openSettings}
         />
       ) : null}
