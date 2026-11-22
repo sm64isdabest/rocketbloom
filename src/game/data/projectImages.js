@@ -65,7 +65,7 @@ export const PROJECT_IMAGES = [
   "/assets/ui/level-frames/gold.webp",
   "/assets/ui/level-frames/orange.webp",
   "/assets/ui/pause/continue.webp",
-  "/assets/ui/pause/leave.webp",
+  "/assets/ui/pause/return-portal.png",
   "/assets/ui/pause/rocket-newspaper.webp",
   "/assets/ui/pause/settings.webp",
   "/assets/ui/planets/earth-icon.webp",
