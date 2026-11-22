@@ -159,6 +159,7 @@ export default function App() {
     progress?.settings?.musicVolume,
     progress?.settings?.soundEffectsVolume,
     progress?.settings?.interfaceSounds,
+    progress?.settings?.interfaceSoundsVolume,
     progress?.settings?.muteAll,
   ]);
 

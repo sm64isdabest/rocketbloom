@@ -12,6 +12,7 @@ let preferences = {
   soundEffects: true,
   musicVolume: AUDIO.defaultMusicVolume,
   soundEffectsVolume: AUDIO.defaultSoundEffectsVolume,
+  interfaceSoundsVolume: AUDIO.defaultInterfaceSoundsVolume,
   interfaceSounds: true,
   muteAll: false,
 };
@@ -130,6 +131,16 @@ function startMenuTrack() {
 export function configureAudio(nextPreferences = {}) {
   const wasMuted = preferences.muteAll;
   preferences = { ...preferences, ...nextPreferences };
+  if (Object.hasOwn(nextPreferences, "interfaceSoundsVolume")) {
+    preferences.interfaceSoundsVolume = Number.isFinite(Number(nextPreferences.interfaceSoundsVolume))
+      ? Math.max(AUDIO.minVolume, Math.min(AUDIO.maxVolume, Number(nextPreferences.interfaceSoundsVolume)))
+      : AUDIO.defaultInterfaceSoundsVolume;
+    preferences.interfaceSounds = preferences.interfaceSoundsVolume > AUDIO.minVolume;
+  } else if (Object.hasOwn(nextPreferences, "interfaceSounds")) {
+    preferences.interfaceSounds = Boolean(nextPreferences.interfaceSounds);
+    if (!preferences.interfaceSounds) preferences.interfaceSoundsVolume = AUDIO.minVolume;
+    else if (preferences.interfaceSoundsVolume <= AUDIO.minVolume) preferences.interfaceSoundsVolume = AUDIO.defaultInterfaceSoundsVolume;
+  }
   if (masterGain && wasMuted !== preferences.muteAll) {
     masterGain.gain.setValueAtTime(preferences.muteAll ? 0 : 1, audioContext.currentTime);
   }
@@ -182,7 +193,7 @@ export function playGameSound(name) {
 }
 
 export function playInterfaceSound(name) {
-  if (preferences.muteAll || !preferences.interfaceSounds) return;
+  if (preferences.muteAll || !preferences.interfaceSounds || preferences.interfaceSoundsVolume <= AUDIO.minVolume) return;
   const sound = INTERFACE_SOUNDS[name];
-  if (sound) playSequence(sound.notes, sound.duration, sound.wave, sound.volume, sound.spacing);
+  if (sound) playSequence(sound.notes, sound.duration, sound.wave, scaleAudioVolume(sound.volume, preferences.interfaceSoundsVolume), sound.spacing);
 }

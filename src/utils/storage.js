@@ -21,6 +21,7 @@ export function createDefaultProgress() {
       soundEffects: true,
       musicVolume: AUDIO.defaultMusicVolume,
       soundEffectsVolume: AUDIO.defaultSoundEffectsVolume,
+      interfaceSoundsVolume: AUDIO.defaultInterfaceSoundsVolume,
       interfaceSounds: true,
       muteAll: false,
       reducedMotion: false,
@@ -79,6 +80,9 @@ export function loadProgress(storage = globalThis.localStorage) {
     const soundEffectsVolume = Number.isFinite(parsed.settings?.soundEffectsVolume)
       ? Math.max(AUDIO.minVolume, Math.min(AUDIO.maxVolume, parsed.settings.soundEffectsVolume))
       : storedEffects ? AUDIO.defaultSoundEffectsVolume : AUDIO.minVolume;
+    const interfaceSoundsVolume = Number.isFinite(parsed.settings?.interfaceSoundsVolume)
+      ? Math.max(AUDIO.minVolume, Math.min(AUDIO.maxVolume, parsed.settings.interfaceSoundsVolume))
+      : parsed.settings?.interfaceSounds === false ? AUDIO.minVolume : AUDIO.defaultInterfaceSoundsVolume;
 
     return {
       progress: {
@@ -99,7 +103,8 @@ export function loadProgress(storage = globalThis.localStorage) {
           soundEffects: soundEffectsVolume > AUDIO.minVolume,
           musicVolume,
           soundEffectsVolume,
-          interfaceSounds: parsed.settings?.interfaceSounds !== false,
+          interfaceSoundsVolume,
+          interfaceSounds: interfaceSoundsVolume > AUDIO.minVolume,
           muteAll: parsed.settings?.muteAll === true,
           reducedMotion: parsed.settings?.reducedMotion === true,
           showHitboxes: parsed.settings?.showHitboxes === true,

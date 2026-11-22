@@ -14,7 +14,8 @@ export function SettingsScreen({ progress, onBack, onChange }) {
   const fallbackEffects = progress.settings.soundEffects === false ? AUDIO.minVolume : AUDIO.defaultSoundEffectsVolume;
   const musicVolume = clampAudioVolume(progress.settings.musicVolume ?? fallbackMusic);
   const soundEffectsVolume = clampAudioVolume(progress.settings.soundEffectsVolume ?? fallbackEffects);
-  const interfaceSounds = progress.settings.interfaceSounds !== false;
+  const fallbackInterfaceSounds = progress.settings.interfaceSounds === false ? AUDIO.minVolume : AUDIO.defaultInterfaceSoundsVolume;
+  const interfaceSoundsVolume = clampAudioVolume(progress.settings.interfaceSoundsVolume ?? fallbackInterfaceSounds);
   const muteAll = progress.settings.muteAll === true;
   const reducedMotion = progress.settings.reducedMotion === true;
   const showHitboxes = progress.settings.showHitboxes === true;
@@ -131,23 +132,28 @@ export function SettingsScreen({ progress, onBack, onChange }) {
               </div>
             </section>
 
-            <section className="settings-popup__audio-card settings-popup__audio-card--switch" aria-labelledby={`${ids}-interface-title`}>
+            <section className="settings-popup__audio-card" aria-labelledby={`${ids}-interface-title`}>
               <span className="settings-popup__audio-icon" aria-hidden="true">🖱️</span>
               <div className="settings-popup__audio-body">
-                <h2 id={`${ids}-interface-title`} className="settings-popup__volume-label">Sons da interface</h2>
+                <h2 id={`${ids}-interface-title`} className="settings-popup__volume-label">
+                  <span id={`${ids}-interface-label`}>Sons da interface</span> <output htmlFor={`${ids}-interface`}>{interfaceSoundsVolume}%</output>
+                </h2>
                 <p id={`${ids}-interface-description`} className="settings-popup__description">Cliques, seleções e botões do jogo.</p>
+                <input
+                  id={`${ids}-interface`}
+                  className="settings-popup__range"
+                  type="range"
+                  min={AUDIO.minVolume}
+                  max={AUDIO.maxVolume}
+                  step="1"
+                  value={interfaceSoundsVolume}
+                  style={{ "--range-progress": `${interfaceSoundsVolume}%` }}
+                  aria-labelledby={`${ids}-interface-label`}
+                  aria-describedby={`${ids}-interface-description`}
+                  aria-valuetext={`${interfaceSoundsVolume}%`}
+                  onChange={(event) => changeVolume("interfaceSoundsVolume", event.currentTarget.value)}
+                />
               </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={interfaceSounds}
-                aria-labelledby={`${ids}-interface-title`}
-                aria-describedby={`${ids}-interface-description`}
-                className={`settings-popup__audio-switch ${interfaceSounds ? "is-on" : ""}`}
-                onClick={() => onChange({ interfaceSounds: !interfaceSounds })}
-              >
-                <span aria-hidden="true" />{interfaceSounds ? "Ligados" : "Desligados"}
-              </button>
             </section>
 
             <section className="settings-popup__audio-card settings-popup__audio-card--switch" aria-labelledby={`${ids}-mute-title`}>

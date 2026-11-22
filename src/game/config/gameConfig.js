@@ -50,6 +50,7 @@ export const AUDIO = {
   maxVolume: 100,
   defaultMusicVolume: 35,
   defaultSoundEffectsVolume: 55,
+  defaultInterfaceSoundsVolume: 100,
 };
 
 export const SPAWN = {

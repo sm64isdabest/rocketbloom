@@ -6,6 +6,10 @@ export function clampAudioVolume(value) {
 
 export function getAudioVolumeChange(settingName, value) {
   const volume = clampAudioVolume(Number(value));
-  const enabledSetting = settingName === "musicVolume" ? "music" : "soundEffects";
+  const enabledSetting = {
+    musicVolume: "music",
+    soundEffectsVolume: "soundEffects",
+    interfaceSoundsVolume: "interfaceSounds",
+  }[settingName];
   return { [settingName]: volume, [enabledSetting]: volume > AUDIO.minVolume };
 }

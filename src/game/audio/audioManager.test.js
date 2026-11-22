@@ -140,8 +140,9 @@ test("interface sounds stay independent from gameplay effects", async () => {
   }
 });
 
-test("silenciar todos pausa os canais sem perder seus volumes e permite restaurÃ¡-los", async () => {
+test("interface volume scales only interface sounds and zero mutes them", async () => {
   const frequencies = [];
+  const gainTargets = [];
   class FakeAudioContext {
     currentTime = 1;
     state = "running";
@@ -149,7 +150,52 @@ test("silenciar todos pausa os canais sem perder seus volumes e permite restaurÃ
     createOscillator() {
       return { type: "sine", frequency: { setValueAtTime: (frequency) => frequencies.push(frequency) }, connect() {}, start() {}, stop() {} };
     }
-    createGain() { return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} }; }
+    createGain() {
+      return { gain: { setValueAtTime: (value) => gainTargets.push(value), exponentialRampToValueAtTime: (value) => gainTargets.push(value) }, connect() {} };
+    }
+  }
+
+  const priorWindow = globalThis.window;
+  globalThis.window = { AudioContext: FakeAudioContext, addEventListener() {} };
+  try {
+    const { configureAudio, playGameSound, playInterfaceSound } = await import("./audioManager.js?interface-volume-slider");
+    configureAudio({ soundEffects: true, soundEffectsVolume: 70, interfaceSoundsVolume: 25, muteAll: false });
+    playInterfaceSound("menuClick");
+    playGameSound("coin");
+    assert.deepEqual(frequencies, [659.25, 880, 783.99, 1046.5]);
+    assert.ok(gainTargets.includes(0.025), "interface volume should scale its own tone to 25%");
+    assert.ok(gainTargets.includes(0.07), "game effects should retain their independent 70% volume");
+
+    frequencies.length = 0;
+    gainTargets.length = 0;
+    configureAudio({ interfaceSoundsVolume: 0 });
+    playInterfaceSound("menuClick");
+    playGameSound("coin");
+    assert.deepEqual(frequencies, [783.99, 1046.5], "zero should mute interface sounds without muting gameplay effects");
+
+    frequencies.length = 0;
+    gainTargets.length = 0;
+    configureAudio({ interfaceSoundsVolume: 35 });
+    playInterfaceSound("menuClick");
+    assert.deepEqual(frequencies, [659.25, 880], "raising the slider should restore interface sounds");
+    assert.ok(gainTargets.includes(0.035));
+  } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+  }
+});
+
+test("silenciar todos pausa os canais sem perder seus volumes e permite restaurÃ¡-los", async () => {
+  const frequencies = [];
+  const toneVolumes = [];
+  class FakeAudioContext {
+    currentTime = 1;
+    state = "running";
+    destination = {};
+    createOscillator() {
+      return { type: "sine", frequency: { setValueAtTime: (frequency) => frequencies.push(frequency) }, connect() {}, start() {}, stop() {} };
+    }
+    createGain() { return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime: (volume) => toneVolumes.push(volume) }, connect() {} }; }
   }
   const tracks = [];
   class FakeAudio {
@@ -164,7 +210,7 @@ test("silenciar todos pausa os canais sem perder seus volumes e permite restaurÃ
   globalThis.Audio = FakeAudio;
   try {
     const { configureAudio, playGameSound, playInterfaceSound, startMenuAudio } = await import("./audioManager.js?restore-after-global-mute");
-    configureAudio({ music: true, musicVolume: 40, soundEffects: true, soundEffectsVolume: 80, interfaceSounds: true, muteAll: true });
+    configureAudio({ music: true, musicVolume: 40, soundEffects: true, soundEffectsVolume: 80, interfaceSounds: true, interfaceSoundsVolume: 72, muteAll: true });
     startMenuAudio();
     playGameSound("coin");
     playInterfaceSound("menuClick");
@@ -178,6 +224,8 @@ test("silenciar todos pausa os canais sem perder seus volumes e permite restaurÃ
     assert.equal(tracks.length, 1);
     assert.equal(tracks[0].volume, 0.4);
     assert.deepEqual(frequencies, [783.99, 1046.5, 659.25, 880]);
+    assert.ok(toneVolumes.some((volume) => Math.abs(volume - 0.08) < 1e-9), "gameplay effects should keep their saved volume after global mute");
+    assert.ok(toneVolumes.some((volume) => Math.abs(volume - 0.072) < 1e-9), "interface sounds should keep their saved volume after global mute");
   } finally {
     if (priorWindow === undefined) delete globalThis.window;
     else globalThis.window = priorWindow;

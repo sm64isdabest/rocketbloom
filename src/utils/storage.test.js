@@ -22,6 +22,7 @@ test("progresso inicial não inventa planetas desbloqueados", () => {
   assert.deepEqual(progress.rescuedPlantIds, []);
   assert.equal(progress.settings.musicVolume, 35);
   assert.equal(progress.settings.soundEffectsVolume, 55);
+  assert.equal(progress.settings.interfaceSoundsVolume, 100);
   assert.equal(progress.settings.interfaceSounds, true);
   assert.equal(progress.settings.muteAll, false);
   assert.deepEqual(progress.seenPlanetIds, []);
@@ -58,18 +59,20 @@ test("preferências antigas recebem sons da interface ligados e silêncio geral 
   const settings = loadProgress(memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) })).progress.settings;
 
   assert.equal(settings.interfaceSounds, true);
+  assert.equal(settings.interfaceSoundsVolume, 100);
   assert.equal(settings.muteAll, false);
 });
 
 test("preferências dos sons da interface e do silêncio geral preservam estados salvos", () => {
   const profile = {
     ...createDefaultProgress(),
-    settings: { ...createDefaultProgress().settings, interfaceSounds: false, muteAll: true },
+    settings: { ...createDefaultProgress().settings, interfaceSoundsVolume: 0, interfaceSounds: false, muteAll: true },
   };
   const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(profile) });
   const settings = loadProgress(storage).progress.settings;
 
   assert.equal(settings.interfaceSounds, false);
+  assert.equal(settings.interfaceSoundsVolume, 0);
   assert.equal(settings.muteAll, true);
 });
 
@@ -77,7 +80,7 @@ test("volumes salvos são limitados e convertem preferências antigas", () => {
   const storage = memoryStorage();
   const progress = {
     ...createDefaultProgress(),
-    settings: { music: false, soundEffects: true, musicVolume: 150, soundEffectsVolume: -8 },
+    settings: { music: false, soundEffects: true, musicVolume: 150, soundEffectsVolume: -8, interfaceSoundsVolume: -8 },
   };
   saveProgress(progress, storage);
 
@@ -85,6 +88,7 @@ test("volumes salvos são limitados e convertem preferências antigas", () => {
 
   assert.equal(loaded.settings.musicVolume, 100);
   assert.equal(loaded.settings.soundEffectsVolume, 0);
+  assert.equal(loaded.settings.interfaceSoundsVolume, 0);
   assert.equal(loaded.settings.music, true);
   assert.equal(loaded.settings.soundEffects, false);
 
@@ -93,6 +97,23 @@ test("volumes salvos são limitados e convertem preferências antigas", () => {
   const legacySettings = loadProgress(legacyStorage).progress.settings;
   assert.equal(legacySettings.musicVolume, 0);
   assert.equal(legacySettings.soundEffectsVolume, 55);
+  assert.equal(legacySettings.interfaceSoundsVolume, 100);
+});
+
+test("configuração antiga de sons da interface migra o estado sem perder o volume configurado", () => {
+  const oldOff = loadProgress(memoryStorage({ [STORAGE_KEY]: JSON.stringify({
+    ...createDefaultProgress(),
+    settings: { interfaceSounds: false },
+  }) })).progress.settings;
+  const savedVolume = loadProgress(memoryStorage({ [STORAGE_KEY]: JSON.stringify({
+    ...createDefaultProgress(),
+    settings: { interfaceSounds: true, interfaceSoundsVolume: 42 },
+  }) })).progress.settings;
+
+  assert.equal(oldOff.interfaceSoundsVolume, 0);
+  assert.equal(oldOff.interfaceSounds, false);
+  assert.equal(savedVolume.interfaceSoundsVolume, 42);
+  assert.equal(savedVolume.interfaceSounds, true);
 });
 
 test("salva e recarrega progresso real", () => {
