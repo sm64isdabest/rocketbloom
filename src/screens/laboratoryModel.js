@@ -6,7 +6,7 @@ const PLANT_STAGE_ASSETS = {
 };
 
 const DEFAULT_PLANT_STAGE_SCALES = [0.5, 0.6, 0.68, 0.76, 0.82];
-const SATURN_PLANT_STAGE_SCALES = [0.5, 0.6, 0.68, 0.76, 0.9];
+const SATURN_PLANT_STAGE_SCALES = [0.5, 0.6, 0.68, 0.76, 0.82];
 
 export function getLaboratoryPlantImage(planetId, growthStage = 0, baseUrl = "/") {
   const stages = PLANT_STAGE_ASSETS[planetId];

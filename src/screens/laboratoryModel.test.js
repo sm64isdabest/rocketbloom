@@ -27,7 +27,7 @@ test("laboratory sprite stage is clamped and supports a Vite base path", () => {
 test("Saturn uses individual progressively larger scales without changing the other planets", () => {
   assert.deepEqual(
     Array.from({ length: 5 }, (_, stage) => getLaboratoryPlantScale("saturn", stage)),
-    [0.5, 0.6, 0.68, 0.76, 0.9],
+    [0.5, 0.6, 0.68, 0.76, 0.82],
   );
   for (const planetId of ["earth", "mars", "neptune"]) {
     assert.deepEqual(

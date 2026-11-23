@@ -6,6 +6,7 @@ import test from "node:test";
 const commandRoomSource = readFileSync(fileURLToPath(new URL("./CommandRoomScreen.jsx", import.meta.url)), "utf8");
 const appSource = readFileSync(fileURLToPath(new URL("../App.jsx", import.meta.url)), "utf8");
 const planetsSource = readFileSync(fileURLToPath(new URL("./PlanetsScreen.jsx", import.meta.url)), "utf8");
+const stylesheetSource = readFileSync(fileURLToPath(new URL("../styles/index.css", import.meta.url)), "utf8");
 
 test("laboratório usa o ícone compartilhado e mantém o retorno da base", () => {
   assert.match(commandRoomSource, /getPauseAssetUrl, RETURN_ICON_FILE/);
@@ -28,6 +29,12 @@ test("laboratório empilha fundo, base, cúpula traseira, planta e frente do vid
   assert.match(commandRoomSource, /onClick=\{onSettings\} aria-label="Abrir configurações"/);
   assert.match(commandRoomSource, /onClick=\{\(\) => changePlanet\(-1\)\}/);
   assert.match(commandRoomSource, /onClick=\{\(\) => changePlanet\(1\)\}/);
+});
+
+test("Saturn's specimen alone gets the lower soil anchor in standard and short layouts", () => {
+  assert.match(stylesheetSource, /\.laboratory-scene--saturn \.laboratory-specimen \{ bottom: calc\(40% - clamp\(10px, 3svh, 20px\)\); \}/);
+  assert.match(stylesheetSource, /\.laboratory-scene--saturn \.laboratory-specimen \{ bottom: calc\(49% - clamp\(10px, 3svh, 20px\)\); \}/);
+  assert.match(stylesheetSource, /\.laboratory-specimen__plant \{[^}]*object-fit: contain; object-position: center bottom;/);
 });
 
 test("laboratório retorna ao seletor de origem e atualiza sua referência ao entrar", () => {
