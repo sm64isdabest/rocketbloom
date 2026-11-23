@@ -10,7 +10,7 @@ function formatFlightTime(elapsedMs) {
   return `${minutes}:${seconds}`;
 }
 
-export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, onRetry }) {
+export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, onRetry, decoration }) {
   const titleRef = useRef(null);
 
   useEffect(() => { titleRef.current?.focus(); }, []);
@@ -31,6 +31,7 @@ export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, 
 
   return (
     <main className="screen victory-screen" aria-labelledby="victory-title" style={{ "--victory-accent": planet?.theme.accent }}>
+      {decoration}
       <section className="victory-screen__panel">
         {planet ? (
           <img className="victory-screen__planet" src={`${APP_BASE}assets/ui/planets/${planet.id}-icon.webp`} alt="" />

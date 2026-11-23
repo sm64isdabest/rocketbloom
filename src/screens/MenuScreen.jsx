@@ -4,7 +4,7 @@ import { getMenuAssetUrl } from "./menuModel.js";
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const menuAsset = (filename) => getMenuAssetUrl(filename, APP_BASE);
 
-export function MenuScreen({ warning, onPlay, onSettings }) {
+export function MenuScreen({ warning, onPlay, onSettings, decoration }) {
   return (
     <main
       className="screen menu screen--home"
@@ -12,6 +12,7 @@ export function MenuScreen({ warning, onPlay, onSettings }) {
       style={{ "--menu-background": `url("${menuAsset("background.webp")}")` }}
     >
       <MenuSpaceBackground />
+      {decoration}
       <button type="button" className="menu__settings" onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
         <img src={menuAsset("settings.webp")} alt="" />
       </button>

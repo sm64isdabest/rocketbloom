@@ -415,8 +415,7 @@ export default function App() {
   const showFlight = run && (screen === SCREEN.PLAYING || screen === SCREEN.PAUSED
     || screen === SCREEN.FLIGHT_INTRO || screen === SCREEN.VICTORY_LAUNCH
     || (screen === SCREEN.DEFEAT && !endlessResult));
-  const showCoinDecorations = !showFlight && ((screen === SCREEN.MENU && menuPage !== SCREEN.STORAGE)
-    || screen === SCREEN.VICTORY || endlessResult);
+  const decoration = <Decorations total={progress.gold.total} />;
   return (
     <>
     <FullscreenButton hidden={settingsOpen || [SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH].includes(screen)
@@ -431,6 +430,7 @@ export default function App() {
       {screen === SCREEN.MENU && menuPage === SCREEN.MENU ? (
         <MenuScreen
           progress={progress}
+          decoration={decoration}
           warning={warning}
           onPlay={() => setMenuPage(SCREEN.PLANETS)}
           onSettings={openSettings}
@@ -450,6 +450,7 @@ export default function App() {
       {screen === SCREEN.MENU && menuPage === SCREEN.PLANETS ? (
         <PlanetsScreen
           progress={progress}
+          decoration={decoration}
           completedStageId={completionStageId}
           preferredPlanetId={navigationContext.selector.planetId}
           preferredStageId={navigationContext.selector.selectedStageId}
@@ -470,6 +471,7 @@ export default function App() {
       {screen === SCREEN.MENU && menuPage === SCREEN.COMMAND ? (
         <CommandRoomScreen
           progress={progress}
+          decoration={decoration}
           onBack={exitLaboratory}
           onSettings={openSettings}
         />
@@ -507,6 +509,7 @@ export default function App() {
       {screen === SCREEN.VICTORY || endlessResult ? (
         <VictoryScreen
           planet={planet}
+          decoration={decoration}
           stage={stage}
           snapshot={outcomeSnapshot}
           bestScore={progress.endlessHighScores?.[planet?.id] ?? 0}
@@ -518,7 +521,6 @@ export default function App() {
         <DefeatScreen onRetry={retryStage} />
       ) : null}
       </div>
-      {showCoinDecorations ? <Decorations total={progress.gold.total} /> : null}
       {settingsOpen ? (
         <SettingsScreen progress={progress} onBack={closeSettings} onChange={patchSettings} onResetProgress={resetCampaign} />
       ) : null}

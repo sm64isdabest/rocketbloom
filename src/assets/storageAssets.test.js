@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import { GOLD_GOALS } from "../game/config/goldConfig.js";
 import { createTreasureSvg, getTreasureArt, preloadStorageAssets, STORAGE_ICON } from "./storageAssets.js";
 
@@ -19,13 +20,15 @@ test("cada meta tem um SVG próprio e progressivamente mais moedas", () => {
   assert.equal(getTreasureArt(-1), getTreasureArt(0));
 });
 
-test("a decoração usa só o tesouro, sem plataforma, e ganha lingotes nas metas altas", () => {
-  const first = createTreasureSvg(1, { floor: true });
-  const last = createTreasureSvg(GOLD_GOALS.at(-1).treasure.level, { floor: true });
-  assert.match(first, /href="#coin"/);
-  assert.doesNotMatch(first, /M68 196|href="#ingot"/);
-  assert.match(last, /href="#ingot"/);
-  assert.notEqual(getTreasureArt(1, { floor: true }), getTreasureArt(1));
+test("cada meta referencia uma sobreposição WebP distinta com transparência", () => {
+  const overlays = GOLD_GOALS.map(({ overlay }) => overlay);
+  assert.equal(new Set(overlays).size, GOLD_GOALS.length);
+  for (const overlay of overlays) {
+    const image = readFileSync(new URL(overlay));
+    assert.equal(image.subarray(8, 12).toString("ascii"), "WEBP");
+    assert.equal(image.subarray(12, 16).toString("ascii"), "VP8X");
+    assert.ok(image[20] & 0x10, "a faixa preserva alpha");
+  }
 });
 
 test("pré-carrega cada SVG uma vez inclusive quando uma imagem falha", async () => {

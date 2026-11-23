@@ -7,7 +7,7 @@ import { getPauseAssetUrl, RETURN_ICON_FILE } from "./pauseModel.js";
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const asset = (path) => `${APP_BASE}${path}`;
 
-export function CommandRoomScreen({ progress, onBack, onSettings }) {
+export function CommandRoomScreen({ progress, onBack, onSettings, decoration }) {
   const [planetIndex, setPlanetIndex] = useState(0);
   const planet = PLANETS[planetIndex];
   const plant = PLANTS.find((entry) => entry.id === planet.plantId);
@@ -22,6 +22,7 @@ export function CommandRoomScreen({ progress, onBack, onSettings }) {
   return (
     <main className={`laboratory-scene laboratory-scene--${planet.id}`} aria-label="Laboratório orbital">
       <img className="laboratory-scene__background" src={asset("assets/laboratory/laboratory-background-clean.png")} alt="" aria-hidden="true" />
+      {decoration}
 
       <header className="laboratory-scene__topbar">
         <button type="button" className="laboratory-scene__icon-button" onClick={onBack} aria-label="Voltar à base">

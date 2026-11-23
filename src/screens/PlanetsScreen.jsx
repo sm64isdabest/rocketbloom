@@ -34,7 +34,7 @@ const stageStatusLabel = (stage) => {
 };
 
 export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, preferredStageId, onBack, onPlay, onPlayEndless,
-  onMarkPlanetSeen, onSettings, onCommandRoom, onSelectionChange, reducedMotion, storageButtonRef, previousGoldBalance, goldCountPaused, onStorage }) {
+  onMarkPlanetSeen, onSettings, onCommandRoom, onSelectionChange, reducedMotion, storageButtonRef, previousGoldBalance, goldCountPaused, onStorage, decoration }) {
   const validPreferredPlanetId = PLANETS.some(({ id }) => id === preferredPlanetId) ? preferredPlanetId : null;
   const initialPlanetId = validPreferredPlanetId ?? getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const initialStageId = PLANETS.find(({ id }) => id === initialPlanetId)?.stages.some(({ id }) => id === preferredStageId)
@@ -103,6 +103,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           draggable="false"
           aria-hidden="true"
         />
+        {decoration}
         <svg
           className="phase-selection-route"
           viewBox={`0 0 ${PANEL_WIDTH} ${PANEL_HEIGHT}`}
