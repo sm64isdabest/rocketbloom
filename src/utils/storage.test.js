@@ -3,6 +3,7 @@ import test from "node:test";
 import { STORAGE_KEY } from "../game/config/gameConfig.js";
 import { createDefaultProgress, loadProgress, saveProgress } from "./storage.js";
 import * as progressStorage from "./storage.js";
+import { acknowledgeGold, creditGold } from "./goldStorage.js";
 
 function memoryStorage(seed = {}) {
   const map = new Map(Object.entries(seed));
@@ -15,6 +16,63 @@ function memoryStorage(seed = {}) {
     },
   };
 }
+
+test("ouro, depósitos ainda não vistos e decorações equipadas sobrevivem ao recarregar", () => {
+  const storage = memoryStorage();
+  const progress = { ...createDefaultProgress(), gold: { total: 617, seenTotal: 95, equippedIds: ["aurora", "saturn"] } };
+  assert.ok(saveProgress(progress, storage).ok);
+  assert.deepEqual(loadProgress(storage).progress.gold, progress.gold);
+  assert.deepEqual(progressStorage.resetSavedProgress(progress, storage).progress.gold, createDefaultProgress().gold);
+});
+
+test("terminar uma animação preserva o saldo acrescentado por outra aba depois que ela começou", () => {
+  const storage = memoryStorage();
+  const openTab = { ...createDefaultProgress(), gold: { total: 100, seenTotal: 0, equippedIds: [] } };
+  assert.ok(saveProgress(openTab, storage).ok);
+  assert.ok(saveProgress({ ...openTab, coins: 12, gold: creditGold(openTab.gold, 1000) }, storage).ok);
+  const result = progressStorage.updateSavedProgress(openTab, (current) => ({
+    ...current, gold: acknowledgeGold(current.gold, 100),
+  }), { storage });
+  assert.ok(result.ok);
+  const saved = loadProgress(storage).progress;
+  assert.deepEqual(saved.gold, { total: 1100, seenTotal: 100, equippedIds: [] });
+  assert.equal(saved.coins, 12);
+});
+
+test("atualizar progresso mantém depósitos em memória se persistir falhou", () => {
+  const local = { ...createDefaultProgress(), gold: { total: 100, seenTotal: 0, equippedIds: [] } };
+  const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(createDefaultProgress()) });
+  storage.setItem = () => { throw new Error("somente leitura"); };
+  const result = progressStorage.updateSavedProgress(local, (current) => ({
+    ...current, gold: creditGold(current.gold, 25),
+  }), { storage, preferMemory: true });
+  assert.equal(result.ok, false);
+  assert.equal(result.progress.gold.total, 125);
+});
+
+test("perfis antigos ou com ouro inválido mantêm as demais recompensas", () => {
+  const legacy = { ...createDefaultProgress(), coins: 45 };
+  delete legacy.gold;
+  for (const profile of [legacy, { ...legacy, gold: { total: -9, seenTotal: 99, equippedIds: ["aurora"] } }]) {
+    const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(profile) });
+    const { progress } = loadProgress(storage);
+    assert.equal(progress.coins, 45);
+    assert.deepEqual(progress.gold, { total: 0, seenTotal: 0, equippedIds: [] });
+  }
+});
+
+test("o jogo inicia em memória quando acessar localStorage lança uma exceção", () => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+  Object.defineProperty(globalThis, "localStorage", { configurable: true, get() { throw new Error("bloqueado"); } });
+  try {
+    const { progress, source } = loadProgress();
+    assert.equal(source, "error");
+    assert.deepEqual(progress.gold, { total: 0, seenTotal: 0, equippedIds: [] });
+  } finally {
+    if (original) Object.defineProperty(globalThis, "localStorage", original);
+    else delete globalThis.localStorage;
+  }
+});
 
 test("progresso inicial não inventa planetas desbloqueados", () => {
   const progress = createDefaultProgress();

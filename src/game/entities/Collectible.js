@@ -25,15 +25,17 @@ export class Collectible {
     this.pickupId = pickupId;
     this.alive = true;
     this.image = getSprite(kind);
+    this.shineTime = 0;
   }
 
-  update(dt) {
+  update(dt, reducedMotion) {
     this.y += this.speed * dt;
+    if (this.kind === "coin") this.shineTime = reducedMotion ? 0 : this.shineTime + dt;
   }
 
   render(ctx) {
     ctx.save();
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = this.kind === "coin" ? 12 + Math.sin(this.shineTime * 5) * 6 : 12;
     if (this.image?.complete && this.image.naturalWidth > 0) {
       const scale = Math.min(this.width / this.image.naturalWidth, this.height / this.image.naturalHeight);
       const width = this.image.naturalWidth * scale;

@@ -4,6 +4,7 @@ export const SCREEN = {
   PLANETS: "planets",
   SETTINGS: "settings",
   COMMAND: "command",
+  STORAGE: "storage",
   FLIGHT_INTRO: "flight-intro",
   PLAYING: "playing",
   PAUSED: "paused",

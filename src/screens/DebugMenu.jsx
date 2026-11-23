@@ -1,10 +1,12 @@
 import { useId, useRef, useState } from "react";
 import { AUDIO } from "../game/config/gameConfig.js";
 import { PLANETS } from "../game/data/planets.js";
+import { SCREEN } from "../utils/screenStates.js";
 
 const TABS = [
   { id: "settings", label: "Configurações" },
   { id: "progress", label: "Progresso" },
+  { id: "gold", label: "Ouro" },
   { id: "stages", label: "Fases" },
   { id: "session", label: "Sessão" },
   { id: "screens", label: "Telas" },
@@ -21,6 +23,7 @@ const DEBUG_SCREENS = [
   { id: "menu", label: "Menu principal" },
   { id: "planets", label: "Seleção de fases" },
   { id: "command", label: "Laboratório" },
+  { id: SCREEN.STORAGE, label: "Armazém de ouro" },
   { id: "settings", label: "Configurações" },
   { id: "playing", label: "Fase (jogando)" },
   { id: "paused", label: "Fase (pausada)" },
@@ -28,7 +31,8 @@ const DEBUG_SCREENS = [
   { id: "defeat", label: "Derrota" },
 ];
 
-export function DebugMenu({ progress, run, controls, onClose, onChange, onGrant, onUnlockAll, onCompleteStage, onUncompleteStage, onStartStage,
+export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, onChange, onGrant, onGrantRunCoins, onGrantGold,
+  onUnlockAll, onCompleteStage, onUncompleteStage, onStartStage,
   onSetSpeed, onSetGodmode, onSetDuration, onGrantPowerUp, onNavigate }) {
   const ids = useId();
   const [activeTab, setActiveTab] = useState("settings");
@@ -111,6 +115,25 @@ export function DebugMenu({ progress, run, controls, onClose, onChange, onGrant,
               ))}
             </div>
             <button type="button" className="debug-menu__button" onClick={onUnlockAll}>Desbloquear todos os planetas</button>
+          </div>}
+
+          {activeTab === "gold" && <div className="debug-menu__section">
+            <h2>Armazém de ouro</h2>
+            <p className="debug-menu__hint">Saldo {progress.gold.total} · {progress.gold.total - progress.gold.seenTotal} a animar</p>
+            <div className="debug-menu__grant-grid">
+              <div className="debug-menu__grant">
+                <span>Moedas no HUD da partida</span>
+                <button type="button" disabled={!canGrantRunCoins} onClick={() => onGrantRunCoins(1)}>+1</button>
+                <button type="button" disabled={!canGrantRunCoins} onClick={() => onGrantRunCoins(25)}>+25</button>
+              </div>
+              <div className="debug-menu__grant">
+                <span>Ouro de teste</span>
+                <button type="button" onClick={() => onGrantGold(100)}>+100</button>
+                <button type="button" onClick={() => onGrantGold(1000)}>+1.000</button>
+              </div>
+            </div>
+            <button type="button" className="debug-menu__button debug-menu__button--primary"
+              onClick={() => onNavigate(SCREEN.STORAGE)}>Abrir armazém</button>
           </div>}
 
           {activeTab === "stages" && <div className="debug-menu__section">

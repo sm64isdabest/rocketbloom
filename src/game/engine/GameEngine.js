@@ -21,6 +21,7 @@ import { finishGameAudio, pauseGameAudio, playGameSound, startGameAudio } from "
 import { activatePowerUp, createPowerUpState, getNextMysteryBoxDelay, getRandomPowerUp, tickPowerUps } from "../systems/powerUps.js";
 import { renderPowerUpIntro } from "../systems/powerUpPresentation.js";
 import { createCollisionImpactState, getCollisionImpactSpeedFactor, tickCollisionImpact, triggerCollisionImpact } from "../systems/collisionImpact.js";
+import { collectCoins } from "../systems/coinManager.js";
 
 const VICTORY_LAUNCH_DURATION_MS = 1100;
 const POWER_UP_FEEDBACK = {
@@ -240,6 +241,12 @@ export class GameEngine {
   grantDebugPowerUp(power) {
     if (!Object.hasOwn(POWER_UPS, power)) throw new Error("Poder de debug inválido.");
     this.receivePowerUp(power);
+  }
+
+  grantDebugCoins(amount) {
+    if (this.ended || this.disposed) return;
+    this.coins = collectCoins(this.coins, amount);
+    this.emitHud(true);
   }
 
   stop() {
@@ -600,11 +607,11 @@ export class GameEngine {
     for (const collectible of this.collectibles) {
       if (!collectible.alive) continue;
       collectible.speed = this.getEntitySpeed(SPAWN.collectibleFallSpeed);
-      collectible.update(dt);
+      collectible.update(dt, this.reducedMotion);
       if (aabbOverlaps(this.rocket, collectible)) {
         collectible.alive = false;
         if (collectible.kind === "diamond") this.diamonds += 1;
-        else this.coins += 1;
+        else this.coins = collectCoins(this.coins);
         playGameSound(collectible.kind === "diamond" ? "diamond" : "coin");
         this.questionFeedback = collectible.kind === "diamond" ? "Diamante coletado +1" : "Moeda coletada +1";
         this.feedbackTimerMs = 700;

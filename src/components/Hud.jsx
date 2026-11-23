@@ -9,7 +9,8 @@ export function Hud({ snapshot, endless, onPause }) {
   return (
     <div className="hud" aria-label="Indicadores da fase">
       <div className="hud__cluster">
-        <span className="hud__stat hud__stat--coins" role="img" aria-label={`${snapshot?.coins ?? 0} moedas coletadas`}>
+        <span key={snapshot?.coins ?? 0} className={`hud__stat hud__stat--coins${snapshot?.coins ? " hud__stat--coin-pulse" : ""}`}
+          role="img" aria-label={`${snapshot?.coins ?? 0} moedas coletadas`}>
           <img className="hud__resource-icon hud__resource-icon--coin" src={getHudAssetUrl("coin.webp", APP_BASE)} alt="" aria-hidden="true" />
           <b>{String(snapshot?.coins ?? 0).padStart(2, "0")}</b>
         </span>

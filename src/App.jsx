@@ -5,12 +5,14 @@ import { PROJECT_IMAGES } from "./game/data/projectImages.js";
 import { getPlanetById, getStageById } from "./game/data/planets.js";
 import { usePersistentProgress } from "./hooks/usePersistentProgress.js";
 import { applyRunOutcome } from "./utils/runProgress.js";
+import { acknowledgeGold, creditGold, toggleDecoration } from "./utils/goldStorage.js";
 import { BootScreen } from "./screens/BootScreen.jsx";
 import { ErrorScreen } from "./screens/ErrorScreen.jsx";
 import { MenuScreen } from "./screens/MenuScreen.jsx";
 import { PlanetsScreen } from "./screens/PlanetsScreen.jsx";
 import { SettingsScreen } from "./screens/SettingsScreen.jsx";
 import { CommandRoomScreen } from "./screens/CommandRoomScreen.jsx";
+import { StorageScreen } from "./screens/StorageScreen.jsx";
 import { PlayScreen } from "./screens/PlayScreen.jsx";
 import { PauseOverlay } from "./screens/PauseOverlay.jsx";
 import { VictoryScreen } from "./screens/VictoryScreen.jsx";
@@ -32,6 +34,7 @@ export default function App() {
   const { progress, warning, fatal, patchSettings, persist, resetProgress } = usePersistentProgress();
   const [screen, setScreen] = useState(SCREEN.BOOT);
   const [menuPage, setMenuPage] = useState(SCREEN.MENU);
+  const storageReturnPage = useRef(SCREEN.MENU);
   const [navigationContext, dispatchNavigationContext] = useReducer(navigationContextReducer, initialNavigationContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsTrigger = useRef(null);
@@ -151,10 +154,10 @@ export default function App() {
   }, [reducedMotion, runKey, screen]);
 
   useEffect(() => {
-    if (!completionStageId) return undefined;
+    if (!completionStageId || screen !== SCREEN.MENU || menuPage !== SCREEN.PLANETS) return undefined;
     const timer = window.setTimeout(() => setCompletionStageId(null), 2800);
     return () => window.clearTimeout(timer);
-  }, [completionStageId]);
+  }, [completionStageId, menuPage, screen]);
 
   useEffect(() => {
     if (progress) configureAudio(progress.settings);
@@ -198,38 +201,51 @@ export default function App() {
     setScreen(reducedMotion ? SCREEN.PLAYING : SCREEN.FLIGHT_INTRO);
   };
 
-  const debugUpdateProgress = (update) => persist(update(progress));
   const debugCompleteStage = (planetId, stageId) => {
     try {
-      debugUpdateProgress((current) => completeDebugStage(current, planetId, stageId));
+      persist((current) => completeDebugStage(current, planetId, stageId));
     } catch (error) {
       console.error(error);
     }
   };
   const debugUncompleteStage = (planetId, stageId) => {
     try {
-      debugUpdateProgress((current) => uncompleteDebugStage(current, planetId, stageId));
+      persist((current) => uncompleteDebugStage(current, planetId, stageId));
     } catch (error) {
       console.error(error);
     }
   };
 
   const markPlanetSeen = useCallback((planetId) => {
-    if (!progress || progress.seenPlanetIds?.includes(planetId)) return;
-    persist({
-      ...progress,
-      seenPlanetIds: [...(progress.seenPlanetIds ?? []), planetId],
+    persist((current) => {
+      if (current.seenPlanetIds.includes(planetId)) return current;
+      return { ...current, seenPlanetIds: [...current.seenPlanetIds, planetId] };
     });
-  }, [persist, progress]);
+  }, [persist]);
+
+  const updateGold = useCallback((update) => {
+    persist((current) => {
+      const gold = update(current.gold);
+      return gold === current.gold ? current : { ...current, gold };
+    });
+  }, [persist]);
+
+  const acknowledgeGoldDeposit = useCallback((total) => {
+    updateGold((gold) => acknowledgeGold(gold, total));
+  }, [updateGold]);
+
+  const openStorage = (returnPage = SCREEN.MENU) => {
+    storageReturnPage.current = returnPage;
+    setMenuPage(SCREEN.STORAGE);
+  };
 
   const recordOutcome = useCallback((outcome, snapshot) => {
     if (!snapshot) return;
-    const applied = applyRunOutcome(progress, snapshot, outcome);
-    if (!applied.alreadyApplied) persist(applied.progress);
-  }, [persist, progress]);
+    persist((current) => applyRunOutcome(current, snapshot, outcome).progress);
+  }, [persist]);
 
   const exitLevel = () => {
-    if (run?.mode === "endless") recordOutcome("exit", debugEngineRef.current?.getSnapshot());
+    recordOutcome("exit", debugEngineRef.current?.getSnapshot());
     dispatchNavigationContext({ type: "exit-run" });
     setCompletionStageId(null);
     setSettingsOpen(false);
@@ -267,12 +283,13 @@ export default function App() {
     setScreen((current) => current === SCREEN.VICTORY_LAUNCH ? SCREEN.VICTORY : current);
   }, []);
 
-  const returnFromResult = () => {
+  const returnFromResult = (openGoldStorage = false) => {
     const destination = getOutcomeReturn(screen === SCREEN.VICTORY ? "victory" : "defeat", outcomeSnapshot);
     dispatchNavigationContext({ type: "exit-run" });
     setRun(null);
     setOutcomeSnapshot(null);
-    setMenuPage(destination.menuPage);
+    if (openGoldStorage) openStorage(destination.menuPage);
+    else setMenuPage(destination.menuPage);
     setCompletionStageId(destination.completedStageId);
     setScreen(SCREEN.MENU);
   };
@@ -321,6 +338,17 @@ export default function App() {
     }
     setSettingsOpen(false);
     setCompletionStageId(null);
+    if (destination === SCREEN.STORAGE) {
+      if (screen === SCREEN.PAUSED || screen === SCREEN.PLAYING) {
+        recordOutcome("exit", debugEngineRef.current?.getSnapshot());
+      }
+      if (menuPage !== SCREEN.STORAGE || screen !== SCREEN.MENU) openStorage();
+      dispatchNavigationContext({ type: "exit-run" });
+      setRun(null);
+      setOutcomeSnapshot(null);
+      setScreen(SCREEN.MENU);
+      return;
+    }
     if ([SCREEN.MENU, SCREEN.PLANETS, SCREEN.COMMAND].includes(destination)) {
       setRun(null);
       setOutcomeSnapshot(null);
@@ -346,10 +374,13 @@ export default function App() {
       progress={progress}
       run={run}
       controls={debugControls}
+      canGrantRunCoins={Boolean(run && [SCREEN.PLAYING, SCREEN.PAUSED].includes(screen))}
       onClose={closeDebug}
       onChange={patchSettings}
-      onGrant={(currency, amount) => debugUpdateProgress((current) => addDebugCurrency(current, currency, amount))}
-      onUnlockAll={() => debugUpdateProgress(unlockAllPlanets)}
+      onGrant={(currency, amount) => persist((current) => addDebugCurrency(current, currency, amount))}
+      onGrantRunCoins={(amount) => debugEngineRef.current?.grantDebugCoins(amount)}
+      onGrantGold={(amount) => updateGold((gold) => creditGold(gold, amount))}
+      onUnlockAll={() => persist(unlockAllPlanets)}
       onCompleteStage={debugCompleteStage}
       onUncompleteStage={debugUncompleteStage}
       onStartStage={startStage}
@@ -375,20 +406,32 @@ export default function App() {
   return (
     <>
     <FullscreenButton hidden={settingsOpen || [SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH].includes(screen)
-      || (screen === SCREEN.MENU && menuPage === SCREEN.COMMAND)} />
+      || (screen === SCREEN.MENU && [SCREEN.COMMAND, SCREEN.STORAGE].includes(menuPage))} />
     <div
       className={`app-shell ${reducedMotion ? "motion-reduced" : ""}`}
       onClickCapture={(event) => {
         if (event.target.closest?.("button")) playInterfaceSound("menuClick");
       }}
     >
-      <div inert={settingsOpen}>
+      <div inert={settingsOpen || (debugOpen && screen === SCREEN.MENU && menuPage === SCREEN.STORAGE)}>
       {screen === SCREEN.MENU && menuPage === SCREEN.MENU ? (
         <MenuScreen
           progress={progress}
           warning={warning}
           onPlay={() => setMenuPage(SCREEN.PLANETS)}
+          onStorage={() => openStorage()}
           onSettings={openSettings}
+        />
+      ) : null}
+      {screen === SCREEN.MENU && menuPage === SCREEN.STORAGE ? (
+        <StorageScreen
+          key={progress.gold.total}
+          gold={progress.gold}
+          reducedMotion={reducedMotion}
+          inputBlocked={debugOpen || settingsOpen}
+          onBack={() => setMenuPage(storageReturnPage.current)}
+          onAcknowledge={acknowledgeGoldDeposit}
+          onToggleDecoration={(id) => updateGold((gold) => toggleDecoration(gold, id))}
         />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.PLANETS ? (
@@ -450,12 +493,13 @@ export default function App() {
           stage={stage}
           snapshot={outcomeSnapshot}
           bestScore={progress.endlessHighScores?.[planet?.id] ?? 0}
-          onContinue={returnFromResult}
+          onContinue={() => returnFromResult()}
+          onStorage={() => returnFromResult(true)}
           onRetry={endlessResult ? retryStage : undefined}
         />
       ) : null}
       {screen === SCREEN.DEFEAT && !endlessResult ? (
-        <DefeatScreen onRetry={retryStage} />
+        <DefeatScreen onRetry={retryStage} onStorage={() => returnFromResult(true)} />
       ) : null}
       </div>
       {settingsOpen ? (

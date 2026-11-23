@@ -1,6 +1,7 @@
 import { AUDIO, PROGRESS_VERSION, STORAGE_KEY } from "../game/config/gameConfig.js";
 import { getCampaignUnlocks, PLANETS } from "../game/data/planets.js";
 import { getPlantGrowthIndex, PLANTS } from "../game/data/plants.js";
+import { createGoldStorage } from "./goldStorage.js";
 
 const campaignStageIds = new Set(PLANETS.flatMap(({ stages }) => stages.map(({ id }) => id)));
 
@@ -8,6 +9,7 @@ export function createDefaultProgress() {
   return {
     version: PROGRESS_VERSION,
     coins: 0,
+    gold: createGoldStorage(),
     diamonds: 0,
     money: 0,
     unlockedPlanetIds: ["earth"],
@@ -55,12 +57,12 @@ function sanitizeProgressMap(value, max = 1) {
     .map(([id, amount]) => [id, Math.min(max, amount)]));
 }
 
-export function loadProgress(storage = globalThis.localStorage) {
-  if (!storage) {
-    return { progress: createDefaultProgress(), error: null, source: "memory" };
-  }
-
+export function loadProgress(providedStorage) {
   try {
+    const storage = providedStorage === undefined ? globalThis.localStorage : providedStorage;
+    if (!storage) {
+      return { progress: createDefaultProgress(), error: null, source: "memory" };
+    }
     const raw = storage.getItem(STORAGE_KEY);
     if (!raw) {
       return { progress: createDefaultProgress(), error: null, source: "default" };
@@ -97,6 +99,9 @@ export function loadProgress(storage = globalThis.localStorage) {
       progress: {
         ...createDefaultProgress(),
         ...parsed,
+        gold: createGoldStorage(parsed.gold),
+        processedRunIds: Array.isArray(parsed.processedRunIds)
+          ? parsed.processedRunIds.filter((id) => typeof id === "string").slice(-1000) : [],
         completedStageIds,
         unlockedPlanetIds: getCampaignUnlocks(parsed.unlockedPlanetIds, completedStageIds),
         seenPlanetIds: Array.isArray(parsed.seenPlanetIds)
@@ -168,13 +173,17 @@ function readResetId(raw) {
   }
 }
 
+function staleProgress() {
+  return { ok: false, stale: true, error: "O progresso foi reiniciado em outra aba. Recarregue o jogo." };
+}
+
 function writeProgress(progress, expectedResetId, providedStorage) {
   try {
     const storage = providedStorage === undefined ? globalThis.localStorage : providedStorage;
     if (!storage) return { ok: false, error: "Armazenamento local indisponível." };
     const currentResetId = typeof expectedResetId === "string" ? expectedResetId : null;
     if (readResetId(storage.getItem?.(STORAGE_KEY)) !== currentResetId) {
-      return { ok: false, stale: true, error: "O progresso foi reiniciado em outra aba. Recarregue o jogo." };
+      return staleProgress();
     }
     storage.setItem(STORAGE_KEY, JSON.stringify(progress));
     return { ok: true, error: null };
@@ -185,6 +194,15 @@ function writeProgress(progress, expectedResetId, providedStorage) {
 
 export function saveProgress(progress, storage) {
   return writeProgress(progress, progress.resetId ?? null, storage);
+}
+
+export function updateSavedProgress(current, update, { storage, preferMemory = false } = {}) {
+  const saved = preferMemory ? null : loadProgress(storage);
+  const base = saved?.source === "storage" ? saved.progress : current;
+  if ((base.resetId ?? null) !== (current.resetId ?? null)) return staleProgress();
+  const progress = update(base);
+  if (progress === base) return { ok: true, error: null, progress };
+  return { ...saveProgress(progress, storage), progress };
 }
 
 export function resetSavedProgress(current, storage) {

@@ -1,6 +1,7 @@
 import { REWARDS } from "../game/config/gameConfig.js";
 import { getCampaignUnlocks, getPlanetById } from "../game/data/planets.js";
 import { getPlantById, getPlantGrowthIndex } from "../game/data/plants.js";
+import { createGoldStorage, creditGold } from "./goldStorage.js";
 
 const NO_REWARDS = { coins: 0, diamonds: 0, money: 0, plantMoney: 0, sustainabilityPoints: 0, plantName: null, stageCompleted: false };
 
@@ -18,6 +19,7 @@ export function applyRunOutcome(progress, snapshot, outcome) {
     };
   }
   const processedRunIds = [...(progress.processedRunIds ?? []), ...(runId ? [runId] : [])].slice(-1000);
+  const gold = creditGold(progress.gold ?? createGoldStorage(), snapshot?.coins);
   if (snapshot?.mode === "endless") {
     const { planetId, endlessScore } = snapshot;
     const endlessHighScores = progress.endlessHighScores ?? {};
@@ -26,9 +28,18 @@ export function applyRunOutcome(progress, snapshot, outcome) {
     return {
       progress: {
         ...progress,
+        gold,
         processedRunIds,
         endlessHighScores: improved ? { ...endlessHighScores, [planetId]: Math.floor(endlessScore) } : endlessHighScores,
       },
+      rewards: { ...NO_REWARDS },
+      alreadyApplied: false,
+    };
+  }
+
+  if (outcome === "exit") {
+    return {
+      progress: gold === progress.gold ? progress : { ...progress, gold, processedRunIds },
       rewards: { ...NO_REWARDS },
       alreadyApplied: false,
     };
@@ -39,6 +50,7 @@ export function applyRunOutcome(progress, snapshot, outcome) {
   const earnedDiamonds = replayingCompletedStage ? 0 : (snapshot?.diamonds ?? 0) * REWARDS.diamondValue;
   const next = {
     ...progress,
+    gold,
     coins: progress.coins + earnedCoins,
     diamonds: progress.diamonds + earnedDiamonds,
     unlockedPlanetIds: [...progress.unlockedPlanetIds],

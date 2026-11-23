@@ -1,14 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
-import { loadProgress, resetSavedProgress, saveProgress } from "../utils/storage.js";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { loadProgress, resetSavedProgress, updateSavedProgress } from "../utils/storage.js";
 
 export function usePersistentProgress() {
   const [progress, setProgress] = useState(null);
   const [warning, setWarning] = useState(null);
   const [fatal, setFatal] = useState(null);
+  const currentProgress = useRef(null);
+  const hasUnsavedProgress = useRef(false);
 
   useEffect(() => {
     try {
       const result = loadProgress();
+      currentProgress.current = result.progress;
       setProgress(result.progress);
       setWarning(result.error);
     } catch (error) {
@@ -16,13 +19,18 @@ export function usePersistentProgress() {
     }
   }, []);
 
-  const persist = useCallback((next) => {
-    const result = saveProgress(next);
+  const persist = useCallback((update) => {
+    const current = currentProgress.current;
+    if (!current) return;
+    const result = updateSavedProgress(current, update, { preferMemory: hasUnsavedProgress.current });
     if (result.stale) {
       window.location.reload();
       return;
     }
-    setProgress(next);
+    if (result.progress === current) return;
+    currentProgress.current = result.progress;
+    hasUnsavedProgress.current = !result.ok;
+    setProgress(result.progress);
     if (!result.ok) {
       setWarning(result.error);
     }
@@ -30,25 +38,24 @@ export function usePersistentProgress() {
 
   const patchSettings = useCallback(
     (partial) => {
-      if (!progress) {
-        return;
-      }
-      persist({
-        ...progress,
-        settings: { ...progress.settings, ...partial },
-      });
+      persist((current) => ({
+        ...current,
+        settings: { ...current.settings, ...partial },
+      }));
     },
-    [persist, progress],
+    [persist],
   );
 
   const resetProgress = useCallback(() => {
-    const result = resetSavedProgress(progress);
+    const result = resetSavedProgress(currentProgress.current);
     if (result.ok) {
+      currentProgress.current = result.progress;
+      hasUnsavedProgress.current = false;
       setProgress(result.progress);
       setWarning(null);
     }
     return result;
-  }, [progress]);
+  }, []);
 
   return { progress, warning, fatal, persist, patchSettings, resetProgress };
 }

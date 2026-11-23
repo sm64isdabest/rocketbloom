@@ -181,6 +181,18 @@ Não houve dificuldades identificadas.
 
 - **Planta:** conquistada durante as fases, oferece dinheiro e progresso ao jogador.
 
+### Armazém de ouro
+
+Cada moeda coletada rende 1 ouro ao encerrar o voo, inclusive na derrota, ao sair pela pausa ou no modo infinito. O **Armazém** fica no menu principal e nas telas de resultado. Lá, as moedas pendentes voam até a barra, e as metas de 100, 300, 600, 1.000 e 2.000 de ouro liberam decorações que podem ser equipadas ou removidas. O jogo guarda o saldo e as escolhas no perfil local.
+
+Durante o depósito, clique na tela ou pressione **Enter**, **Espaço** ou **Esc** para pular. Com movimento reduzido, o saldo e os desbloqueios aparecem direto.
+
+#### Testar com o menu de debug
+
+1. Segure **Q** e pressione **P** para abrir o menu de debug. Na aba **Ouro**, use **+100** ou **+1.000** em **Ouro de teste** e clique em **Abrir armazém** para testar a animação e as metas.
+2. Para testar o HUD, inicie uma fase, abra a mesma aba e use **+1** ou **+25** em **Moedas no HUD da partida**. Feche o debug para ver o contador ou clique em **Abrir armazém** para encerrar o voo e depositar.
+3. Equipe uma decoração, recarregue a página e reabra o Armazém para conferir o saldo e a escolha. O ouro de teste também fica salvo no perfil usado no teste.
+
 ## Desenvolvimento
 
 Aplicação web com React, Vite, JavaScript e HTML5 Canvas.

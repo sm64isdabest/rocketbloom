@@ -309,20 +309,16 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
   paint-order: stroke fill;
 }
 .menu__option img { width: clamp(37px, 13vw, 52px); height: clamp(37px, 13vw, 52px); flex: 0 0 auto; object-fit: contain; }
-.menu__option--shop { display: none; height: clamp(45px, 5.7vh, 51px); margin-top: 2px; border-color: #51400e; border-radius: 14px; background: linear-gradient(110deg, #e2b83e, #75520d); box-shadow: inset 0 2px 0 rgba(255, 235, 136, .4), 0 3px 0 #2b1e07; }
+.menu__option--storage { height: clamp(45px, 5.7vh, 51px); margin-top: 2px; border-color: #96703a; border-radius: 14px; background: linear-gradient(110deg, #684722, #39270f); box-shadow: inset 0 2px 0 rgba(255, 235, 136, .4), 0 3px 0 #2b1e07; }
 .menu__option--info { height: clamp(36px, 4.3vh, 39px); margin-top: 3px; gap: 8px; border: 1px solid rgba(230, 229, 244, .84); border-radius: 5px; background: linear-gradient(110deg, rgba(128, 128, 148, .78), rgba(72, 73, 94, .8)); box-shadow: inset 0 1px 0 rgba(255,255,255,.37), 0 2px 4px rgba(0,0,0,.25); font-size: clamp(.98rem, 5.6vw, 1.27rem); font-weight: 600; }
 .menu__info-icon { display: grid; width: 22px; height: 22px; flex: 0 0 auto; place-items: center; border: 2px solid #090c13; border-radius: 50%; color: #090c13; font: 700 15px/1 Georgia, serif; text-shadow: none; }
 .menu__warning { position: absolute; z-index: 2; top: 59px; right: 12px; width: min(310px, calc(100% - 24px)); margin: 0; padding: 10px 12px; border: 1px solid rgba(255, 208, 109, .6); border-radius: 9px; color: #fff4d4; background: rgba(41, 26, 12, .9); font-size: .76rem; line-height: 1.45; }
-.menu__notice-backdrop { position: fixed; z-index: 6; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(2, 5, 18, .72); backdrop-filter: blur(5px); }
-.menu__notice { display: grid; width: min(380px, 100%); justify-items: center; gap: 10px; padding: 25px 22px; text-align: center; }
-.menu__notice h2 { margin: 0; font-size: clamp(1.35rem, 6vw, 1.8rem); }
-.menu__notice .muted { margin: 0 0 6px; font-size: .9rem; line-height: 1.6; }
 
 @media (max-height: 740px) {
   .menu__layout { padding-top: max(64px, 10vh); }
   .menu__logo { width: min(72vw, 245px, 40vh); }
   .menu__buttons { gap: 7px; margin-top: clamp(12px, 3.6vh, 24px); }
-  .menu__option--shop { height: 38px; margin-top: 0; }
+  .menu__option--storage { height: 38px; margin-top: 0; }
   .menu__option--info { height: 30px; margin-top: 0; }
 }
 @media (max-width: 360px) {
@@ -636,6 +632,10 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 /* In-flight resource counters and top question placement */
 .hud__resource-icon { display: block; flex: 0 0 auto; object-fit: contain; }
 .hud__resource-icon--coin { width: 29px; height: 29px; }
+.hud__stat--coin-pulse { animation: hud-coin-pulse .35s ease-out; }
+@keyframes hud-coin-pulse {
+  30% { box-shadow: 0 0 15px #ffcb63a6, inset 0 0 11px #ffc85d55; }
+}
 .hud__resource-icon--diamond { width: 32px; height: 27px; }
 .resource-diamond-icon { display: inline-block; width: 1.25em; height: 1.25em; object-fit: contain; vertical-align: middle; }
 .hud__stat--diamonds { min-width: 124px; justify-content: flex-start; }
@@ -1290,7 +1290,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .debug-menu__header h1 { margin: 3px 0 0; font-size: clamp(1.35rem, 4vw, 1.8rem); letter-spacing: -.04em; }
 .debug-menu__eyebrow { margin: 0; color: #76dbb5; font: 600 .62rem/1.4 "DM Mono", monospace; letter-spacing: .14em; }
 .debug-menu__close { display: grid; width: 38px; height: 38px; flex: none; place-items: center; border: 1px solid rgba(186, 229, 221, .2); border-radius: 10px; background: rgba(255, 255, 255, .05); color: white; font-size: 1.7rem; cursor: pointer; }
-.debug-menu__tabs { display: flex; gap: 6px; padding: 0 24px; border-bottom: 1px solid rgba(190, 226, 221, .13); }
+.debug-menu__tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 24px; border-bottom: 1px solid rgba(190, 226, 221, .13); }
 .debug-menu__tabs button { padding: 10px 13px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #9eb9b7; font-family: inherit; font-size: .82rem; font-weight: 600; line-height: 1.2; cursor: pointer; }
 .debug-menu__tabs button.is-active { border-bottom-color: #75e3b7; color: #eafff5; }
 .debug-menu__tabs button:focus-visible, .debug-menu button:focus-visible, .debug-menu select:focus-visible, .debug-menu input:focus-visible { outline: 2px solid #9fffd2; outline-offset: 2px; }

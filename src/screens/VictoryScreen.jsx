@@ -10,7 +10,7 @@ function formatFlightTime(elapsedMs) {
   return `${minutes}:${seconds}`;
 }
 
-export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, onRetry }) {
+export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, onRetry, onStorage }) {
   const titleRef = useRef(null);
 
   useEffect(() => { titleRef.current?.focus(); }, []);
@@ -50,6 +50,7 @@ export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, 
         <div className="victory-screen__actions">
           {onRetry ? <button className="btn" type="button" onClick={onRetry}>Voar novamente</button> : null}
           <button className={onRetry ? "btn btn--ghost" : "btn"} type="button" onClick={onContinue}>Voltar à seleção de fases</button>
+          {onStorage ? <button className="btn btn--ghost" type="button" onClick={onStorage}>Abrir armazém</button> : null}
         </div>
       </section>
     </main>

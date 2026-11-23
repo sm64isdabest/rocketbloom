@@ -1,32 +1,10 @@
-import { useEffect, useId, useState } from "react";
 import { MenuSpaceBackground } from "./MenuSpaceBackground.jsx";
 import { getMenuAssetUrl } from "./menuModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const menuAsset = (filename) => getMenuAssetUrl(filename, APP_BASE);
 
-const NOTICE_CONTENT = {
-  shop: {
-    title: "Loja",
-    body: "A loja ainda não está disponível nesta versão. Suas moedas e diamantes continuam guardados no progresso da missão.",
-  },
-};
-
-export function MenuScreen({ warning, onPlay, onSettings }) {
-  const [notice, setNotice] = useState(null);
-  const noticeTitleId = useId();
-
-  useEffect(() => {
-    if (!notice) return undefined;
-    const closeOnEscape = (event) => {
-      if (event.key === "Escape") setNotice(null);
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [notice]);
-
-  const noticeContent = notice ? NOTICE_CONTENT[notice] : null;
-
+export function MenuScreen({ warning, onPlay, onSettings, onStorage }) {
   return (
     <main
       className="screen menu screen--home"
@@ -48,28 +26,14 @@ export function MenuScreen({ warning, onPlay, onSettings }) {
             <span>Jogar</span>
           </button>
 
-          <button type="button" className="menu__option menu__option--shop" onClick={() => setNotice("shop")}>
+          <button type="button" className="menu__option menu__option--storage" onClick={onStorage}>
             <img src={menuAsset("shop.webp")} alt="" />
-            <span>Loja</span>
+            <span>Armazém</span>
           </button>
         </nav>
       </section>
 
       {warning ? <p className="menu__warning" role="status">{warning}</p> : null}
-
-      {noticeContent ? (
-        <div className="menu__notice-backdrop" onMouseDown={(event) => {
-          if (event.target === event.currentTarget) setNotice(null);
-        }}>
-          <section className="menu__notice panel" role="dialog" aria-modal="true" aria-labelledby={noticeTitleId}>
-            <h2 id={noticeTitleId}>{noticeContent.title}</h2>
-            <p className="muted">{noticeContent.body}</p>
-            <button type="button" className="btn btn--launch" onClick={() => setNotice(null)} autoFocus>
-              Voltar
-            </button>
-          </section>
-        </div>
-      ) : null}
     </main>
   );
 }
