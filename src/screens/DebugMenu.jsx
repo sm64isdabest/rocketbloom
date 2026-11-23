@@ -24,7 +24,7 @@ const DEBUG_SCREENS = [
   { id: "menu", label: "Menu principal" },
   { id: "planets", label: "Seleção de fases" },
   { id: "command", label: "Laboratório" },
-  { id: SCREEN.STORAGE, label: "Armazém de ouro" },
+  { id: SCREEN.STORAGE, label: "Cofre de Moedas" },
   { id: "settings", label: "Configurações" },
   { id: "playing", label: "Fase (jogando)" },
   { id: "paused", label: "Fase (pausada)" },
@@ -120,7 +120,7 @@ export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, 
           </div>}
 
           {activeTab === "gold" && <div className="debug-menu__section">
-            <h2>Armazém de ouro</h2>
+            <h2>Cofre de Moedas</h2>
             <p className="debug-menu__hint">Saldo {progress.gold.total} · {progress.gold.total - progress.gold.seenTotal} a animar</p>
             <div className="debug-menu__grant-grid">
               <div className="debug-menu__grant">
@@ -139,7 +139,7 @@ export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, 
                 {nextGoldGoal ? `Creditar até ${nextGoldGoal.amount.toLocaleString("pt-BR")} ouro` : "Todas as metas atingidas"}
               </button>
               <button type="button" className="debug-menu__button debug-menu__button--primary"
-                onClick={() => onNavigate(SCREEN.STORAGE)}>Abrir armazém</button>
+                onClick={() => onNavigate(SCREEN.STORAGE)}>Abrir cofre</button>
             </div>
           </div>}
 

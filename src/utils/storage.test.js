@@ -17,9 +17,9 @@ function memoryStorage(seed = {}) {
   };
 }
 
-test("ouro, depósitos ainda não vistos e decorações equipadas sobrevivem ao recarregar", () => {
+test("ouro, depósitos ainda não vistos e metas vistas sobrevivem ao recarregar", () => {
   const storage = memoryStorage();
-  const progress = { ...createDefaultProgress(), gold: { total: 617, seenTotal: 300, seenGoalIds: ["aurora", "stars"], equippedIds: ["aurora", "saturn"] } };
+  const progress = { ...createDefaultProgress(), gold: { total: 617, seenTotal: 300, seenGoalIds: ["aurora", "stars"] } };
   assert.ok(saveProgress(progress, storage).ok);
   assert.deepEqual(loadProgress(storage).progress.gold, progress.gold);
   assert.deepEqual(progressStorage.resetSavedProgress(progress, storage).progress.gold, createDefaultProgress().gold);
@@ -27,7 +27,7 @@ test("ouro, depósitos ainda não vistos e decorações equipadas sobrevivem ao 
 
 test("terminar uma animação preserva o saldo acrescentado por outra aba depois que ela começou", () => {
   const storage = memoryStorage();
-  const openTab = { ...createDefaultProgress(), gold: { total: 100, seenTotal: 0, equippedIds: [] } };
+  const openTab = { ...createDefaultProgress(), gold: { total: 100, seenTotal: 0 } };
   assert.ok(saveProgress(openTab, storage).ok);
   assert.ok(saveProgress({ ...openTab, coins: 12, gold: creditGold(openTab.gold, 1000) }, storage).ok);
   const result = progressStorage.updateSavedProgress(openTab, (current) => ({
@@ -35,12 +35,12 @@ test("terminar uma animação preserva o saldo acrescentado por outra aba depois
   }), { storage });
   assert.ok(result.ok);
   const saved = loadProgress(storage).progress;
-  assert.deepEqual(saved.gold, { total: 1100, seenTotal: 100, seenGoalIds: ["aurora"], equippedIds: [] });
+  assert.deepEqual(saved.gold, { total: 1100, seenTotal: 100, seenGoalIds: ["aurora"] });
   assert.equal(saved.coins, 12);
 });
 
 test("atualizar progresso mantém depósitos em memória se persistir falhou", () => {
-  const local = { ...createDefaultProgress(), gold: { total: 100, seenTotal: 0, equippedIds: [] } };
+  const local = { ...createDefaultProgress(), gold: { total: 100, seenTotal: 0 } };
   const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(createDefaultProgress()) });
   storage.setItem = () => { throw new Error("somente leitura"); };
   const result = progressStorage.updateSavedProgress(local, (current) => ({
@@ -57,7 +57,7 @@ test("perfis antigos ou com ouro inválido mantêm as demais recompensas", () =>
     const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(profile) });
     const { progress } = loadProgress(storage);
     assert.equal(progress.coins, 45);
-    assert.deepEqual(progress.gold, { total: 0, seenTotal: 0, seenGoalIds: [], equippedIds: [] });
+    assert.deepEqual(progress.gold, { total: 0, seenTotal: 0, seenGoalIds: [] });
   }
 });
 
@@ -67,7 +67,7 @@ test("o jogo inicia em memória quando acessar localStorage lança uma exceção
   try {
     const { progress, source } = loadProgress();
     assert.equal(source, "error");
-    assert.deepEqual(progress.gold, { total: 0, seenTotal: 0, seenGoalIds: [], equippedIds: [] });
+    assert.deepEqual(progress.gold, { total: 0, seenTotal: 0, seenGoalIds: [] });
   } finally {
     if (original) Object.defineProperty(globalThis, "localStorage", original);
     else delete globalThis.localStorage;

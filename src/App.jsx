@@ -6,7 +6,8 @@ import { PROJECT_IMAGES } from "./game/data/projectImages.js";
 import { getPlanetById, getStageById } from "./game/data/planets.js";
 import { usePersistentProgress } from "./hooks/usePersistentProgress.js";
 import { applyRunOutcome } from "./utils/runProgress.js";
-import { acknowledgeGold, creditGold, creditNextGoldGoal, toggleDecoration } from "./utils/goldStorage.js";
+import { acknowledgeGold, creditGold, creditNextGoldGoal } from "./utils/goldStorage.js";
+import { Decorations } from "./screens/Decorations.jsx";
 import { BootScreen } from "./screens/BootScreen.jsx";
 import { ErrorScreen } from "./screens/ErrorScreen.jsx";
 import { MenuScreen } from "./screens/MenuScreen.jsx";
@@ -414,10 +415,12 @@ export default function App() {
   const showFlight = run && (screen === SCREEN.PLAYING || screen === SCREEN.PAUSED
     || screen === SCREEN.FLIGHT_INTRO || screen === SCREEN.VICTORY_LAUNCH
     || (screen === SCREEN.DEFEAT && !endlessResult));
+  const showCoinDecorations = !showFlight && ((screen === SCREEN.MENU && menuPage !== SCREEN.STORAGE)
+    || screen === SCREEN.VICTORY || endlessResult);
   return (
     <>
     <FullscreenButton hidden={settingsOpen || [SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH].includes(screen)
-      || (screen === SCREEN.MENU && [SCREEN.COMMAND, SCREEN.STORAGE].includes(menuPage))} />
+      || (screen === SCREEN.MENU && menuPage === SCREEN.COMMAND)} />
     <div
       className={`app-shell ${reducedMotion ? "motion-reduced" : ""}`}
       onClickCapture={(event) => {
@@ -442,7 +445,6 @@ export default function App() {
           onBack={closeStorage}
           onSettings={openSettings}
           onAcknowledge={acknowledgeGoldDeposit}
-          onToggleDecoration={(id) => updateGold((gold) => toggleDecoration(gold, id))}
         />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.PLANETS ? (
@@ -516,6 +518,7 @@ export default function App() {
         <DefeatScreen onRetry={retryStage} />
       ) : null}
       </div>
+      {showCoinDecorations ? <Decorations total={progress.gold.total} /> : null}
       {settingsOpen ? (
         <SettingsScreen progress={progress} onBack={closeSettings} onChange={patchSettings} onResetProgress={resetCampaign} />
       ) : null}

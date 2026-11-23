@@ -19,6 +19,15 @@ test("cada meta tem um SVG próprio e progressivamente mais moedas", () => {
   assert.equal(getTreasureArt(-1), getTreasureArt(0));
 });
 
+test("a decoração usa só o tesouro, sem plataforma, e ganha lingotes nas metas altas", () => {
+  const first = createTreasureSvg(1, { floor: true });
+  const last = createTreasureSvg(GOLD_GOALS.at(-1).treasure.level, { floor: true });
+  assert.match(first, /href="#coin"/);
+  assert.doesNotMatch(first, /M68 196|href="#ingot"/);
+  assert.match(last, /href="#ingot"/);
+  assert.notEqual(getTreasureArt(1, { floor: true }), getTreasureArt(1));
+});
+
 test("pré-carrega cada SVG uma vez inclusive quando uma imagem falha", async () => {
   const attempted = [];
   class FakeImage {
@@ -32,6 +41,6 @@ test("pré-carrega cada SVG uma vez inclusive quando uma imagem falha", async ()
   assert.equal(preloadStorageAssets(FakeImage), pending);
   const result = await pending;
   assert.equal(result.failed, 1);
-  assert.equal(result.loaded, GOLD_GOALS.length + 2);
+  assert.equal(result.loaded, GOLD_GOALS.length * 2 + 2);
   assert.equal(attempted.length, new Set(attempted).size);
 });

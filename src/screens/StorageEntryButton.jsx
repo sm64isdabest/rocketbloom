@@ -34,11 +34,11 @@ export function StorageEntryButton({ gold, previousBalance, reducedMotion, pause
 
   return (
     <button type="button" ref={buttonRef} className={`phase-selection-storage${isNew ? " has-new" : ""}`}
-      onClick={onClick} title="Armazém de ouro"
-      aria-label={`Abrir Armazém, ${format.format(total)} de ouro${isNew ? ", nova meta alcançada" : ""}`}>
+      onClick={onClick} title="Cofre de Moedas"
+      aria-label={`Abrir Cofre de Moedas, ${format.format(total)} de ouro${isNew ? ", nova meta alcançada" : ""}`}>
       <StorageIcon />
       <span className="phase-selection-storage__copy">
-        <span>Armazém</span>
+        <span>Cofre</span>
         <strong>{format.format(reducedMotion ? total : shown)}</strong>
       </span>
       {isNew ? <span className="phase-selection-storage__new" aria-hidden="true" /> : null}

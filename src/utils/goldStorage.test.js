@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { getCrossedGoals, getGoalProgress, getGoldMeterProgress, getHighestGoldGoal, getNextGoldGoal } from "../game/systems/goalSystem.js";
-import { acknowledgeGold, creditGold, creditNextGoldGoal, createGoldStorage, hasUnseenGoldGoals, toggleDecoration } from "./goldStorage.js";
+import { acknowledgeGold, creditGold, creditNextGoldGoal, createGoldStorage, hasUnseenGoldGoals } from "./goldStorage.js";
 
 test("metas incluem todos os desbloqueios cruzados e apontam para a próxima decoração", () => {
   assert.deepEqual(getCrossedGoals(90, 610).map(({ amount }) => amount), [100, 300, 600]);
@@ -60,24 +60,16 @@ test("o save antigo migra as metas vistas e descarta referências corrompidas", 
 test("depósitos ficam disponíveis para animar até serem vistos sem apagar novos depósitos", () => {
   const first = creditGold(createGoldStorage(), 25);
   const second = creditGold(first, 200);
-  assert.deepEqual(first, { total: 25, seenTotal: 0, seenGoalIds: [], equippedIds: [] });
-  assert.deepEqual(acknowledgeGold(second, first.total), { total: 225, seenTotal: 25, seenGoalIds: [], equippedIds: [] });
+  assert.deepEqual(first, { total: 25, seenTotal: 0, seenGoalIds: [] });
+  assert.deepEqual(acknowledgeGold(second, first.total), { total: 225, seenTotal: 25, seenGoalIds: [] });
   assert.equal(acknowledgeGold(second, 999).seenTotal, second.total);
   assert.equal(creditGold(second, Infinity), second);
 });
 
-test("só é possível equipar recompensas desbloqueadas e a decoração pode ser removida", () => {
-  const initial = creditGold(createGoldStorage(), 100);
-  assert.equal(toggleDecoration(initial, "nebula"), initial);
-  const equipped = toggleDecoration(initial, "aurora");
-  assert.deepEqual(equipped.equippedIds, ["aurora"]);
-  assert.deepEqual(toggleDecoration(equipped, "aurora").equippedIds, []);
-});
-
 test("campos inválidos do ouro recebem valores seguros", () => {
-  assert.deepEqual(createGoldStorage(null), { total: 0, seenTotal: 0, seenGoalIds: [], equippedIds: [] });
+  assert.deepEqual(createGoldStorage(null), { total: 0, seenTotal: 0, seenGoalIds: [] });
   assert.deepEqual(createGoldStorage({ total: "100", seenTotal: -1, equippedIds: "aurora" }), createGoldStorage());
   assert.deepEqual(createGoldStorage({ total: 100, seenTotal: 200, equippedIds: ["nebula", "aurora", "aurora", "unknown"] }), {
-    total: 100, seenTotal: 100, seenGoalIds: ["aurora"], equippedIds: ["aurora"],
+    total: 100, seenTotal: 100, seenGoalIds: ["aurora"],
   });
 });

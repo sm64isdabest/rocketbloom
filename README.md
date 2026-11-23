@@ -181,19 +181,19 @@ Não houve dificuldades identificadas.
 
 - **Planta:** conquistada durante as fases, oferece dinheiro e progresso ao jogador.
 
-### Armazém de ouro
+### Cofre de Moedas
 
-Cada moeda coletada rende 1 ouro ao encerrar o voo, inclusive na derrota, ao sair pela pausa ou no modo infinito. O botão **Armazém** fica na seleção de fases, mostra o saldo de ouro e sinaliza metas ainda não vistas. Ao voltar pelo portal, o mesmo planeta e a mesma fase continuam selecionados.
+Cada moeda coletada rende 1 ouro ao encerrar o voo, inclusive na derrota, ao sair pela pausa ou no modo infinito. O botão **Cofre** fica na seleção de fases, mostra o saldo de ouro e sinaliza metas ainda não vistas. Ao voltar pelo portal, o mesmo planeta e a mesma fase continuam selecionados.
 
-As moedas pendentes voam até a barra. As metas de 100, 300, 600, 1.000 e 2.000 de ouro revelam novos tesouros na galeria e liberam decorações que podem ser equipadas ou removidas. O jogo guarda o saldo, as metas vistas e as escolhas no perfil local.
+As moedas pendentes voam até a barra abaixo do tesouro. As metas de 100, 300, 600, 1.000 e 2.000 de ouro mudam a arte do Cofre e aumentam automaticamente as pilhas de moedas nas telas de navegação. Nas metas mais altas, as pilhas também ganham lingotes. O jogo guarda o saldo e as metas vistas no perfil local.
 
 Durante o depósito, clique na tela ou pressione **Enter**, **Espaço** ou **Esc** para pular. Com movimento reduzido, o saldo e os desbloqueios aparecem direto.
 
 #### Testar com o menu de debug
 
-1. Na seleção de fases, segure **Q** e pressione **P**. Na aba **Ouro**, use **Creditar até … ouro** para ganhar o valor exato da próxima meta. Feche o debug com **Esc** para ver o novo saldo e a bolinha de novidade no seletor. Depois entre pelo botão **Armazém** e veja a transformação do tesouro. Repita para percorrer as cinco imagens ou use **+1.000** para testar várias metas no mesmo depósito.
-2. Para testar o HUD, inicie uma fase, abra a mesma aba e use **+1** ou **+25** em **Moedas no HUD da partida**. Feche o debug para ver o contador ou clique em **Abrir armazém** para encerrar o voo e depositar.
-3. Equipe uma decoração, recarregue a página e reabra o Armazém para conferir o saldo e a escolha. O ouro de teste também fica salvo no perfil usado no teste.
+1. Na seleção de fases, segure **Q** e pressione **P**. Na aba **Ouro**, use **Creditar até … ouro** para ganhar o valor exato da próxima meta. Feche o debug com **Esc** para ver o novo saldo e a bolinha de novidade no seletor. Depois entre pelo botão **Cofre** e veja a transformação do tesouro. Repita para percorrer as cinco imagens ou use **+1.000** para testar várias metas no mesmo depósito.
+2. Para testar o HUD, inicie uma fase, abra a mesma aba e use **+1** ou **+25** em **Moedas no HUD da partida**. Feche o debug para ver o contador ou clique em **Abrir cofre** para encerrar o voo e depositar.
+3. Após alcançar uma meta, volte ao seletor, ao menu ou ao laboratório para ver as pilhas automáticas. Recarregue a página para conferir a persistência. O ouro de teste também fica salvo no perfil usado no teste.
 
 ## Desenvolvimento
 

@@ -26,9 +26,8 @@ export const StorageTreasure = memo(function StorageTreasure({ treasure, isFinal
 
   const previous = !reducedMotion && transition?.to === treasure ? transition.from : null;
   return (
-    <figure className="gold-treasure" aria-label="Tesouro atual" data-treasure-level={treasure.level}>
+    <figure className="gold-treasure" aria-label={treasure.name} data-treasure-level={treasure.level}>
       <div className="gold-treasure__chamber">
-        <span className="gold-treasure__grid" aria-hidden="true" />
         {isFinal ? <span className="gold-treasure__aura" aria-hidden="true" /> : null}
         <div key={treasure.level} className={`gold-treasure__art${previous ? " is-transforming" : ""}`}>
           {previous ? <StorageArt src={getTreasureArt(previous.level)} className="gold-treasure__image gold-treasure__image--previous" /> : null}
@@ -42,9 +41,6 @@ export const StorageTreasure = memo(function StorageTreasure({ treasure, isFinal
           ) : null}
         </div>
       </div>
-      <figcaption className="laboratory-plant-caption gold-treasure__caption">
-        <h2>{treasure.name}</h2>
-      </figcaption>
     </figure>
   );
 });

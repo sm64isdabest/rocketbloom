@@ -8,12 +8,10 @@ export function createGoldStorage(value) {
   const seenGoalIds = Array.isArray(value?.seenGoalIds)
     ? reached.filter(({ id }) => value.seenGoalIds.includes(id)).map(({ id }) => id)
     : getCrossedGoals(0, seenTotal).map(({ id }) => id);
-  const equippedIds = Array.isArray(value?.equippedIds) ? value.equippedIds : [];
   return {
     total,
     seenTotal,
     seenGoalIds,
-    equippedIds: reached.map(({ id }) => id).filter((id) => equippedIds.includes(id)),
   };
 }
 
@@ -37,12 +35,4 @@ export function acknowledgeGold(gold, throughTotal) {
   const newlySeen = getCrossedGoals(0, through).filter(({ id }) => !gold.seenGoalIds.includes(id));
   if (seenTotal === gold.seenTotal && !newlySeen.length) return gold;
   return { ...gold, seenTotal, seenGoalIds: [...gold.seenGoalIds, ...newlySeen.map(({ id }) => id)] };
-}
-
-export function toggleDecoration(gold, id) {
-  if (!getCrossedGoals(0, gold.total).some((goal) => goal.id === id)) return gold;
-  const equippedIds = gold.equippedIds.includes(id)
-    ? gold.equippedIds.filter((equippedId) => equippedId !== id)
-    : [...gold.equippedIds, id];
-  return { ...gold, equippedIds };
 }

@@ -72,7 +72,9 @@ function renderChest(open) {
   </g>`;
 }
 
-export function createTreasureSvg(level) {
+const FLOOR_BOUNDS = ["0 0 420 240", "128 156 164 49", "101 118 218 85", "83 109 254 101", "43 65 334 148", "23 53 374 171"];
+
+export function createTreasureSvg(level, { floor = false } = {}) {
   const art = LEVELS[level] ?? LEVELS[0];
   const sparks = Array.from({ length: art.sparks }, (_, i) =>
     stamp("spark", 41 + i * 79 % 339, 35 + i * 53 % 166, 0, i % 4 === 0 ? 1.15 : .55)).join("");
@@ -83,7 +85,7 @@ export function createTreasureSvg(level) {
   const bars = (art.bars ?? []).map(([x, y], i) => stamp("ingot", x, y, i % 2 ? 13 : -12)).join("");
   const gems = (art.gems ?? []).map(([x, y], i) => stamp("gem", x, y, 0, i % 2 ? 1.2 : .9)).join("");
   const orbit = (art.orbit ?? []).map(([x, y], i) => stamp("coin", x, y, i * 23, i % 2 ? 1.1 : .83)).join("");
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 240">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${floor ? FLOOR_BOUNDS[level] ?? FLOOR_BOUNDS[0] : "0 0 420 240"}">
     <defs>${GOLD_GRADIENT}${STEEL_GRADIENT}
       <radialGradient id="aura"><stop stop-color="${art.rays ? "#ffc64f" : "#286fc4"}" stop-opacity="${art.rays ? .68 : .48}"/>
         <stop offset="1" stop-color="#2855a0" stop-opacity="0"/></radialGradient>
@@ -98,23 +100,24 @@ export function createTreasureSvg(level) {
         <path d="M-11-4-6-10H6l5 6L0 11Z" fill="#af59c7"/><path d="m-6-10 2 6L0 11l4-15 2-6M-11-4h22" fill="#ed9feb"/></g>
       <path id="spark" d="M0-7 1.6-1.6 7 0 1.6 1.6 0 7-1.6 1.6-7 0-1.6-1.6Z" fill="#fff2a8"/>
     </defs>
-    <ellipse cx="210" cy="128" rx="${art.radius}" ry="108" fill="url(#aura)"/>
+    ${floor ? "" : `<ellipse cx="210" cy="128" rx="${art.radius}" ry="108" fill="url(#aura)"/>
     ${rays}
     ${art.orbit ? '<ellipse cx="210" cy="112" rx="171" ry="53" transform="rotate(-14 210 112)" fill="none" stroke="#ffd681" stroke-opacity=".65"/><ellipse cx="210" cy="112" rx="174" ry="57" transform="rotate(14 210 112)" fill="none" stroke="#65c9f3" stroke-opacity=".43"/>' : ""}
     <ellipse cx="210" cy="205" rx="173" ry="22" fill="#051025" opacity=".74"/>
     <path d="m67 196 37-19h212l37 19-14 20H81Z" fill="#112447" stroke="#5188b9" stroke-width="1.5"/>
     <path d="M68 196h284l-13 14H81Z" fill="url(#steel)"/>
     <path d="M99 212h36m150 0h36" stroke="#65d9ff" stroke-width="2.4" stroke-linecap="round"/>
-    ${!art.rows.length || art.openChest ? renderChest(art.openChest) : ""}
-    ${renderCoins(art.rows)}${stacks}${bars}${gems}${orbit}${sparks}
+    ${!art.rows.length || art.openChest ? renderChest(art.openChest) : ""}`}
+    ${renderCoins(art.rows)}${stacks}${bars}${gems}${floor ? "" : orbit + sparks}
   </svg>`;
 }
 
 const treasureUrls = new Map();
-export function getTreasureArt(level) {
+export function getTreasureArt(level, { floor = false } = {}) {
   const available = LEVELS[level] ? level : EMPTY_TREASURE.level;
-  if (!treasureUrls.has(available)) treasureUrls.set(available, svgUrl(createTreasureSvg(available)));
-  return treasureUrls.get(available);
+  const key = `${available}:${floor}`;
+  if (!treasureUrls.has(key)) treasureUrls.set(key, svgUrl(createTreasureSvg(available, { floor })));
+  return treasureUrls.get(key);
 }
 
 let preloading;
@@ -124,6 +127,7 @@ export function preloadStorageAssets(ImageConstructor = globalThis.Image) {
     STORAGE_ICON.highlight,
     getTreasureArt(EMPTY_TREASURE.level),
     ...GOLD_GOALS.map(({ treasure }) => getTreasureArt(treasure.level)),
+    ...GOLD_GOALS.map(({ treasure }) => getTreasureArt(treasure.level, { floor: true })),
   ], { ImageConstructor });
   return preloading;
 }
