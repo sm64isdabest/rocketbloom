@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PLANETS } from "../game/data/planets.js";
 import { PLANTS } from "../game/data/plants.js";
-import { getLaboratoryPlantImage, getNextPlanetIndex, shouldShowLaboratoryPlant } from "./laboratoryModel.js";
+import { getLaboratoryPlantImage, getLaboratoryPlantScale, getNextPlanetIndex, shouldShowLaboratoryPlant } from "./laboratoryModel.js";
 import { getPauseAssetUrl, RETURN_ICON_FILE } from "./pauseModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
@@ -15,7 +15,7 @@ export function CommandRoomScreen({ progress, onBack, onSettings }) {
   const growthStage = plantVisible
     ? Math.min(plant.growthStages.length - 1, progress.plantGrowthStages?.[plant.id] ?? 0)
     : 0;
-  const plantStageScale = [0.5, 0.6, 0.68, 0.76, 0.82][growthStage];
+  const plantStageScale = getLaboratoryPlantScale(planet.id, growthStage);
   const plantImage = getLaboratoryPlantImage(planet.id, growthStage, APP_BASE);
   const changePlanet = (direction) => setPlanetIndex((index) => getNextPlanetIndex(index, direction, PLANETS.length));
 

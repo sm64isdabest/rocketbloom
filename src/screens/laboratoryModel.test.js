@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getLaboratoryPlantImage, getNextPlanetIndex, shouldShowLaboratoryPlant } from "./laboratoryModel.js";
+import { getLaboratoryPlantImage, getLaboratoryPlantScale, getNextPlanetIndex, shouldShowLaboratoryPlant } from "./laboratoryModel.js";
 
 test("laboratory sprites follow each planet's seedling-to-mature artwork order", () => {
   const expectedStages = {
@@ -22,6 +22,19 @@ test("laboratory sprites follow each planet's seedling-to-mature artwork order",
 test("laboratory sprite stage is clamped and supports a Vite base path", () => {
   assert.equal(getLaboratoryPlantImage("earth", -3), "/assets/laboratory/plant-01.png");
   assert.equal(getLaboratoryPlantImage("earth", 99, "/rocketbloom/"), "/rocketbloom/assets/laboratory/plant-05.png");
+});
+
+test("Saturn uses individual progressively larger scales without changing the other planets", () => {
+  assert.deepEqual(
+    Array.from({ length: 5 }, (_, stage) => getLaboratoryPlantScale("saturn", stage)),
+    [0.46, 0.54, 0.62, 0.68, 0.7],
+  );
+  for (const planetId of ["earth", "mars", "neptune"]) {
+    assert.deepEqual(
+      Array.from({ length: 5 }, (_, stage) => getLaboratoryPlantScale(planetId, stage)),
+      [0.5, 0.6, 0.68, 0.76, 0.82],
+    );
+  }
 });
 
 test("plant is hidden until the first stage of its planet is complete", () => {
