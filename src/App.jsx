@@ -29,7 +29,7 @@ const PROJECT_IMAGE_URLS = PROJECT_IMAGES.map((image) => `${APP_BASE}${image.sli
 const FLIGHT_INTRO_MS = 1500;
 
 export default function App() {
-  const { progress, warning, fatal, patchSettings, persist } = usePersistentProgress();
+  const { progress, warning, fatal, patchSettings, persist, resetProgress } = usePersistentProgress();
   const [screen, setScreen] = useState(SCREEN.BOOT);
   const [menuPage, setMenuPage] = useState(SCREEN.MENU);
   const [navigationContext, dispatchNavigationContext] = useReducer(navigationContextReducer, initialNavigationContext);
@@ -291,6 +291,23 @@ export default function App() {
     window.requestAnimationFrame(() => settingsTrigger.current?.focus());
   }, []);
 
+  const resetCampaign = () => {
+    const result = resetProgress();
+    if (!result.ok) return result;
+    debugEngineRef.current?.stop();
+    hudRef.current = null;
+    settingsTrigger.current = null;
+    dispatchNavigationContext({ type: "reset" });
+    setRun(null);
+    setOutcomeSnapshot(null);
+    setCompletionStageId(null);
+    setDebugOpen(false);
+    setSettingsOpen(false);
+    setMenuPage(SCREEN.MENU);
+    setScreen(SCREEN.MENU);
+    return result;
+  };
+
   const closeDebug = () => {
     setDebugOpen(false);
     setScreen(debugReturnScreen.current);
@@ -442,7 +459,7 @@ export default function App() {
       ) : null}
       </div>
       {settingsOpen ? (
-        <SettingsScreen progress={progress} onBack={closeSettings} onChange={patchSettings} />
+        <SettingsScreen progress={progress} onBack={closeSettings} onChange={patchSettings} onResetProgress={resetCampaign} />
       ) : null}
       {debugMenu}
     </div>

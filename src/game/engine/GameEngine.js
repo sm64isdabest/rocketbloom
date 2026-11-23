@@ -19,9 +19,16 @@ import { createGameLoop } from "./loop.js";
 import { fitCanvasToContainer } from "./resize.js";
 import { finishGameAudio, pauseGameAudio, playGameSound, startGameAudio } from "../audio/audioManager.js";
 import { activatePowerUp, createPowerUpState, getNextMysteryBoxDelay, getRandomPowerUp, tickPowerUps } from "../systems/powerUps.js";
+import { renderPowerUpIntro } from "../systems/powerUpPresentation.js";
 import { createCollisionImpactState, getCollisionImpactSpeedFactor, tickCollisionImpact, triggerCollisionImpact } from "../systems/collisionImpact.js";
 
 const VICTORY_LAUNCH_DURATION_MS = 1100;
+const POWER_UP_FEEDBACK = {
+  turbo: "TURBO!",
+  star: "ESTRELA! Invencível",
+  bubble: "Bolha ativada",
+  shrink: "Raio encolhedor!",
+};
 
 function makeRunId() {
   return globalThis.crypto?.randomUUID?.() ?? `run-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -111,7 +118,7 @@ export class GameEngine {
     this.questionFeedback = "";
     this.feedbackTimerMs = 0;
 
-    this.input = createInputController(canvas, controlMode);
+    this.input = createInputController(canvas, controlMode, (x, y) => this.prepareAnswerSelection(x, y));
     this.loop = createGameLoop((dt) => this.tick(dt));
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.onVisibilityChange = () => {
@@ -232,16 +239,7 @@ export class GameEngine {
 
   grantDebugPowerUp(power) {
     if (!Object.hasOwn(POWER_UPS, power)) throw new Error("Poder de debug inválido.");
-    if (power === "shrink") {
-      for (const obstacle of this.obstacles) obstacle.startShrink(POWER_UPS.shrink.shrinkMs);
-      this.hazardClearRemainingMs = POWER_UPS.shrink.durationMs;
-      this.shrinkFlashRemainingMs = 180;
-    } else {
-      this.powerUps = activatePowerUp(this.powerUps, power);
-    }
-    this.questionFeedback = ({ turbo: "TURBO!", star: "ESTRELA! Invencível", bubble: "Bolha ativada", shrink: "Raio encolhedor!" })[power];
-    this.feedbackTimerMs = 1200;
-    this.emitHud(true);
+    this.receivePowerUp(power);
   }
 
   stop() {
@@ -408,15 +406,13 @@ export class GameEngine {
           answer.y = laser.y - answer.height - 8;
         }
         if (aabbOverlaps(this.rocket, laser)) {
-          const selected = answer;
-          for (const answerLaser of this.answerLasers) answerLaser.beginFadeOut();
           this.spawnParticles(
             this.rocket.x + this.rocket.width / 2,
             this.rocket.y + this.rocket.height / 2,
             laser.color,
             18,
           );
-          this.resolveCurrentAnswer(selected);
+          this.resolveCurrentAnswer(answer);
           return;
         }
       }
@@ -487,9 +483,34 @@ export class GameEngine {
     }
   }
 
+  prepareAnswerSelection(clientX, clientY) {
+    const round = this.currentRound;
+    if (this.paused || this.ended || this.disposed || this.pendingOutcome
+      || round?.status !== "awaiting-resolution") return undefined;
+
+    const rect = this.canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return undefined;
+    const pointer = {
+      x: (clientX - rect.left) * this.view.width / rect.width,
+      y: (clientY - rect.top) * this.view.height / rect.height,
+      width: 0,
+      height: 0,
+    };
+    const laser = this.answerLasers.find((beam) => {
+      const bounds = beam.drawBounds;
+      return beam.alive && bounds && aabbOverlaps(pointer, bounds);
+    });
+    const answer = this.answers.find((card) => card.alive && (card.lane === laser?.lane || aabbOverlaps(pointer, card)));
+    if (!answer) return undefined;
+    return () => {
+      if (this.currentRound === round && !this.pendingOutcome) this.resolveCurrentAnswer(answer);
+    };
+  }
+
   resolveCurrentAnswer(answer) {
     const result = resolveAnswerRound(this.currentRound, answer);
     if (!result) return false;
+    for (const laser of this.answerLasers) laser.beginFadeOut();
     if (result.correct) {
       this.correctAnswers += 1;
       this.score += SCORE.correctAnswer;
@@ -663,6 +684,10 @@ export class GameEngine {
     const power = this.pendingPowerUp;
     this.pendingPowerUp = null;
     if (!power) return;
+    this.receivePowerUp(power);
+  }
+
+  receivePowerUp(power) {
     this.powerUpReveal = { id: power, elapsedMs: 0 };
     if (power === "shrink") {
       for (const obstacle of this.obstacles) obstacle.startShrink(POWER_UPS.shrink.shrinkMs);
@@ -671,7 +696,7 @@ export class GameEngine {
     } else {
       this.powerUps = activatePowerUp(this.powerUps, power);
     }
-    this.questionFeedback = ({ turbo: "TURBO!", star: "ESTRELA! Invencível", bubble: "Bolha ativada" })[power] ?? "Raio encolhedor!";
+    this.questionFeedback = POWER_UP_FEEDBACK[power];
     this.feedbackTimerMs = 1200;
     playGameSound("discovery");
     this.emitHud(true);
@@ -972,34 +997,35 @@ export class GameEngine {
 
   renderPowerRoulette() {
     const { ctx, view } = this;
-    const isReveal = Boolean(this.powerUpReveal);
-    const progress = isReveal ? clamp(this.powerUpReveal.elapsedMs / MYSTERY_BOX.selectionRevealMs, 0, 1) : 0;
-    const easedProgress = progress * progress * (3 - 2 * progress);
-    const scale = isReveal && !this.reducedMotion ? 1 + easedProgress * 0.6 : 1;
-    const alpha = isReveal && !this.reducedMotion ? 1 - easedProgress : 1;
     const cardSize = Math.min(96, Math.max(64, view.width * 0.23));
     const centerX = view.width / 2;
     const centerY = view.height * 0.42 + 36;
-    const size = cardSize * scale;
-    const left = centerX - size / 2;
-    const top = centerY - size / 2;
     const powerIds = Object.keys(POWER_UPS);
     const powerId = this.powerUpReveal?.id
       ?? powerIds[Math.floor(this.powerUps.rouletteElapsedMs / 150) % powerIds.length];
     const image = this.powerUpImages[powerId];
 
     ctx.save();
-    ctx.globalAlpha = alpha;
+    ctx.translate(centerX, centerY);
+    let card = { width: cardSize, height: cardSize, color: "#fff" };
+    if (this.powerUpReveal && !this.reducedMotion) {
+      const progress = clamp(this.powerUpReveal.elapsedMs / MYSTERY_BOX.selectionRevealMs, 0, 1);
+      card = renderPowerUpIntro(ctx, powerId, progress, cardSize);
+    } else {
+      ctx.globalAlpha = 1;
+    }
+    const { width, height, color } = card;
     ctx.fillStyle = "rgba(5, 23, 54, .9)";
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = color;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.roundRect(left, top, size, size, size * 0.12);
+    ctx.roundRect(-width / 2, -height / 2, width, height, Math.min(width, height) * 0.12);
     ctx.fill();
     ctx.stroke();
     if (image?.complete && image.naturalWidth > 0) {
-      const imageSize = size * 0.76;
-      ctx.drawImage(image, centerX - imageSize / 2, centerY - imageSize / 2, imageSize, imageSize);
+      const imageWidth = width * 0.76;
+      const imageHeight = height * 0.76;
+      ctx.drawImage(image, -imageWidth / 2, -imageHeight / 2, imageWidth, imageHeight);
     }
     ctx.restore();
   }

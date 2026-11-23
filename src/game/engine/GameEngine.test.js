@@ -28,6 +28,7 @@ function withCanvasEnvironment(run) {
   const drawnImageCalls = [];
   const drawnImageAlphas = [];
   const translations = [];
+  const canvasListeners = new Map();
   globalThis.Image = class {
     constructor() { this.complete = true; this.naturalWidth = 128; this.naturalHeight = 128; }
     set src(value) { this._src = value; }
@@ -61,12 +62,12 @@ function withCanvasEnvironment(run) {
     parentElement: { getBoundingClientRect: () => ({ width: 320, height: 640 }) },
     getBoundingClientRect: () => ({ left: 0, top: 0, width: 320, height: 640 }),
     getContext: () => ctx,
-    addEventListener() {},
-    removeEventListener() {},
+    addEventListener(name, listener) { canvasListeners.set(name, listener); },
+    removeEventListener(name) { canvasListeners.delete(name); },
   };
 
   try {
-    run({ canvas, scheduled, observers, strokeRects, roundedCards, strokeColors, drawnImages, drawnImageCalls, drawnImageAlphas, translations });
+    run({ canvas, canvasListeners, scheduled, observers, strokeRects, roundedCards, strokeColors, drawnImages, drawnImageCalls, drawnImageAlphas, translations });
   } finally {
     globalThis.window = original.window;
     globalThis.ResizeObserver = original.ResizeObserver;
@@ -311,6 +312,49 @@ test("quatro lasers aparecem no topo, um por alternativa e na cor da faixa", () 
       assert.equal(laser.y, 0);
       assert.equal(laser.color, ["#00FFFF", "#FF00FE", "#FFFF00", "#FFFFFF"][laser.lane]);
     }
+    engine.stop();
+  });
+});
+
+test("toque na borda visível do laser seleciona a resposta mesmo quando o feixe se move", () => {
+  withCanvasEnvironment(({ canvas, canvasListeners }) => {
+    const rect = { left: 50, top: 20, width: 1080, height: 900 };
+    canvas.parentElement.getBoundingClientRect = () => rect;
+    canvas.getBoundingClientRect = () => rect;
+    canvas.clientWidth = rect.width;
+    const engine = new GameEngine(engineOptions(canvas));
+    const answer = engine.answers.find((candidate) => candidate.correct);
+    const laser = engine.answerLasers.find((candidate) => candidate.lane === answer.lane);
+    laser.y = 170;
+    laser.frames = [{ complete: true, naturalWidth: 252, naturalHeight: 73 }];
+    const click = {
+      pointerId: 1,
+      pointerType: "mouse",
+      clientX: rect.left + (laser.x + laser.width * 0.16) * engine.view.scale,
+      clientY: rect.top + (laser.y - 12) * engine.view.scale,
+    };
+    canvasListeners.get("pointerdown")(click);
+    assert.equal(engine.currentRound.result, null);
+    laser.y += 50;
+    canvasListeners.get("pointerup")(click);
+    assert.equal(engine.currentRound.selectedAnswer, answer);
+    assert.equal(engine.correctAnswers, 1);
+    assert.ok(engine.answerLasers.every((beam) => beam.fadeOutElapsedMs === 0));
+    tickFor(engine, 120);
+    assert.ok(engine.answerLasers.every((beam) => beam.opacity > 0 && beam.opacity < 1));
+    tickFor(engine, 200);
+    assert.ok(engine.answerLasers.every((beam) => !beam.alive));
+    engine.stop();
+  });
+});
+
+test("o fim da contagem da pergunta também inicia o fade dos lasers", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.answerChoiceRemainingMs = 1;
+    engine.tick(0.02);
+    assert.ok(engine.currentRound.result);
+    assert.ok(engine.answerLasers.every((beam) => beam.fadeOutElapsedMs === 0));
     engine.stop();
   });
 });
@@ -856,6 +900,26 @@ test("movimento reduzido mantém a arte do resultado estática e opaca", () => {
     assert.equal(drawnImageCalls[revealIndex][3], Math.min(96, Math.max(64, engine.view.width * 0.23)) * 0.76,
       "a arte deve usar o tamanho do espaço lógico do gameplay");
     assert.equal(drawnImageAlphas[revealIndex], 1, "a arte não deve desaparecer");
+    engine.stop();
+  });
+});
+
+test("os quatro poderes recebem apresentações distintas no canvas", () => {
+  withCanvasEnvironment(({ canvas, drawnImageCalls }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const sizes = {};
+    for (const power of ["turbo", "star", "bubble", "shrink"]) {
+      engine.grantDebugPowerUp(power);
+      drawnImageCalls.length = 0;
+      tickFor(engine, 300);
+      const draw = drawnImageCalls.findLastIndex(([image]) => image === engine.powerUpImages[power]);
+      assert.ok(draw >= 0, `a arte de ${power} aparece assim que o poder é recebido`);
+      sizes[power] = drawnImageCalls[draw].slice(3, 5);
+    }
+    assert.ok(sizes.turbo[0] < sizes.turbo[1], "o turbo se alonga verticalmente");
+    assert.ok(sizes.shrink[0] < sizes.shrink[1] && sizes.shrink[1] < sizes.star[1], "o raio comprime o cartão");
+    assert.ok(sizes.bubble[0] > sizes.star[0], "a bolha tem uma expansão própria");
+    assert.equal(sizes.star[0], sizes.star[1], "a estrela mantém a proporção ao girar");
     engine.stop();
   });
 });

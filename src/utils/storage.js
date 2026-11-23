@@ -159,15 +159,38 @@ function migratePlantGrowth(progress) {
   return stored;
 }
 
-export function saveProgress(progress, storage = globalThis.localStorage) {
-  if (!storage) {
-    return { ok: false, error: "Armazenamento local indisponível." };
-  }
-
+function readResetId(raw) {
   try {
+    const resetId = JSON.parse(raw)?.resetId;
+    return typeof resetId === "string" ? resetId : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeProgress(progress, expectedResetId, providedStorage) {
+  try {
+    const storage = providedStorage === undefined ? globalThis.localStorage : providedStorage;
+    if (!storage) return { ok: false, error: "Armazenamento local indisponível." };
+    const currentResetId = typeof expectedResetId === "string" ? expectedResetId : null;
+    if (readResetId(storage.getItem?.(STORAGE_KEY)) !== currentResetId) {
+      return { ok: false, stale: true, error: "O progresso foi reiniciado em outra aba. Recarregue o jogo." };
+    }
     storage.setItem(STORAGE_KEY, JSON.stringify(progress));
     return { ok: true, error: null };
   } catch (error) {
     return { ok: false, error: "Não foi possível salvar o progresso.", cause: error };
   }
+}
+
+export function saveProgress(progress, storage) {
+  return writeProgress(progress, progress.resetId ?? null, storage);
+}
+
+export function resetSavedProgress(current, storage) {
+  const progress = createDefaultProgress();
+  progress.resetId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+  progress.settings = { ...progress.settings, ...current.settings };
+  const result = writeProgress(progress, current.resetId ?? null, storage);
+  return result.ok ? { ...result, progress } : result;
 }

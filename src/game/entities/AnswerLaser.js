@@ -61,18 +61,23 @@ export class AnswerLaser {
     this.frameIndex = Math.floor(this.frameElapsedMs / FRAME_DURATION_MS) % this.frames.length;
   }
 
+  get drawBounds() {
+    const frame = this.frames[this.frameIndex];
+    if (!frame?.complete || !(frame.naturalWidth > 0) || !(frame.naturalHeight > 0)) return null;
+    const height = this.width * frame.naturalHeight / frame.naturalWidth;
+    return { x: this.x, y: this.y + (this.height - height) / 2, width: this.width, height };
+  }
+
   render(ctx) {
     if (!this.alive) return;
-    const frame = this.frames[this.frameIndex];
-    if (!frame?.complete || frame.naturalWidth <= 0) return;
+    const bounds = this.drawBounds;
+    if (!bounds) return;
     ctx.save();
     ctx.globalAlpha *= this.opacity;
     ctx.filter = LASER_FILTERS[this.color] ?? "none";
     ctx.shadowColor = this.color;
     ctx.shadowBlur = 9;
-    const aspectRatio = frame.naturalWidth / frame.naturalHeight;
-    const renderHeight = this.width / aspectRatio;
-    ctx.drawImage(frame, this.x, this.y + (this.height - renderHeight) / 2, this.width, renderHeight);
+    ctx.drawImage(this.frames[this.frameIndex], bounds.x, bounds.y, bounds.width, bounds.height);
     ctx.restore();
   }
 }

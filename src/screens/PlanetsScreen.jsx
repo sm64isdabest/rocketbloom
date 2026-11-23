@@ -3,6 +3,7 @@ import { PLANETS } from "../game/data/planets.js";
 import { playGameSound } from "../game/audio/audioManager.js";
 import { canNavigateToPlanet, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
 import { getMenuAssetUrl } from "./menuModel.js";
+import { getPauseAssetUrl, RETURN_ICON_FILE } from "./pauseModel.js";
 import { setOrbitTargetElement } from "./rocketOrbit.js";
 
 const OrbitalRocket = lazy(() => import("./OrbitalRocket.jsx").then((module) => ({ default: module.OrbitalRocket })));
@@ -149,7 +150,9 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           </div>
 
           <nav className="phase-selection-navigation" aria-label="Navegação do seletor">
-            <button type="button" className="phase-selection-back" onClick={onBack} aria-label="Voltar ao menu">Menu</button>
+            <button type="button" className="phase-selection-back" onClick={onBack} aria-label="Voltar ao menu" title="Voltar ao menu">
+              <img src={getPauseAssetUrl(RETURN_ICON_FILE, APP_BASE)} alt="" />
+            </button>
             <button type="button" className="phase-selection-settings" onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
               <img src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" aria-hidden="true" />
             </button>

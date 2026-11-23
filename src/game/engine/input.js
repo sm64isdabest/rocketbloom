@@ -1,23 +1,27 @@
 import { INPUT, ROCKET } from "../config/gameConfig.js";
 
-export function createInputController(target, controlMode = "pointer") {
+const TAP_TOLERANCE_PX = 8;
+
+export function createInputController(target, controlMode = "pointer", prepareTap) {
   let activeControlMode = controlMode;
   let enabled = true;
   const state = {
     pointerX: null,
     pointerActive: false,
+    tap: null,
     keys: new Set(),
   };
 
   const onPointerDown = (event) => {
-    if (!enabled) return;
+    if (!enabled || event.isPrimary === false || (event.button ?? 0) !== 0) return;
     state.pointerActive = true;
     state.pointerX = event.clientX;
+    state.tap = { x: event.clientX, y: event.clientY, id: event.pointerId, commit: prepareTap?.(event.clientX, event.clientY) };
     target.setPointerCapture?.(event.pointerId);
   };
 
   const onPointerMove = (event) => {
-    if (!enabled) return;
+    if (!enabled || event.isPrimary === false) return;
     if (!state.pointerActive && event.pointerType === "mouse") {
       state.pointerX = event.clientX;
       return;
@@ -25,11 +29,25 @@ export function createInputController(target, controlMode = "pointer") {
     if (state.pointerActive) {
       state.pointerX = event.clientX;
     }
+    if (state.tap && Math.hypot(event.clientX - state.tap.x, event.clientY - state.tap.y) > TAP_TOLERANCE_PX) {
+      state.tap = null;
+    }
   };
 
-  const onPointerUp = () => {
-    if (!enabled) return;
+  const cancelPointer = (event) => {
+    if (event?.isPrimary === false) return;
     state.pointerActive = false;
+    state.tap = null;
+  };
+
+  const onPointerUp = (event) => {
+    if (!enabled || event.isPrimary === false || (event.button ?? 0) !== 0) return;
+    const start = state.tap;
+    cancelPointer();
+    if (start && start.id === event.pointerId
+      && Math.hypot(event.clientX - start.x, event.clientY - start.y) <= TAP_TOLERANCE_PX) {
+      start.commit?.();
+    }
   };
 
   const onKeyDown = (event) => {
@@ -44,13 +62,13 @@ export function createInputController(target, controlMode = "pointer") {
 
   const onWindowBlur = () => {
     state.keys.clear();
-    state.pointerActive = false;
+    cancelPointer();
   };
 
   target.addEventListener("pointerdown", onPointerDown);
   target.addEventListener("pointermove", onPointerMove);
   target.addEventListener("pointerup", onPointerUp);
-  target.addEventListener("pointercancel", onPointerUp);
+  target.addEventListener("pointercancel", cancelPointer);
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
   window.addEventListener("blur", onWindowBlur);
@@ -60,14 +78,14 @@ export function createInputController(target, controlMode = "pointer") {
       if (activeControlMode === nextControlMode) return;
       activeControlMode = nextControlMode;
       state.pointerX = null;
-      state.pointerActive = false;
+      cancelPointer();
     },
     setEnabled(nextEnabled) {
       enabled = nextEnabled;
       if (!enabled) {
         state.keys.clear();
         state.pointerX = null;
-        state.pointerActive = false;
+        cancelPointer();
       }
     },
     apply(rocket, canvas, dt, scale = 1) {
@@ -103,7 +121,7 @@ export function createInputController(target, controlMode = "pointer") {
       target.removeEventListener("pointerdown", onPointerDown);
       target.removeEventListener("pointermove", onPointerMove);
       target.removeEventListener("pointerup", onPointerUp);
-      target.removeEventListener("pointercancel", onPointerUp);
+      target.removeEventListener("pointercancel", cancelPointer);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
       window.removeEventListener("blur", onWindowBlur);

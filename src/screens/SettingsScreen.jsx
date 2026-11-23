@@ -5,10 +5,12 @@ import { clampAudioVolume, getAudioVolumeChange } from "./settingsModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 
-export function SettingsScreen({ progress, onBack, onChange }) {
+export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) {
   const ids = useId();
   const [activeTab, setActiveTab] = useState("audio");
   const tabRefs = useRef([]);
+  const resetDialog = useRef(null);
+  const [resetError, setResetError] = useState(null);
   const controlMode = progress.settings.controlMode ?? "pointer";
   const fallbackMusic = progress.settings.music === false ? AUDIO.minVolume : AUDIO.defaultMusicVolume;
   const fallbackEffects = progress.settings.soundEffects === false ? AUDIO.minVolume : AUDIO.defaultSoundEffectsVolume;
@@ -22,7 +24,7 @@ export function SettingsScreen({ progress, onBack, onChange }) {
 
   useEffect(() => {
     const closeOnEscape = (event) => {
-      if (event.key === "Escape") onBack();
+      if (event.key === "Escape" && !resetDialog.current?.open) onBack();
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
@@ -30,6 +32,16 @@ export function SettingsScreen({ progress, onBack, onChange }) {
 
   const changeVolume = (settingName, value) => {
     onChange(getAudioVolumeChange(settingName, value));
+  };
+
+  const openResetDialog = () => {
+    setResetError(null);
+    resetDialog.current.showModal();
+  };
+
+  const confirmReset = () => {
+    const result = onResetProgress();
+    if (!result.ok) setResetError(result.error);
   };
 
   const tabs = [
@@ -220,9 +232,20 @@ export function SettingsScreen({ progress, onBack, onChange }) {
             <h2 id={`${ids}-information`}>Ajude a flora a florescer</h2>
             <p className="settings-popup__description">Pilote o foguete pelas fases e alcance as respostas corretas para ganhar velocidade e resgatar as espécies de cada planeta.</p>
             <p className="settings-popup__description">Acompanhe as plantas resgatadas no Laboratório e avance pela campanha para explorar novos planetas.</p>
+            <button type="button" className="btn settings-reset-button" onClick={openResetDialog}>Resetar progresso</button>
           </section> : null}
           </div>
         </div>
+        <dialog ref={resetDialog} className="settings-reset-dialog"
+          aria-labelledby={`${ids}-reset-title`} aria-describedby={`${ids}-reset-description`}>
+          <h2 id={`${ids}-reset-title`}>Resetar progresso?</h2>
+          <p id={`${ids}-reset-description`}>A campanha voltará ao início. Fases concluídas, recursos, plantas resgatadas e recordes do Modo Infinito serão apagados deste navegador.</p>
+          {resetError ? <p className="settings-reset-dialog__error" role="alert">{resetError}</p> : null}
+          <div className="settings-reset-dialog__actions">
+            <button type="button" className="btn btn--ghost" onClick={() => resetDialog.current.close()}>Cancelar</button>
+            <button type="button" className="btn settings-reset-button" onClick={confirmReset}>Apagar progresso</button>
+          </div>
+        </dialog>
       </section>
     </div>
   );

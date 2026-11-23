@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { loadProgress, saveProgress } from "../utils/storage.js";
+import { loadProgress, resetSavedProgress, saveProgress } from "../utils/storage.js";
 
 export function usePersistentProgress() {
   const [progress, setProgress] = useState(null);
@@ -17,8 +17,12 @@ export function usePersistentProgress() {
   }, []);
 
   const persist = useCallback((next) => {
-    setProgress(next);
     const result = saveProgress(next);
+    if (result.stale) {
+      window.location.reload();
+      return;
+    }
+    setProgress(next);
     if (!result.ok) {
       setWarning(result.error);
     }
@@ -37,5 +41,14 @@ export function usePersistentProgress() {
     [persist, progress],
   );
 
-  return { progress, warning, fatal, persist, patchSettings };
+  const resetProgress = useCallback(() => {
+    const result = resetSavedProgress(progress);
+    if (result.ok) {
+      setProgress(result.progress);
+      setWarning(null);
+    }
+    return result;
+  }, [progress]);
+
+  return { progress, warning, fatal, persist, patchSettings, resetProgress };
 }

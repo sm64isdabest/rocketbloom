@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { STORAGE_KEY } from "../game/config/gameConfig.js";
 import { createDefaultProgress, loadProgress, saveProgress } from "./storage.js";
+import * as progressStorage from "./storage.js";
 
 function memoryStorage(seed = {}) {
   const map = new Map(Object.entries(seed));
@@ -125,6 +126,49 @@ test("salva e recarrega progresso real", () => {
   assert.equal(loaded.progress.coins, 3);
   assert.equal(loaded.source, "storage");
   assert.ok(storage.getItem(STORAGE_KEY));
+});
+
+test("reset salva uma nova campanha e preserva as preferências", () => {
+  const storage = memoryStorage();
+  const previous = {
+    ...createDefaultProgress(),
+    coins: 82,
+    diamonds: 6,
+    unlockedPlanetIds: ["earth", "mars"],
+    completedStageIds: ["earth-1"],
+    endlessHighScores: { earth: 500 },
+    settings: { ...createDefaultProgress().settings, reducedMotion: true, musicVolume: 0, music: false },
+  };
+  saveProgress(previous, storage);
+  const result = progressStorage.resetSavedProgress(previous, storage);
+  assert.equal(result.ok, true);
+  const { resetId, ...profile } = loadProgress(storage).progress;
+  assert.equal(typeof resetId, "string");
+  assert.deepEqual(profile, { ...createDefaultProgress(), settings: previous.settings });
+  assert.equal(previous.coins, 82);
+});
+
+test("outra aba com o perfil antigo não restaura o progresso após o reset", () => {
+  const storage = memoryStorage();
+  const initial = { ...createDefaultProgress(), coins: 82, completedStageIds: ["earth-1"] };
+  saveProgress(initial, storage);
+  const oldTab = loadProgress(storage).progress;
+  assert.ok(progressStorage.resetSavedProgress(initial, storage).ok);
+
+  const staleUpdate = saveProgress({ ...oldTab, settings: { ...oldTab.settings, muteAll: true } }, storage);
+  assert.equal(staleUpdate.ok, false);
+  assert.equal(staleUpdate.stale, true);
+  const active = loadProgress(storage).progress;
+  assert.equal(active.coins, 0);
+  assert.deepEqual(active.completedStageIds, []);
+  assert.ok(saveProgress({ ...active, coins: 2 }, storage).ok);
+});
+
+test("uma falha de armazenamento durante o reset não retorna um perfil vazio", () => {
+  const storage = { setItem() { throw new Error("storage indisponível"); } };
+  const result = progressStorage.resetSavedProgress(createDefaultProgress(), storage);
+  assert.equal(result.ok, false);
+  assert.equal(result.progress, undefined);
 });
 
 test("progresso inválido é descartado", () => {

@@ -20,8 +20,7 @@ test("barra reúne os dados dinâmicos e conserva os handlers e ícones originai
   assert.ok(toolbar);
   assert.match(toolbar, /numberFormat\.format\(progress\.coins \?\? 0\)/);
   assert.match(toolbar, /numberFormat\.format\(progress\.diamonds \?\? 0\)/);
-  assert.match(toolbar, /onClick=\{onBack\}[^>]*>Menu<\/button>/);
-  assert.doesNotMatch(toolbar, /phase-selection-back[^>]*>[\s\S]*?<span|aria-hidden="true">‹/);
+  assert.match(toolbar, /onClick=\{onBack\}[^>]*aria-label="Voltar ao menu"[^>]*>\s*<img[^>]*getPauseAssetUrl\(RETURN_ICON_FILE, APP_BASE\)/);
   assert.match(toolbar, /onClick=\{onSettings\}/);
   assert.match(toolbar, /getMenuAssetUrl\("settings\.webp", APP_BASE\)/);
   assert.match(toolbar, /onClick=\{\(\) => onCommandRoom\(planet\.id, selectedStageId\)\}/);
@@ -37,7 +36,6 @@ test("barra tem cores por planeta e reorganiza recursos e navegação em telas e
   assert.match(stylesheet, /\.phase-selection-resources\s*\{[^}]*grid-column:\s*1 \/ -1/);
   assert.match(stylesheet, /\.phase-selection-identity__planet\s*\{\s*width:\s*clamp\(54px, 9cqw, 96px\)/);
   assert.match(stylesheet, /\.phase-selection-wallet,[\s\S]*?\.phase-selection-planet-name\s*\{[^}]*position:\s*static[^}]*width:\s*auto[^}]*height:\s*auto[^}]*pointer-events:\s*auto/);
-  assert.match(stylesheet, /\.phase-selection-back\s*\{[^}]*border-radius:\s*\.65cqw/);
 });
 
 test("identidade verde da Terra não altera as paletas dos outros planetas", () => {

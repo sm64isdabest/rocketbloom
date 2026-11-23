@@ -54,6 +54,27 @@ test("converte o toque do viewport estreito para as coordenadas lógicas do jogo
   });
 });
 
+test("somente um toque curto dispara a seleção, mesmo se um arrasto voltar ao ponto inicial", () => {
+  withInputEnvironment(({ canvasListeners, target }) => {
+    const taps = [];
+    const input = createInputController(target, "pointer", (x, y) => () => taps.push([x, y]));
+    const pointer = { clientX: 180, clientY: 240, pointerId: 7, pointerType: "touch" };
+    canvasListeners.get("pointerdown")(pointer);
+    canvasListeners.get("pointermove")({ ...pointer, clientY: 290 });
+    canvasListeners.get("pointerup")(pointer);
+    canvasListeners.get("pointerdown")(pointer);
+    canvasListeners.get("pointercancel")(pointer);
+    canvasListeners.get("pointerup")(pointer);
+    assert.deepEqual(taps, []);
+
+    canvasListeners.get("pointerdown")(pointer);
+    assert.deepEqual(taps, []);
+    canvasListeners.get("pointerup")(pointer);
+    assert.deepEqual(taps, [[180, 240]]);
+    input.destroy();
+  });
+});
+
 test("teclado continua controlando o foguete no modo mouse e toque", () => {
   withInputEnvironment(({ listeners, target, canvas }) => {
     const input = createInputController(target, "pointer");

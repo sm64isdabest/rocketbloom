@@ -10,6 +10,8 @@ export const initialNavigationContext = {
 
 export function navigationContextReducer(state, action) {
   switch (action.type) {
+    case "reset":
+      return initialNavigationContext;
     case "select-stage": {
       const selector = createSelectorState(action.planetId, action.selectedStageId ?? null);
       return { ...state, selector };
