@@ -2,20 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
-import { getMenuAssetUrl, getSettingsReturnPage } from "./menuModel.js";
-import { SCREEN } from "../utils/screenStates.js";
-
-test("settings opened from phase selection returns to phase selection", () => {
-  assert.equal(getSettingsReturnPage(SCREEN.PLANETS, SCREEN), SCREEN.PLANETS);
-});
-
-test("settings opened from the laboratory returns to the laboratory", () => {
-  assert.equal(getSettingsReturnPage(SCREEN.COMMAND, SCREEN), SCREEN.COMMAND);
-});
-
-test("settings opened from the home menu returns to the home menu", () => {
-  assert.equal(getSettingsReturnPage(SCREEN.MENU, SCREEN), SCREEN.MENU);
-});
+import { getMenuAssetUrl } from "./menuModel.js";
 
 test("menu assets respect the configured app base path", () => {
   assert.equal(getMenuAssetUrl("gear.webp", "/rocketbloom/"), "/rocketbloom/assets/menu/gear.webp");

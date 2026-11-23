@@ -1,6 +1,6 @@
 import { COLLECTIBLES } from "../data/items.js";
 import { getQuestionsForStage, pickQuestion } from "../data/questions.js";
-import { SPEED, SCORE, SPAWN, QUESTION_TIMING, MYSTERY_BOX, POWER_UPS } from "../config/gameConfig.js";
+import { SPEED, SCORE, ENDLESS, SPAWN, QUESTION_TIMING, MYSTERY_BOX, POWER_UPS } from "../config/gameConfig.js";
 import { Answer } from "../entities/Answer.js";
 import { AnswerLaser } from "../entities/AnswerLaser.js";
 import { Collectible } from "../entities/Collectible.js";
@@ -36,6 +36,7 @@ export class GameEngine {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.session = session;
+    this.endless = session.mode === "endless";
     this.reducedMotion = reducedMotion;
     this.showHitboxes = showHitboxes;
     this.onHud = onHud;
@@ -79,7 +80,7 @@ export class GameEngine {
     this.collisionImpact = createCollisionImpactState();
     this.collisionAlertRemainingMs = 0;
     this.collisionAlertSequence = 0;
-    this.stageDurationMs = session.stage.durationMs;
+    this.stageDurationMs = this.endless ? Infinity : session.stage.durationMs;
     this.godmode = false;
     this.backgroundOffsetY = 0;
     this.elapsedMs = 0;
@@ -222,6 +223,7 @@ export class GameEngine {
   }
 
   setDebugDuration(durationMs) {
+    if (this.endless) return;
     if (durationMs === 0 || durationMs === Infinity) this.stageDurationMs = Infinity;
     else if (Number.isFinite(durationMs) && durationMs > 0) this.stageDurationMs = durationMs;
     else return;
@@ -516,7 +518,7 @@ export class GameEngine {
   }
 
   updatePickupsAndHazards(dt, frameMs) {
-    const stageProgress = Number.isFinite(this.stageDurationMs) ? clamp(this.progressMs / this.stageDurationMs, 0, 1) : 0;
+    const stageProgress = this.getDifficultyProgress();
     const spawnRate = this.session.difficulty.spawnRateMultiplier;
     const baseInterval = this.session.stage.obstacleIntervalMs ?? SPAWN.obstacleIntervalMs / spawnRate;
     const minInterval = this.session.stage.obstacleMinIntervalMs ?? SPAWN.obstacleMinIntervalMs;
@@ -548,7 +550,7 @@ export class GameEngine {
 
     for (const obstacle of this.obstacles) {
       if (!obstacle.alive) continue;
-      const stageProgress = Number.isFinite(this.stageDurationMs) ? clamp(this.progressMs / this.stageDurationMs, 0, 1) : 0;
+      const stageProgress = this.getDifficultyProgress();
       obstacle.speed = this.getEntitySpeed(SPAWN.obstacleFallSpeed)
         * (this.session.stage.speedMultiplier ?? this.session.difficulty.speedMultiplier ?? 1)
         * (this.session.stage.obstacleSpeedMultiplier ?? 1)
@@ -685,7 +687,7 @@ export class GameEngine {
         || Math.abs(x - active.x) >= (obstacle.width + active.width) / 2 + SPAWN.obstacleSafeGap));
     const pool = safe.length ? safe : candidates;
     const x = pool[Math.floor(this.rng() * pool.length)];
-    const stageProgress = Number.isFinite(this.stageDurationMs) ? clamp(this.progressMs / this.stageDurationMs, 0, 1) : 0;
+    const stageProgress = this.getDifficultyProgress();
     const speed = this.getEntitySpeed(SPAWN.obstacleFallSpeed)
       * (this.session.stage.speedMultiplier ?? this.session.difficulty.speedMultiplier ?? 1)
       * (this.session.stage.obstacleSpeedMultiplier ?? 1)
@@ -786,6 +788,11 @@ export class GameEngine {
     this.onHud?.(this.getSnapshot(), force);
   }
 
+  getDifficultyProgress() {
+    const duration = this.endless ? ENDLESS.difficultyRampMs : this.stageDurationMs;
+    return clamp(this.progressMs / duration, 0, 1);
+  }
+
   getSnapshot() {
     return {
       runId: this.runId,
@@ -799,11 +806,18 @@ export class GameEngine {
       incorrectAnswers: this.incorrectAnswers,
       elapsedMs: this.elapsedMs,
       progressMs: this.progressMs,
-      stageProgress: Number.isFinite(this.stageDurationMs) ? clamp(this.progressMs / this.stageDurationMs, 0, 1) : 0,
+      stageProgress: this.endless ? 0 : this.getDifficultyProgress(),
       stageDurationMs: this.stageDurationMs,
       godmode: this.godmode,
       planetId: this.session.planet.id,
-      stageId: this.session.stage.id,
+      stageId: this.endless ? null : this.session.stage.id,
+      ...(this.endless ? {
+        mode: "endless",
+        endlessScore: Math.floor(this.elapsedMs / 1000) * ENDLESS.pointsPerSecond
+          + this.correctAnswers * ENDLESS.correctAnswerPoints
+          + this.coins * ENDLESS.coinPoints
+          + this.diamonds * ENDLESS.diamondPoints,
+      } : {}),
       question: this.currentRound?.status === "waiting-next-question" ? null : this.currentRound?.question ?? null,
       answerState: this.currentRound?.status ?? "preparing",
       selectedLane: this.currentRound?.result?.lane ?? getLaneFromCenter(this.rocket.x + this.rocket.width / 2, this.view.width),

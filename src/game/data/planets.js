@@ -2,7 +2,7 @@ import { REWARDS } from "../config/gameConfig.js";
 
 // Edit this value to rebalance campaign length without changing planet content.
 export const CAMPAIGN_CONFIG = {
-  stagesPerPlanet: 5,
+  stagesPerPlanet: 3,
   baseStageDurationMs: 58_000,
   durationIncreasePerStageMs: 8_000,
   stageClearMoney: REWARDS.stageClearMoney,
@@ -16,11 +16,11 @@ export const CAMPAIGN_CONFIG = {
   },
 };
 
-export const MATH_OPERATIONS_BY_PLANET = {
-  earth: [["addition"], ["addition"], ["addition"], ["addition"], ["addition"]],
-  mars: [["subtraction"], ["subtraction"], ["subtraction"], ["addition", "subtraction"], ["addition", "subtraction"]],
-  saturn: [["multiplication"], ["multiplication"], ["multiplication"], ["addition", "subtraction", "multiplication"], ["addition", "subtraction", "multiplication"]],
-  neptune: [["division"], ["division"], ["division"], ["addition", "subtraction", "multiplication", "division"], ["addition", "subtraction", "multiplication", "division"]],
+const MATH_OPERATION_BY_PLANET = {
+  earth: "addition",
+  mars: "subtraction",
+  saturn: "multiplication",
+  neptune: "division",
 };
 
 const PLANET_CONFIG = [
@@ -83,7 +83,7 @@ function buildStages(planet) {
       obstacleMinIntervalMs: interpolate(difficulty.obstacleMinIntervalMs),
       obstacleSpeedMultiplier: interpolate(difficulty.obstacleSpeedMultiplier),
       maxActiveObstacles: Math.min(5, 2 + Math.floor(campaignProgress * 3)),
-      questionCategories: [...(MATH_OPERATIONS_BY_PLANET[planet.id]?.[index] ?? [])],
+      questionCategories: [MATH_OPERATION_BY_PLANET[planet.id]],
       questionLimits: {
         operandMax: planet.questionLimits.operandMax + index * 2,
         multiplierMax: Math.min(12, planet.questionLimits.multiplierMax + index),
@@ -95,7 +95,35 @@ function buildStages(planet) {
   });
 }
 
-export const PLANETS = PLANET_CONFIG.map((planet) => ({ ...planet, stages: buildStages(planet) }));
+export const PLANETS = PLANET_CONFIG.map((planet) => {
+  const stages = buildStages(planet);
+  return {
+    ...planet,
+    stages,
+    endlessStage: {
+      ...stages.at(-1),
+      id: `${planet.id}-endless`,
+      name: "Modo infinito",
+      durationMs: Infinity,
+      questionCategories: PLANET_CONFIG.slice(0, planet.order).map(({ id }) => MATH_OPERATION_BY_PLANET[id]),
+    },
+  };
+});
+
+export function isPlanetComplete(planet, completedStageIds) {
+  return planet.stages.every(({ id }) => completedStageIds.includes(id));
+}
+
+export function getCampaignUnlocks(unlockedPlanetIds, completedStageIds) {
+  const unlocked = new Set(["earth", ...unlockedPlanetIds]);
+  for (const [index, planet] of PLANETS.entries()) {
+    const nextPlanet = PLANETS[index + 1];
+    if (nextPlanet && unlocked.has(planet.id) && isPlanetComplete(planet, completedStageIds)) {
+      unlocked.add(nextPlanet.id);
+    }
+  }
+  return [...unlocked];
+}
 
 export function getPlanetById(planetId) {
   return PLANETS.find((planet) => planet.id === planetId) ?? null;

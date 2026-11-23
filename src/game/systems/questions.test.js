@@ -4,10 +4,10 @@ import { generateQuestion } from "./questions.js";
 import { PLANETS } from "../data/planets.js";
 
 const EXPECTED_OPERATIONS = {
-  earth: [["addition"], ["addition"], ["addition"], ["addition"], ["addition"]],
-  mars: [["subtraction"], ["subtraction"], ["subtraction"], ["addition", "subtraction"], ["addition", "subtraction"]],
-  saturn: [["multiplication"], ["multiplication"], ["multiplication"], ["addition", "subtraction", "multiplication"], ["addition", "subtraction", "multiplication"]],
-  neptune: [["division"], ["division"], ["division"], ["addition", "subtraction", "multiplication", "division"], ["addition", "subtraction", "multiplication", "division"]],
+  earth: ["addition"],
+  mars: ["subtraction"],
+  saturn: ["multiplication"],
+  neptune: ["division"],
 };
 
 function makeSequenceRng() {
@@ -40,9 +40,9 @@ test("a dificuldade aumenta os intervalos configurados", () => {
 
 test("cada fase usa somente as operações previstas na matriz de campanha", () => {
   for (const planet of PLANETS) {
-    assert.equal(planet.stages.length, 5);
-    for (const [index, stage] of planet.stages.entries()) {
-      assert.deepEqual(stage.questionCategories, EXPECTED_OPERATIONS[planet.id][index], `${planet.name} ${stage.name}`);
+    assert.equal(planet.stages.length, 3);
+    for (const stage of planet.stages) {
+      assert.deepEqual(stage.questionCategories, EXPECTED_OPERATIONS[planet.id], `${planet.name} ${stage.name}`);
       const rng = makeSequenceRng();
       for (let round = 0; round < 120; round += 1) {
         const question = generateQuestion({

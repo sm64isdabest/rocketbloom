@@ -48,3 +48,7 @@ export function getPlantById(plantId) {
 export function getPlantForPlanet(planetId) {
   return PLANTS.find((plant) => plant.planetId === planetId) ?? null;
 }
+
+export function getPlantGrowthIndex(plant, stageIndex, stageCount) {
+  return Math.round(stageIndex * (plant.growthStages.length - 1) / (stageCount - 1));
+}

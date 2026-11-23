@@ -55,7 +55,7 @@ test("o fundo repete verticalmente e desloca horizontalmente com a câmera", () 
   }
 });
 
-test("os 20 níveis mantêm a escala e a repetição em telas desktop e celular", () => {
+test("as fases mantêm a escala e a repetição em telas desktop e celular", () => {
   const draws = [];
   const previousImage = globalThis.Image;
   globalThis.Image = class {
@@ -72,7 +72,7 @@ test("os 20 níveis mantêm a escala e a repetição em telas desktop e celular"
     const ctx = { drawImage: (...args) => draws.push(args) };
     const viewports = [{ width: 1440, height: 900 }, { width: 390, height: 844 }];
     for (const planet of PLANETS) {
-      assert.equal(planet.stages.length, 5);
+      assert.equal(planet.stages.length, 3);
       for (const stage of planet.stages) {
         assert.equal(stage.planetId, planet.id);
         for (const view of viewports) {

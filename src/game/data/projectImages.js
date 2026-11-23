@@ -1,4 +1,5 @@
 import { OBSTACLE_SPRITES } from "./obstacles.js";
+import { CAMPAIGN_CONFIG } from "./planets.js";
 
 // Keep this list in sync with the raster and vector images in public/assets.
 export const PROJECT_IMAGES = [
@@ -21,7 +22,7 @@ export const PROJECT_IMAGES = [
   "/assets/lasers/idle/frame_07.webp",
   "/assets/lasers/idle/frame_08.webp",
   ...["terra", "marte", "saturno", "netuno"].flatMap((assetName) =>
-    Array.from({ length: 5 }, (_, index) => `/assets/levels/${assetName}/${assetName}_${index + 1}.png`),
+    Array.from({ length: CAMPAIGN_CONFIG.stagesPerPlanet }, (_, index) => `/assets/levels/${assetName}/${assetName}_${index + 1}.png`),
   ),
   "/assets/rocket.webp",
   "/assets/backgrounds/marte_background.webp",
@@ -61,6 +62,7 @@ export const PROJECT_IMAGES = [
   "/assets/powerups/turbo.webp",
   "/assets/ui/coin.webp",
   "/assets/ui/diamond.webp",
+  "/assets/ui/endless.webp",
   "/assets/ui/warning-alert.webp",
   "/assets/ui/selection-rocket.webp",
   "/assets/ui/level-frames/arrow-left.webp",

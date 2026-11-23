@@ -1,6 +1,8 @@
 import { AUDIO, PROGRESS_VERSION, STORAGE_KEY } from "../game/config/gameConfig.js";
-import { PLANETS } from "../game/data/planets.js";
-import { PLANTS } from "../game/data/plants.js";
+import { getCampaignUnlocks, PLANETS } from "../game/data/planets.js";
+import { getPlantGrowthIndex, PLANTS } from "../game/data/plants.js";
+
+const campaignStageIds = new Set(PLANETS.flatMap(({ stages }) => stages.map(({ id }) => id)));
 
 export function createDefaultProgress() {
   return {
@@ -12,6 +14,7 @@ export function createDefaultProgress() {
     seenPlanetIds: [],
     completedStageIds: [],
     stageProgress: {},
+    endlessHighScores: {},
     rescuedPlantIds: [],
     plantGrowthStages: {},
     sustainabilityPoints: 0,
@@ -83,15 +86,24 @@ export function loadProgress(storage = globalThis.localStorage) {
     const interfaceSoundsVolume = Number.isFinite(parsed.settings?.interfaceSoundsVolume)
       ? Math.max(AUDIO.minVolume, Math.min(AUDIO.maxVolume, parsed.settings.interfaceSoundsVolume))
       : parsed.settings?.interfaceSounds === false ? AUDIO.minVolume : AUDIO.defaultInterfaceSoundsVolume;
+    const completedStageIds = [...new Set(parsed.completedStageIds.filter((id) => campaignStageIds.has(id)))];
+    const stageProgress = Object.fromEntries(Object.entries(sanitizeProgressMap(parsed.stageProgress))
+      .filter(([id]) => campaignStageIds.has(id)));
+    const endlessHighScores = Object.fromEntries(Object.entries(sanitizeProgressMap(parsed.endlessHighScores, Number.MAX_SAFE_INTEGER))
+      .filter(([id]) => PLANETS.some((planet) => planet.id === id))
+      .map(([id, score]) => [id, Math.floor(score)]));
 
     return {
       progress: {
         ...createDefaultProgress(),
         ...parsed,
+        completedStageIds,
+        unlockedPlanetIds: getCampaignUnlocks(parsed.unlockedPlanetIds, completedStageIds),
         seenPlanetIds: Array.isArray(parsed.seenPlanetIds)
           ? parsed.seenPlanetIds.filter((id) => PLANETS.some((planet) => planet.id === id))
           : [],
-        stageProgress: sanitizeProgressMap(parsed.stageProgress),
+        stageProgress,
+        endlessHighScores,
         plantGrowthStages: migratePlantGrowth(parsed),
         rescuedPlantIds: migrateRescuedPlants(parsed),
         sustainabilityPoints: Number.isFinite(parsed.sustainabilityPoints) && parsed.sustainabilityPoints >= 0
@@ -139,9 +151,9 @@ function migratePlantGrowth(progress) {
   const stored = sanitizeProgressMap(progress.plantGrowthStages, 4);
   for (const planet of PLANETS) {
     const plant = PLANTS.find((entry) => entry.id === planet.plantId);
-    const completed = planet.stages.filter((stage) => progress.completedStageIds.includes(stage.id));
-    if (!plant || !completed.length) continue;
-    const earnedStage = Math.min(plant.growthStages.length - 1, completed.length - 1);
+    const stageIndex = planet.stages.findLastIndex((stage) => progress.completedStageIds.includes(stage.id));
+    if (!plant || stageIndex < 0) continue;
+    const earnedStage = getPlantGrowthIndex(plant, stageIndex, planet.stages.length);
     stored[plant.id] = Math.max(stored[plant.id] ?? 0, earnedStage);
   }
   return stored;

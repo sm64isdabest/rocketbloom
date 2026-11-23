@@ -4,34 +4,36 @@ import { PLANETS } from "../game/data/planets.js";
 import { createDefaultProgress } from "../utils/storage.js";
 import { canNavigateToPlanet, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
 
-test("selector keeps five phase states per planet and respects the saved unlock order", () => {
+test("selector shows three campaign phases and a locked endless mode on a new save", () => {
   const progress = createDefaultProgress();
   const earth = PLANETS[0];
   const model = getPlanetSelectorModel(earth, progress);
 
   assert.equal(PLANETS.length, 4);
-  assert.deepEqual(PLANETS.map((planet) => planet.stages.length), [5, 5, 5, 5]);
+  assert.deepEqual(PLANETS.map((planet) => planet.stages.length), [3, 3, 3, 3]);
   assert.equal(getInitialExpandedPlanetId(progress), "earth");
-  assert.deepEqual(model.stages.map(({ status }) => status), ["available", "locked", "locked", "locked", "locked"]);
+  assert.deepEqual(model.stages.map(({ status }) => status), ["available", "locked", "locked"]);
+  assert.deepEqual(model.endless, { unlocked: false, highScore: 0 });
 });
 
 test("selector presents completed, partial, available, and locked phases without unlocking ahead", () => {
   const progress = createDefaultProgress();
   progress.unlockedPlanetIds = ["earth", "mars"];
   progress.completedStageIds = ["earth-1", "earth-2", "earth-3", "mars-1"];
-  progress.stageProgress = { "earth-4": 0.35, "mars-2": 0.6 };
+  progress.stageProgress = { "mars-2": 0.6 };
+  progress.endlessHighScores = { earth: 1450 };
 
   const earth = getPlanetSelectorModel(PLANETS[0], progress);
   const mars = getPlanetSelectorModel(PLANETS[1], progress);
   const saturn = getPlanetSelectorModel(PLANETS[2], progress);
 
-  assert.equal(earth.progressLabel, "3/5 fases concluídas");
-  assert.deepEqual(earth.stages.map(({ status }) => status), ["completed", "completed", "completed", "in-progress", "locked"]);
-  assert.deepEqual(mars.stages.map(({ status }) => status), ["completed", "in-progress", "locked", "locked", "locked"]);
+  assert.equal(earth.progressLabel, "3/3 fases concluídas");
+  assert.deepEqual(earth.stages.map(({ status }) => status), ["completed", "completed", "completed"]);
+  assert.deepEqual(mars.stages.map(({ status }) => status), ["completed", "in-progress", "locked"]);
+  assert.deepEqual(earth.endless, { unlocked: true, highScore: 1450 });
+  assert.deepEqual(mars.endless, { unlocked: false, highScore: 0 });
   assert.equal(saturn.unlocked, false);
   assert.ok(saturn.stages.every(({ status }) => status === "locked"));
-  assert.equal(getInitialExpandedPlanetId(progress), "earth");
-  progress.completedStageIds = ["earth-1", "earth-2", "earth-3", "earth-4", "earth-5", "mars-1"];
   assert.equal(getInitialExpandedPlanetId(progress), "mars");
 });
 
@@ -45,7 +47,7 @@ test("when the campaign is complete, selector defaults to the last unlocked plan
 });
 
 test("selector can return to the planet containing the phase just completed", () => {
-  assert.equal(getPlanetIdForStage("earth-5"), "earth");
+  assert.equal(getPlanetIdForStage("earth-3"), "earth");
   assert.equal(getPlanetIdForStage("unknown-stage"), null);
 });
 

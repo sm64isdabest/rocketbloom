@@ -15,7 +15,7 @@ function getAssetFiles(directory) {
 test("assets raster usam WebP", () => {
   const assetFiles = getAssetFiles(assetsDirectory);
   const levelSprites = assetFiles.filter((path) => path.includes("/levels/") && /\.png$/i.test(path));
-  assert.equal(levelSprites.length, 20, "cada fase deve ter seu PNG original");
+  assert.equal(levelSprites.length, 12, "cada fase deve ter seu PNG original");
   for (const path of levelSprites) {
     const png = readFileSync(path);
     assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", `${path} deve ser um PNG válido`);

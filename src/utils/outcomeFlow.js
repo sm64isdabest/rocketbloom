@@ -1,7 +1,7 @@
 import { SCREEN } from "./screenStates.js";
 
 export function getOutcomeReturn(outcome, snapshot) {
-  if (outcome !== "victory") {
+  if (outcome !== "victory" && snapshot?.mode !== "endless") {
     return { menuPage: SCREEN.MENU, completedStageId: null };
   }
 

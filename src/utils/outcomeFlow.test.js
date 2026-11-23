@@ -16,3 +16,10 @@ test("derrota retorna ao menu sem destacar uma fase", () => {
     completedStageId: null,
   });
 });
+
+test("fim do modo infinito retorna ao seletor sem destacar uma fase de campanha", () => {
+  assert.deepEqual(getOutcomeReturn("defeat", { mode: "endless", planetId: "earth", stageId: null }), {
+    menuPage: SCREEN.PLANETS,
+    completedStageId: null,
+  });
+});

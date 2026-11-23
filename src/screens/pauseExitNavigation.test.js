@@ -17,5 +17,5 @@ test("sair do nível encerra a sessão pausada e abre diretamente o seletor", ()
   assert.match(appSource, /<PauseOverlay[\s\S]*?onQuit=\{exitLevel\}/);
   assert.match(appSource, /run && \(screen === SCREEN\.PLAYING \|\| screen === SCREEN\.PAUSED/);
   assert.match(appSource, /screen === SCREEN\.MENU && menuPage === SCREEN\.PLANETS/);
-  assert.match(appSource, /screen === SCREEN\.MENU && \(menuPage === SCREEN\.MENU \|\| menuPage === SCREEN\.SETTINGS\)/);
+  assert.match(appSource, /screen === SCREEN\.MENU && menuPage === SCREEN\.MENU/);
 });

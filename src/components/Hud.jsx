@@ -1,8 +1,9 @@
 import { getActiveQuestion, getHudAssetUrl, getPowerUpAssetUrl } from "./hudModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
+const numberFormat = new Intl.NumberFormat("pt-BR");
 
-export function Hud({ snapshot, onPause }) {
+export function Hud({ snapshot, endless, onPause }) {
   const activeQuestion = getActiveQuestion(snapshot);
 
   return (
@@ -16,6 +17,12 @@ export function Hud({ snapshot, onPause }) {
           <img className="hud__resource-icon hud__resource-icon--diamond" src={getHudAssetUrl("diamond.webp", APP_BASE)} alt="" aria-hidden="true" />
           <b>{String(snapshot?.diamonds ?? 0).padStart(2, "0")}</b>
         </span>
+        {endless ? (
+          <div className="hud__endless-score">
+            <img src={getHudAssetUrl("endless.webp", APP_BASE)} alt="" />
+            <span><small>Pontuação</small><strong>{numberFormat.format(snapshot?.endlessScore ?? 0)}</strong></span>
+          </div>
+        ) : null}
         <div className="hud__speed-group">
           <span className="hud__stat hud__stat--speed" aria-label={`Velocidade ${snapshot?.speed ?? 0} quilômetros por hora`}>
             <small>VELOCIDADE</small><b>{snapshot?.speed ?? 0}<i> km/h</i></b>

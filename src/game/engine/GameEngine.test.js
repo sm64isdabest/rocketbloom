@@ -493,6 +493,25 @@ test("a vitória congela a partida e o foguete sai pelo topo antes de liberar o 
   });
 });
 
+test("modo infinito ultrapassa o tempo da fase e tem placar de sobrevivência próprio", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const session = { ...createSession(10), mode: "endless" };
+    const outcomes = [];
+    const engine = new GameEngine(engineOptions(canvas, { onOutcome: (outcome) => outcomes.push(outcome) }, { session }));
+    engine.setDebugDuration(10);
+    engine.correctAnswers = 2;
+    engine.coins = 3;
+    engine.diamonds = 1;
+    tickFor(engine, 1200);
+    const snapshot = engine.getSnapshot();
+    assert.deepEqual(outcomes, []);
+    assert.equal(snapshot.stageId, null);
+    assert.equal(snapshot.endlessScore, 385);
+    assert.equal(snapshot.stageProgress, 0);
+    engine.stop();
+  });
+});
+
 test("movimento reduzido apresenta o resultado da vitória imediatamente", () => {
   withCanvasEnvironment(({ canvas, scheduled }) => {
     const presentations = [];
@@ -924,13 +943,13 @@ test("caixa adia uma tentativa bloqueada e reaparece quando existe uma posição
   });
 });
 
-test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões", () => {
+test("o voo prolongado com a dificuldade final de Netuno completa com acertos e colisões", () => {
   withCanvasEnvironment(({ canvas }) => {
     const planet = getPlanetById("neptune");
-    const stage = planet.stages[4];
+    const stage = planet.stages.at(-1);
     const session = {
       planet,
-    stage: { ...stage, durationMs: stage.durationMs + 10_000, obstaclePenaltyMultiplier: 0.35 },
+      stage: { ...stage, durationMs: 100_000, obstaclePenaltyMultiplier: 0.35 },
       difficulty: { ...getPlanetDifficulty(planet.id), mathTier: stage.difficulty },
       obstacles: getObstaclesForPlanet(planet.id),
     };
@@ -943,7 +962,7 @@ test("Netuno 5 completa em simulação com acertos, erros ocasionais e colisões
     const outcomes = [];
     const engine = new GameEngine(engineOptions(canvas, { onOutcome: (outcome) => outcomes.push(outcome) }, {
       session,
-      runId: "neptune-5-stress",
+      runId: "neptune-3-stress",
       rng,
     }));
     engine.speed = 300;

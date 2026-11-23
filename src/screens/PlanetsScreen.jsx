@@ -19,10 +19,10 @@ const PLANET_SUBTITLES = {
 };
 
 const STAGE_POSITIONS = {
-  earth: [[59, 168], [153, 196], [251, 170], [345, 208], [426, 165]],
-  mars: [[58, 166], [153, 205], [251, 177], [343, 213], [423, 169]],
-  saturn: [[59, 169], [151, 197], [250, 169], [344, 211], [425, 171]],
-  neptune: [[59, 168], [151, 197], [250, 170], [342, 213], [425, 168]],
+  earth: [[99, 156], [236, 183], [373, 158]],
+  mars: [[99, 160], [236, 182], [373, 154]],
+  saturn: [[99, 162], [236, 184], [373, 157]],
+  neptune: [[99, 151], [236, 183], [373, 162]],
 };
 
 const stageStatusLabel = (stage) => {
@@ -31,7 +31,8 @@ const stageStatusLabel = (stage) => {
   return stage.available ? "fase atual, disponível" : "bloqueada";
 };
 
-export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, preferredStageId, onBack, onPlay, onMarkPlanetSeen, onSettings, onCommandRoom, onSelectionChange }) {
+export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, preferredStageId, onBack, onPlay, onPlayEndless,
+  onMarkPlanetSeen, onSettings, onCommandRoom, onSelectionChange, reducedMotion }) {
   const validPreferredPlanetId = PLANETS.some(({ id }) => id === preferredPlanetId) ? preferredPlanetId : null;
   const initialPlanetId = validPreferredPlanetId ?? getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const initialStageId = PLANETS.find(({ id }) => id === initialPlanetId)?.stages.some(({ id }) => id === preferredStageId)
@@ -41,7 +42,6 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   const [selectedStageId, setSelectedStageId] = useState(initialStageId);
   const [revealingPlanetId, setRevealingPlanetId] = useState(null);
   const [hoveredSelector, setHoveredSelector] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [selectionPulse, setSelectionPulse] = useState(0);
   const discoveryHandled = useRef(new Set(progress.seenPlanetIds ?? []));
   const activeStageElementRef = useRef(null);
@@ -60,15 +60,6 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
     playGameSound("discovery");
   }, [model.unlocked, onMarkPlanetSeen, planet]);
 
-  useEffect(() => {
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updatePreference = () => setReducedMotion(preference.matches);
-    preference.addEventListener?.("change", updatePreference);
-    return () => {
-      preference.removeEventListener?.("change", updatePreference);
-    };
-  }, []);
-
   const canGoBack = previousPlanet && canNavigateToPlanet(planet.id, previousPlanet.id, progress);
   const canGoForward = nextPlanet && canNavigateToPlanet(planet.id, nextPlanet.id, progress);
   const activeStage = model.stages.find((stage) => stage.available && !stage.completed);
@@ -86,6 +77,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
     onPlay(planet.id, stageId);
   };
   const selectPlanet = (planetId) => {
+    setRevealingPlanetId(null);
     setSelectedStageId(null);
     setSelectedPlanetId(planetId);
     onSelectionChange?.(planetId, null);
@@ -95,11 +87,14 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
     <main className="phase-selection-screen" aria-label={`Seleção de fases: ${planet.name}`}>
       <div
         className={baseClass}
-        onAnimationEnd={() => setRevealingPlanetId(null)}
+        onAnimationEnd={(event) => {
+          if (event.animationName === "planet-discovery-color") setRevealingPlanetId(null);
+        }}
         onPointerEnter={() => setHoveredSelector(true)}
         onPointerLeave={() => setHoveredSelector(false)}
       >
         <img
+          key={planet.id}
           className="phase-selection-background"
           src={`${APP_BASE}assets/ui/planets/${planet.id}.webp`}
           alt=""
@@ -203,6 +198,21 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
             );
           })}
         </ol>
+
+        <button
+          type="button"
+          className="phase-selection-endless"
+          disabled={!model.endless.unlocked}
+          onClick={() => onPlayEndless(planet.id)}
+        >
+          <img src={`${APP_BASE}assets/ui/endless.webp`} alt="" />
+          <span>
+            <strong>Modo infinito</strong>
+            <small>{model.endless.unlocked
+              ? `Recorde: ${numberFormat.format(model.endless.highScore)} pts`
+              : `Bloqueado · Conclua as ${model.stages.length} fases`}</small>
+          </span>
+        </button>
 
         <button
           type="button"

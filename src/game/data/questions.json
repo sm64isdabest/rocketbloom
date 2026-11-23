@@ -365,7 +365,7 @@
       ]
     }
   ],
-  "earth-4": [
+  "earth-endless": [
     {
       "id": "earth-4-q01",
       "category": "addition",
@@ -485,9 +485,7 @@
         15,
         18
       ]
-    }
-  ],
-  "earth-5": [
+    },
     {
       "id": "earth-5-q01",
       "category": "addition",
@@ -975,7 +973,7 @@
       ]
     }
   ],
-  "mars-4": [
+  "mars-endless": [
     {
       "id": "mars-4-q01",
       "category": "addition",
@@ -1095,9 +1093,7 @@
         5,
         8
       ]
-    }
-  ],
-  "mars-5": [
+    },
     {
       "id": "mars-5-q01",
       "category": "addition",
@@ -1585,7 +1581,7 @@
       ]
     }
   ],
-  "saturn-4": [
+  "saturn-endless": [
     {
       "id": "saturn-4-q01",
       "category": "addition",
@@ -1705,9 +1701,7 @@
         29,
         32
       ]
-    }
-  ],
-  "saturn-5": [
+    },
     {
       "id": "saturn-5-q01",
       "category": "addition",
@@ -2195,7 +2189,7 @@
       ]
     }
   ],
-  "neptune-4": [
+  "neptune-endless": [
     {
       "id": "neptune-4-q01",
       "category": "addition",
@@ -2315,9 +2309,7 @@
         0,
         3
       ]
-    }
-  ],
-  "neptune-5": [
+    },
     {
       "id": "neptune-5-q01",
       "category": "addition",

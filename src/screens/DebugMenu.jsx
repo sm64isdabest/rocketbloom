@@ -129,9 +129,9 @@ export function DebugMenu({ progress, run, controls, onClose, onChange, onGrant,
               <input type="range" min="0" max="320" step="1" value={controls.speed} disabled={!run} onChange={(event) => onSetSpeed(Number(event.currentTarget.value))} />
             </label>
             <label className="debug-menu__setting"><span>GODMODE</span><input type="checkbox" checked={controls.godmode} disabled={!run} onChange={(event) => onSetGodmode(event.currentTarget.checked)} /></label>
-            <label className="debug-menu__field">Duração da fase (segundos)<input type="number" min="0" max="3600" step="1" value={controls.stageDurationMs === null ? 0 : Number.isFinite(controls.stageDurationMs) ? controls.stageDurationMs / 1000 : 0} disabled={!run}
+            <label className="debug-menu__field">Duração da fase (segundos)<input type="number" min="0" max="3600" step="1" value={controls.stageDurationMs === null ? 0 : Number.isFinite(controls.stageDurationMs) ? controls.stageDurationMs / 1000 : 0} disabled={!run || run.mode === "endless"}
               onChange={(event) => { const seconds = Number(event.currentTarget.value); if (Number.isFinite(seconds) && seconds >= 0 && seconds <= 3600) onSetDuration(seconds === 0 ? 0 : seconds * 1000); }} /></label>
-            <p className="debug-menu__hint">Use 0 para deixar a fase infinita.</p>
+            <p className="debug-menu__hint">{run?.mode === "endless" ? "O modo infinito não tem limite de tempo." : "Use 0 para deixar a fase infinita."}</p>
             <label className="debug-menu__field">Powerup<select value={powerUp} onChange={(event) => setPowerUp(event.currentTarget.value)}>{POWER_UPS.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}</select></label>
             <button type="button" className="debug-menu__button debug-menu__button--primary" disabled={!run} onClick={() => onGrantPowerUp(powerUp)}>Aplicar powerup</button>
           </div>}

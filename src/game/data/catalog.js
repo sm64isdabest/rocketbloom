@@ -1,12 +1,12 @@
-import { PLANETS } from "./planets.js";
+import { CAMPAIGN_CONFIG, PLANETS } from "./planets.js";
 import { QUESTION_BANK, getQuestionsForStage } from "./questions.js";
 import { PLANTS } from "./plants.js";
 import { OBSTACLES } from "./obstacles.js";
 import { COLLECTIBLES } from "./items.js";
 
-function validateStageQuestions(stage, errors) {
+function validateStageQuestions(stage, errors, expectedCount = 10) {
   const questions = getQuestionsForStage(stage.id);
-  if (questions.length !== 10) errors.push(`Fase ${stage.id} deve possuir exatamente dez perguntas.`);
+  if (questions.length !== expectedCount) errors.push(`A missão ${stage.id} deve possuir ${expectedCount} perguntas.`);
 
   const questionIds = new Set();
   for (const question of questions) {
@@ -42,7 +42,9 @@ export function validateCatalog() {
   if (!PLANETS.length) errors.push("Nenhum planeta configurado.");
 
   for (const planet of PLANETS) {
-    if (planet.stages?.length !== 5) errors.push(`Planeta ${planet.id} deve possuir exatamente cinco fases.`);
+    if (planet.stages?.length !== CAMPAIGN_CONFIG.stagesPerPlanet) {
+      errors.push(`Planeta ${planet.id} deve possuir ${CAMPAIGN_CONFIG.stagesPerPlanet} fases de campanha.`);
+    }
     for (const [index, stage] of (planet.stages ?? []).entries()) {
       if (stage.planetId !== planet.id) errors.push(`Fase ${stage.id} aponta para planeta incorreto.`);
       if (!(stage.durationMs > 0) || !(stage.obstacleIntervalMs > 0) || !(stage.speedMultiplier > 0)) {
@@ -56,6 +58,7 @@ export function validateCatalog() {
         errors.push(`A frequência de obstáculos não aumenta em ${stage.id}.`);
       }
     }
+    validateStageQuestions(planet.endlessStage, errors, 20);
     if (!PLANTS.some((plant) => plant.id === planet.plantId)) {
       errors.push(`Planeta ${planet.id} aponta para planta inexistente.`);
     }
@@ -68,10 +71,7 @@ export function validateCatalog() {
     }
   }
 
-  if (PLANETS.reduce((total, planet) => total + planet.stages.length, 0) !== 20) {
-    errors.push("A campanha deve possuir exatamente vinte fases.");
-  }
-  const stageIds = new Set(PLANETS.flatMap((planet) => planet.stages.map((stage) => stage.id)));
+  const stageIds = new Set(PLANETS.flatMap(({ stages, endlessStage }) => [...stages, endlessStage].map(({ id }) => id)));
   for (const stageId of Object.keys(QUESTION_BANK)) {
     if (!stageIds.has(stageId)) errors.push(`Banco de perguntas contém fase desconhecida: ${stageId}.`);
   }

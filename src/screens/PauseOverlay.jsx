@@ -3,12 +3,12 @@ import { getPauseActions, getPauseAssetUrl } from "./pauseModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 
-export function PauseOverlay({ onResume, onQuit, onSettings, onTapRocket, reducedMotion = false, settingsOpen = false }) {
+export function PauseOverlay({ onResume, onQuit, onSettings, onTapRocket, reducedMotion = false }) {
   const [reaction, setReaction] = useState(0);
   const actions = getPauseActions({ onQuit, onResume, onSettings });
 
   return (
-    <div className="pause-overlay" inert={settingsOpen}>
+    <div className="pause-overlay">
       <section className="pause-popup" role="dialog" aria-modal="true" aria-labelledby="pause-title">
         <h2 id="pause-title">Jogo pausado</h2>
         <button

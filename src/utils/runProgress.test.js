@@ -15,19 +15,19 @@ test("uma conclusão duplicada não reaplica moedas, créditos ou resgate", () =
   assert.equal(duplicate.progress.completedStageIds.length, 1);
 });
 
-test("concluir as cinco fases da Terra desbloqueia Marte", () => {
+test("concluir as três fases da Terra desbloqueia Marte", () => {
   let progress = applyRunOutcome(createDefaultProgress(), {
     runId: "run-b", planetId: "earth", stageId: "earth-1", coins: 0, diamonds: 0,
   }, "victory").progress;
   assert.deepEqual(progress.rescuedPlantIds, ["victoria-amazonica"]);
   assert.equal(progress.plantGrowthStages["victoria-amazonica"], 0);
-  for (let phase = 2; phase <= 5; phase += 1) {
+  for (let phase = 2; phase <= 3; phase += 1) {
     progress = applyRunOutcome(progress, { runId: `earth-${phase}`, planetId: "earth", stageId: `earth-${phase}`, coins: 0, diamonds: 0 }, "victory").progress;
   }
   assert.ok(progress.unlockedPlanetIds.includes("mars"));
   assert.deepEqual(progress.rescuedPlantIds, ["victoria-amazonica"]);
   assert.equal(progress.plantGrowthStages["victoria-amazonica"], 4);
-  const replay = applyRunOutcome(progress, { runId: "earth-replay", planetId: "earth", stageId: "earth-5" }, "victory");
+  const replay = applyRunOutcome(progress, { runId: "earth-replay", planetId: "earth", stageId: "earth-3" }, "victory");
   assert.equal(replay.progress.plantGrowthStages["victoria-amazonica"], 4);
   assert.equal(replay.progress.money, progress.money);
 });
@@ -36,8 +36,22 @@ test("uma fase avança apenas a planta do planeta correspondente", () => {
   let progress = createDefaultProgress();
   progress = applyRunOutcome(progress, { runId: "growth-earth-1", planetId: "earth", stageId: "earth-1" }, "victory").progress;
   progress = applyRunOutcome(progress, { runId: "growth-earth-2", planetId: "earth", stageId: "earth-2" }, "victory").progress;
-  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 1);
+  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 2);
   assert.equal(progress.plantGrowthStages["mars-lichen"], undefined);
+});
+
+test("infinito guarda o maior placar por planeta sem conceder recompensas da campanha", () => {
+  const original = { ...createDefaultProgress(), coins: 9, endlessHighScores: { mars: 450 } };
+  const attempt = { mode: "endless", planetId: "earth", stageId: null, runId: "endless-1", endlessScore: 325, coins: 5, diamonds: 3 };
+  const first = applyRunOutcome(original, attempt, "defeat").progress;
+  assert.deepEqual(first.endlessHighScores, { earth: 325, mars: 450 });
+  assert.equal(first.coins, original.coins);
+  assert.equal(first.diamonds, original.diamonds);
+  assert.deepEqual(first.completedStageIds, []);
+  assert.deepEqual(first.stageProgress, {});
+  const lower = applyRunOutcome(first, { ...attempt, runId: "endless-2", endlessScore: 200 }, "exit").progress;
+  assert.deepEqual(lower.endlessHighScores, first.endlessHighScores);
+  assert.ok(applyRunOutcome(lower, attempt, "defeat").alreadyApplied);
 });
 
 test("itens coletados durante uma derrota são salvos sem marcar a fase como concluída", () => {

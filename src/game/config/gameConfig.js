@@ -33,6 +33,14 @@ export const SCORE = {
   incorrectAnswer: -25,
 };
 
+export const ENDLESS = {
+  difficultyRampMs: 120_000,
+  pointsPerSecond: 10,
+  correctAnswerPoints: 100,
+  coinPoints: 25,
+  diamondPoints: 100,
+};
+
 export const COMBAT = {
   obstacleDamage: 1,
   maxHitsBeforeDefeat: 3,

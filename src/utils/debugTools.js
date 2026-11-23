@@ -1,4 +1,4 @@
-import { PLANETS } from "../game/data/planets.js";
+import { getCampaignUnlocks, PLANETS } from "../game/data/planets.js";
 
 const CURRENCIES = new Set(["coins", "diamonds", "money"]);
 
@@ -23,11 +23,10 @@ export function completeDebugStage(progress, planetId, stageId) {
   if (stageIndex < 0) throw new Error("Fase de debug inválida.");
   const completedStageIds = [...new Set([...progress.completedStageIds, stageId])];
   const planetIndex = PLANETS.findIndex(({ id }) => id === planetId);
-  const unlockedPlanetIds = [...new Set([...progress.unlockedPlanetIds, ...PLANETS.slice(0, planetIndex + 1).map(({ id }) => id)])];
-  if (stageIndex === planet.stages.length - 1 && planet.stages.every(({ id }) => completedStageIds.includes(id))) {
-    const nextPlanet = PLANETS[planetIndex + 1];
-    if (nextPlanet && !unlockedPlanetIds.includes(nextPlanet.id)) unlockedPlanetIds.push(nextPlanet.id);
-  }
+  const unlockedPlanetIds = getCampaignUnlocks([
+    ...progress.unlockedPlanetIds,
+    ...PLANETS.slice(0, planetIndex + 1).map(({ id }) => id),
+  ], completedStageIds);
 
   return {
     ...progress,

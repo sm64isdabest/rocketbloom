@@ -5,20 +5,23 @@ import { getObstaclesForPlanet } from "../game/data/obstacles.js";
 import { getPlantForPlanet } from "../game/data/plants.js";
 import { getPlanetDifficulty } from "../game/config/gameConfig.js";
 
-export function useGameSession(planetId, stageId) {
+export function useGameSession(planetId, stageId, mode) {
   return useMemo(() => {
     const planet = getPlanetById(planetId);
     if (!planet) {
       return { error: `Planeta não encontrado: ${planetId}` };
     }
-    const stage = getStageById(planet, stageId);
+    const stage = mode === "endless" ? planet.endlessStage : getStageById(planet, stageId);
     if (!stage) {
       return { error: `Fase não encontrada: ${stageId}` };
     }
     return {
       planet,
       stage,
-      questions: getQuestionsForStage(stage.id),
+      mode,
+      questions: mode === "endless"
+        ? [...planet.stages.flatMap(({ id }) => getQuestionsForStage(id)), ...getQuestionsForStage(stage.id)]
+        : getQuestionsForStage(stage.id),
       obstacles: getObstaclesForPlanet(planet.id),
       plant: getPlantForPlanet(planet.id),
       difficulty: {
@@ -26,5 +29,5 @@ export function useGameSession(planetId, stageId) {
         mathTier: stage.difficulty,
       },
     };
-  }, [planetId, stageId]);
+  }, [planetId, stageId, mode]);
 }

@@ -1,4 +1,4 @@
-import { PLANETS } from "../game/data/planets.js";
+import { isPlanetComplete, PLANETS } from "../game/data/planets.js";
 
 export function getPlanetIdForStage(stageId, planets = PLANETS) {
   return planets.find((planet) => planet.stages.some((stage) => stage.id === stageId))?.id ?? null;
@@ -27,7 +27,12 @@ export function canNavigateToPlanet(fromPlanetId, toPlanetId, progress, planets 
   if (fromIndex < 0 || toIndex < 0 || Math.abs(fromIndex - toIndex) !== 1) return false;
   if (!progress.unlockedPlanetIds.includes(fromPlanetId) || !progress.unlockedPlanetIds.includes(toPlanetId)) return false;
   if (toIndex < fromIndex) return true;
-  return planets[fromIndex].stages.every((stage) => progress.completedStageIds.includes(stage.id));
+  return isPlanetComplete(planets[fromIndex], progress.completedStageIds);
+}
+
+export function canPlayEndless(planet, progress) {
+  return Boolean(planet && progress.unlockedPlanetIds.includes(planet.id)
+    && isPlanetComplete(planet, progress.completedStageIds));
 }
 
 export function getPlanetSelectorModel(planet, progress) {
@@ -50,6 +55,10 @@ export function getPlanetSelectorModel(planet, progress) {
   return {
     unlocked,
     stages,
+    endless: {
+      unlocked: canPlayEndless(planet, progress),
+      highScore: progress.endlessHighScores?.[planet.id] ?? 0,
+    },
     completedCount,
     progressPercent: Math.round((accumulated / stages.length) * 100),
     progressLabel: `${completedCount}/${stages.length} fases concluídas`,

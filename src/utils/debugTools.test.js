@@ -37,7 +37,7 @@ test("debug completion advances the campaign and unlocks the next planet at the 
     ...progress,
     completedStageIds: PLANETS[0].stages.slice(0, -1).map(({ id }) => id),
   };
-  assert.deepEqual(completeDebugStage(atFinalEarthStage, "earth", "earth-5").unlockedPlanetIds, ["earth", "mars"]);
+  assert.deepEqual(completeDebugStage(atFinalEarthStage, "earth", "earth-3").unlockedPlanetIds, ["earth", "mars"]);
   assert.deepEqual(completeDebugStage(progress, "mars", "mars-1").unlockedPlanetIds, ["earth", "mars"]);
 });
 

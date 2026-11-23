@@ -1,6 +1,8 @@
 import { REWARDS } from "../game/config/gameConfig.js";
-import { PLANETS, getPlanetById } from "../game/data/planets.js";
-import { PLANTS, getPlantById } from "../game/data/plants.js";
+import { getCampaignUnlocks, getPlanetById } from "../game/data/planets.js";
+import { getPlantById, getPlantGrowthIndex } from "../game/data/plants.js";
+
+const NO_REWARDS = { coins: 0, diamonds: 0, money: 0, plantMoney: 0, sustainabilityPoints: 0, plantName: null, stageCompleted: false };
 
 function unique(values) {
   return [...new Set(values)];
@@ -11,8 +13,24 @@ export function applyRunOutcome(progress, snapshot, outcome) {
   if (runId && progress.processedRunIds?.includes(runId)) {
     return {
       progress,
-      rewards: { coins: 0, diamonds: 0, money: 0, plantMoney: 0, sustainabilityPoints: 0, plantName: null, stageCompleted: false },
+      rewards: { ...NO_REWARDS },
       alreadyApplied: true,
+    };
+  }
+  const processedRunIds = [...(progress.processedRunIds ?? []), ...(runId ? [runId] : [])].slice(-1000);
+  if (snapshot?.mode === "endless") {
+    const { planetId, endlessScore } = snapshot;
+    const endlessHighScores = progress.endlessHighScores ?? {};
+    const highScore = endlessHighScores[planetId] ?? 0;
+    const improved = getPlanetById(planetId) && Number.isFinite(endlessScore) && endlessScore > highScore;
+    return {
+      progress: {
+        ...progress,
+        processedRunIds,
+        endlessHighScores: improved ? { ...endlessHighScores, [planetId]: Math.floor(endlessScore) } : endlessHighScores,
+      },
+      rewards: { ...NO_REWARDS },
+      alreadyApplied: false,
     };
   }
 
@@ -29,16 +47,12 @@ export function applyRunOutcome(progress, snapshot, outcome) {
     rescuedPlantIds: [...progress.rescuedPlantIds],
     plantGrowthStages: { ...(progress.plantGrowthStages ?? {}) },
     sustainabilityPoints: progress.sustainabilityPoints ?? 0,
-    processedRunIds: [...(progress.processedRunIds ?? []), ...(runId ? [runId] : [])].slice(-1000),
+    processedRunIds,
   };
   const rewards = {
+    ...NO_REWARDS,
     coins: earnedCoins,
     diamonds: earnedDiamonds,
-    money: 0,
-    plantMoney: 0,
-    sustainabilityPoints: 0,
-    plantName: null,
-    stageCompleted: false,
     replayedStage: replayingCompletedStage,
   };
 
@@ -63,14 +77,13 @@ export function applyRunOutcome(progress, snapshot, outcome) {
   rewards.stageCompleted = true;
   rewards.money += stage.rewards?.money ?? REWARDS.stageClearMoney;
 
-  const nextStage = planet.stages[stageIndex + 1];
   const plant = getPlantById(planet.plantId);
   if (plant) {
     const firstRescue = !next.rescuedPlantIds.includes(plant.id);
     next.rescuedPlantIds = unique([...next.rescuedPlantIds, plant.id]);
     next.plantGrowthStages[plant.id] = Math.max(
       next.plantGrowthStages[plant.id] ?? 0,
-      Math.min(plant.growthStages.length - 1, stageIndex),
+      getPlantGrowthIndex(plant, stageIndex, planet.stages.length),
     );
     if (firstRescue) {
       rewards.money += plant.moneyReward;
@@ -81,13 +94,7 @@ export function applyRunOutcome(progress, snapshot, outcome) {
     }
   }
 
-  if (!nextStage) {
-    const planetIndex = PLANETS.findIndex((candidate) => candidate.id === planet.id);
-    const nextPlanet = PLANETS[planetIndex + 1];
-    if (nextPlanet) next.unlockedPlanetIds = unique([...next.unlockedPlanetIds, nextPlanet.id]);
-
-  }
-
+  next.unlockedPlanetIds = getCampaignUnlocks(next.unlockedPlanetIds, next.completedStageIds);
   next.money += rewards.money;
   return { progress: next, rewards, alreadyApplied: false };
 }
