@@ -35,7 +35,6 @@ export default function App() {
   const { progress, warning, fatal, patchSettings, persist, resetProgress } = usePersistentProgress();
   const [screen, setScreen] = useState(SCREEN.BOOT);
   const [menuPage, setMenuPage] = useState(SCREEN.MENU);
-  const storageReturnPage = useRef(SCREEN.MENU);
   const selectorStorageButton = useRef(null);
   const selectorGoldBalance = useRef(null);
   const [navigationContext, dispatchNavigationContext] = useReducer(navigationContextReducer, initialNavigationContext);
@@ -240,22 +239,14 @@ export default function App() {
     updateGold((gold) => acknowledgeGold(gold, total));
   }, [updateGold]);
 
-  const openStorage = (returnPage = SCREEN.MENU) => {
-    storageReturnPage.current = returnPage;
+  const enterStorageFromSelector = (planetId, selectedStageId) => {
+    dispatchNavigationContext({ type: "select-stage", planetId, selectedStageId });
     setMenuPage(SCREEN.STORAGE);
   };
 
-  const enterStorageFromSelector = (planetId, selectedStageId) => {
-    dispatchNavigationContext({ type: "select-stage", planetId, selectedStageId });
-    openStorage(SCREEN.PLANETS);
-  };
-
   const closeStorage = () => {
-    const destination = storageReturnPage.current;
-    setMenuPage(destination);
-    if (destination === SCREEN.PLANETS) {
-      window.requestAnimationFrame(() => selectorStorageButton.current?.focus({ preventScroll: true }));
-    }
+    setMenuPage(SCREEN.PLANETS);
+    window.requestAnimationFrame(() => selectorStorageButton.current?.focus({ preventScroll: true }));
   };
 
   const recordOutcome = useCallback((outcome, snapshot) => {
@@ -302,13 +293,12 @@ export default function App() {
     setScreen((current) => current === SCREEN.VICTORY_LAUNCH ? SCREEN.VICTORY : current);
   }, []);
 
-  const returnFromResult = (openGoldStorage = false) => {
+  const returnFromResult = () => {
     const destination = getOutcomeReturn(screen === SCREEN.VICTORY ? "victory" : "defeat", outcomeSnapshot);
     dispatchNavigationContext({ type: "exit-run" });
     setRun(null);
     setOutcomeSnapshot(null);
-    if (openGoldStorage) openStorage(destination.menuPage);
-    else setMenuPage(destination.menuPage);
+    setMenuPage(destination.menuPage);
     setCompletionStageId(destination.completedStageId);
     setScreen(SCREEN.MENU);
   };
@@ -362,12 +352,10 @@ export default function App() {
       if (screen === SCREEN.PAUSED || screen === SCREEN.PLAYING) {
         recordOutcome("exit", debugEngineRef.current?.getSnapshot());
       }
-      if (menuPage !== SCREEN.STORAGE || screen !== SCREEN.MENU) {
-        openStorage(screen === SCREEN.MENU && menuPage === SCREEN.PLANETS ? SCREEN.PLANETS : SCREEN.MENU);
-      }
       dispatchNavigationContext({ type: "exit-run" });
       setRun(null);
       setOutcomeSnapshot(null);
+      setMenuPage(SCREEN.STORAGE);
       setScreen(SCREEN.MENU);
       return;
     }
@@ -442,7 +430,6 @@ export default function App() {
           progress={progress}
           warning={warning}
           onPlay={() => setMenuPage(SCREEN.PLANETS)}
-          onStorage={() => openStorage()}
           onSettings={openSettings}
         />
       ) : null}
@@ -453,7 +440,6 @@ export default function App() {
           reducedMotion={reducedMotion}
           inputBlocked={debugOpen || settingsOpen}
           onBack={closeStorage}
-          backLabel={storageReturnPage.current === SCREEN.PLANETS ? "Voltar à seleção de fases" : "Voltar ao menu"}
           onSettings={openSettings}
           onAcknowledge={acknowledgeGoldDeposit}
           onToggleDecoration={(id) => updateGold((gold) => toggleDecoration(gold, id))}
@@ -522,13 +508,12 @@ export default function App() {
           stage={stage}
           snapshot={outcomeSnapshot}
           bestScore={progress.endlessHighScores?.[planet?.id] ?? 0}
-          onContinue={() => returnFromResult()}
-          onStorage={() => returnFromResult(true)}
+          onContinue={returnFromResult}
           onRetry={endlessResult ? retryStage : undefined}
         />
       ) : null}
       {screen === SCREEN.DEFEAT && !endlessResult ? (
-        <DefeatScreen onRetry={retryStage} onStorage={() => returnFromResult(true)} />
+        <DefeatScreen onRetry={retryStage} />
       ) : null}
       </div>
       {settingsOpen ? (

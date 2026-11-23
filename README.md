@@ -183,7 +183,7 @@ Não houve dificuldades identificadas.
 
 ### Armazém de ouro
 
-Cada moeda coletada rende 1 ouro ao encerrar o voo, inclusive na derrota, ao sair pela pausa ou no modo infinito. O **Armazém** fica no menu principal, na seleção de fases e nas telas de resultado. O botão do seletor mostra o saldo de ouro e sinaliza metas ainda não vistas. Ao voltar pelo portal, o mesmo planeta e a mesma fase continuam selecionados.
+Cada moeda coletada rende 1 ouro ao encerrar o voo, inclusive na derrota, ao sair pela pausa ou no modo infinito. O botão **Armazém** fica na seleção de fases, mostra o saldo de ouro e sinaliza metas ainda não vistas. Ao voltar pelo portal, o mesmo planeta e a mesma fase continuam selecionados.
 
 As moedas pendentes voam até a barra. As metas de 100, 300, 600, 1.000 e 2.000 de ouro revelam novos tesouros na galeria e liberam decorações que podem ser equipadas ou removidas. O jogo guarda o saldo, as metas vistas e as escolhas no perfil local.
 

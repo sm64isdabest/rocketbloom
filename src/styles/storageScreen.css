@@ -6,10 +6,8 @@
   flex: none;
 }
 .storage-icon > :is(img, svg) { grid-area: 1 / 1; width: 100%; height: 100%; object-fit: contain; }
-.menu__option--storage .storage-icon { width: clamp(37px, 13vw, 52px); }
-.menu__option--storage .storage-icon > :is(img, svg) { width: 100%; height: 100%; }
 .storage-icon__highlight { opacity: 0; transition: opacity .18s ease; }
-:is(.menu__option--storage, .phase-selection-storage):is(:hover, :active, :focus-visible, .has-new) .storage-icon__highlight { opacity: 1; }
+.phase-selection-storage:is(:hover, :active, :focus-visible, .has-new) .storage-icon__highlight { opacity: 1; }
 
 .phase-selection-header .phase-selection-resources {
   grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(84px, auto);

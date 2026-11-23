@@ -35,7 +35,7 @@ function GoldMeter({ total, goal, label, large = false, trackRef, pulse }) {
   );
 }
 
-export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, backLabel, onSettings, onAcknowledge, onToggleDecoration }) {
+export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, onSettings, onAcknowledge, onToggleDecoration }) {
   const [from] = useState(gold.seenTotal);
   const [seenAtEntry] = useState(gold.seenGoalIds);
   const [frame, setFrame] = useState({ total: from, arrived: 0 });
@@ -140,7 +140,8 @@ export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, backL
         src={`${APP_BASE}assets/laboratory/laboratory-background-clean.png`} alt="" />
       <Decorations equippedIds={gold.equippedIds} />
       <header className="laboratory-scene__topbar gold-storage__header">
-        <button type="button" className="laboratory-scene__icon-button gold-storage__back" onClick={onBack} aria-label={backLabel} title={backLabel}>
+        <button type="button" className="laboratory-scene__icon-button gold-storage__back" onClick={onBack}
+          aria-label="Voltar à seleção de fases" title="Voltar à seleção de fases">
           <img className="laboratory-scene__back-icon" src={getPauseAssetUrl(RETURN_ICON_FILE, APP_BASE)} alt="" />
           <span aria-hidden="true">Voltar</span>
         </button>
