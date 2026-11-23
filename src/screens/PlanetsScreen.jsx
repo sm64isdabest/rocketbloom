@@ -5,6 +5,7 @@ import { canNavigateToPlanet, getInitialExpandedPlanetId, getOrbitStage, getPlan
 import { getMenuAssetUrl } from "./menuModel.js";
 import { getPauseAssetUrl, RETURN_ICON_FILE } from "./pauseModel.js";
 import { setOrbitTargetElement } from "./rocketOrbit.js";
+import { StorageEntryButton } from "./StorageEntryButton.jsx";
 
 const OrbitalRocket = lazy(() => import("./OrbitalRocket.jsx").then((module) => ({ default: module.OrbitalRocket })));
 
@@ -33,7 +34,7 @@ const stageStatusLabel = (stage) => {
 };
 
 export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, preferredStageId, onBack, onPlay, onPlayEndless,
-  onMarkPlanetSeen, onSettings, onCommandRoom, onSelectionChange, reducedMotion }) {
+  onMarkPlanetSeen, onSettings, onCommandRoom, onSelectionChange, reducedMotion, storageButtonRef, previousGoldBalance, goldCountPaused, onStorage }) {
   const validPreferredPlanetId = PLANETS.some(({ id }) => id === preferredPlanetId) ? preferredPlanetId : null;
   const initialPlanetId = validPreferredPlanetId ?? getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const initialStageId = PLANETS.find(({ id }) => id === initialPlanetId)?.stages.some(({ id }) => id === preferredStageId)
@@ -147,6 +148,8 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
               <img src={`${APP_BASE}assets/ui/diamond.webp`} alt="" aria-hidden="true" />
               <span>{numberFormat.format(progress.diamonds ?? 0)}</span>
             </div>
+            <StorageEntryButton gold={progress.gold} previousBalance={previousGoldBalance} reducedMotion={reducedMotion}
+              paused={goldCountPaused} buttonRef={storageButtonRef} onClick={() => onStorage(planet.id, selectedStageId)} />
           </div>
 
           <nav className="phase-selection-navigation" aria-label="Navegação do seletor">

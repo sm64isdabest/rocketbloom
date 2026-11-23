@@ -1,4 +1,5 @@
 import { MenuSpaceBackground } from "./MenuSpaceBackground.jsx";
+import { StorageIcon } from "../components/StorageArt.jsx";
 import { getMenuAssetUrl } from "./menuModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
@@ -27,7 +28,7 @@ export function MenuScreen({ warning, onPlay, onSettings, onStorage }) {
           </button>
 
           <button type="button" className="menu__option menu__option--storage" onClick={onStorage}>
-            <img src={menuAsset("shop.webp")} alt="" />
+            <StorageIcon />
             <span>Armazém</span>
           </button>
         </nav>

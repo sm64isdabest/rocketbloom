@@ -4,6 +4,10 @@ export function getNextGoldGoal(total) {
   return GOLD_GOALS.find(({ amount }) => total < amount) ?? null;
 }
 
+export function getHighestGoldGoal(total) {
+  return GOLD_GOALS.findLast(({ amount }) => total >= amount) ?? null;
+}
+
 export function getCrossedGoals(previous, total) {
   return GOLD_GOALS.filter(({ amount }) => previous < amount && total >= amount);
 }

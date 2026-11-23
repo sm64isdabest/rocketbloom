@@ -183,13 +183,15 @@ Não houve dificuldades identificadas.
 
 ### Armazém de ouro
 
-Cada moeda coletada rende 1 ouro ao encerrar o voo, inclusive na derrota, ao sair pela pausa ou no modo infinito. O **Armazém** fica no menu principal e nas telas de resultado. Lá, as moedas pendentes voam até a barra, e as metas de 100, 300, 600, 1.000 e 2.000 de ouro liberam decorações que podem ser equipadas ou removidas. O jogo guarda o saldo e as escolhas no perfil local.
+Cada moeda coletada rende 1 ouro ao encerrar o voo, inclusive na derrota, ao sair pela pausa ou no modo infinito. O **Armazém** fica no menu principal, na seleção de fases e nas telas de resultado. O botão do seletor mostra o saldo de ouro e sinaliza metas ainda não vistas. Ao voltar pelo portal, o mesmo planeta e a mesma fase continuam selecionados.
+
+As moedas pendentes voam até a barra. As metas de 100, 300, 600, 1.000 e 2.000 de ouro revelam novos tesouros na galeria e liberam decorações que podem ser equipadas ou removidas. O jogo guarda o saldo, as metas vistas e as escolhas no perfil local.
 
 Durante o depósito, clique na tela ou pressione **Enter**, **Espaço** ou **Esc** para pular. Com movimento reduzido, o saldo e os desbloqueios aparecem direto.
 
 #### Testar com o menu de debug
 
-1. Segure **Q** e pressione **P** para abrir o menu de debug. Na aba **Ouro**, use **+100** ou **+1.000** em **Ouro de teste** e clique em **Abrir armazém** para testar a animação e as metas.
+1. Na seleção de fases, segure **Q** e pressione **P**. Na aba **Ouro**, use **Creditar até … ouro** para ganhar o valor exato da próxima meta. Feche o debug com **Esc** para ver o novo saldo e a bolinha de novidade no seletor. Depois entre pelo botão **Armazém** e veja a transformação do tesouro. Repita para percorrer as cinco imagens ou use **+1.000** para testar várias metas no mesmo depósito.
 2. Para testar o HUD, inicie uma fase, abra a mesma aba e use **+1** ou **+25** em **Moedas no HUD da partida**. Feche o debug para ver o contador ou clique em **Abrir armazém** para encerrar o voo e depositar.
 3. Equipe uma decoração, recarregue a página e reabra o Armazém para conferir o saldo e a escolha. O ouro de teste também fica salvo no perfil usado no teste.
 

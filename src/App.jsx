@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { preloadStorageAssets } from "./assets/storageAssets.js";
 import { SCREEN } from "./utils/screenStates.js";
 import { validateCatalog } from "./game/data/catalog.js";
 import { PROJECT_IMAGES } from "./game/data/projectImages.js";
 import { getPlanetById, getStageById } from "./game/data/planets.js";
 import { usePersistentProgress } from "./hooks/usePersistentProgress.js";
 import { applyRunOutcome } from "./utils/runProgress.js";
-import { acknowledgeGold, creditGold, toggleDecoration } from "./utils/goldStorage.js";
+import { acknowledgeGold, creditGold, creditNextGoldGoal, toggleDecoration } from "./utils/goldStorage.js";
 import { BootScreen } from "./screens/BootScreen.jsx";
 import { ErrorScreen } from "./screens/ErrorScreen.jsx";
 import { MenuScreen } from "./screens/MenuScreen.jsx";
@@ -35,6 +36,8 @@ export default function App() {
   const [screen, setScreen] = useState(SCREEN.BOOT);
   const [menuPage, setMenuPage] = useState(SCREEN.MENU);
   const storageReturnPage = useRef(SCREEN.MENU);
+  const selectorStorageButton = useRef(null);
+  const selectorGoldBalance = useRef(null);
   const [navigationContext, dispatchNavigationContext] = useReducer(navigationContextReducer, initialNavigationContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsTrigger = useRef(null);
@@ -57,11 +60,14 @@ export default function App() {
 
   useEffect(() => {
     let active = true;
-    preloadImages(PROJECT_IMAGE_URLS, {
-      onProgress: (nextProgress) => {
-        if (active) setAssetProgress(nextProgress);
-      },
-    }).then((result) => {
+    Promise.all([
+      preloadImages(PROJECT_IMAGE_URLS, {
+        onProgress: (nextProgress) => {
+          if (active) setAssetProgress(nextProgress);
+        },
+      }),
+      preloadStorageAssets().catch(() => null),
+    ]).then(([result]) => {
       if (!active) return;
       if (!hasLoadedAllImages(result)) {
         setBootError(`${result.failed} imagem(ns) não puderam ser carregadas. Verifique sua conexão e tente novamente.`);
@@ -239,6 +245,19 @@ export default function App() {
     setMenuPage(SCREEN.STORAGE);
   };
 
+  const enterStorageFromSelector = (planetId, selectedStageId) => {
+    dispatchNavigationContext({ type: "select-stage", planetId, selectedStageId });
+    openStorage(SCREEN.PLANETS);
+  };
+
+  const closeStorage = () => {
+    const destination = storageReturnPage.current;
+    setMenuPage(destination);
+    if (destination === SCREEN.PLANETS) {
+      window.requestAnimationFrame(() => selectorStorageButton.current?.focus({ preventScroll: true }));
+    }
+  };
+
   const recordOutcome = useCallback((outcome, snapshot) => {
     if (!snapshot) return;
     persist((current) => applyRunOutcome(current, snapshot, outcome).progress);
@@ -311,6 +330,7 @@ export default function App() {
   const resetCampaign = () => {
     const result = resetProgress();
     if (!result.ok) return result;
+    selectorGoldBalance.current = null;
     debugEngineRef.current?.stop();
     hudRef.current = null;
     settingsTrigger.current = null;
@@ -342,7 +362,9 @@ export default function App() {
       if (screen === SCREEN.PAUSED || screen === SCREEN.PLAYING) {
         recordOutcome("exit", debugEngineRef.current?.getSnapshot());
       }
-      if (menuPage !== SCREEN.STORAGE || screen !== SCREEN.MENU) openStorage();
+      if (menuPage !== SCREEN.STORAGE || screen !== SCREEN.MENU) {
+        openStorage(screen === SCREEN.MENU && menuPage === SCREEN.PLANETS ? SCREEN.PLANETS : SCREEN.MENU);
+      }
       dispatchNavigationContext({ type: "exit-run" });
       setRun(null);
       setOutcomeSnapshot(null);
@@ -380,6 +402,7 @@ export default function App() {
       onGrant={(currency, amount) => persist((current) => addDebugCurrency(current, currency, amount))}
       onGrantRunCoins={(amount) => debugEngineRef.current?.grantDebugCoins(amount)}
       onGrantGold={(amount) => updateGold((gold) => creditGold(gold, amount))}
+      onGrantNextGoldGoal={() => updateGold(creditNextGoldGoal)}
       onUnlockAll={() => persist(unlockAllPlanets)}
       onCompleteStage={debugCompleteStage}
       onUncompleteStage={debugUncompleteStage}
@@ -429,7 +452,9 @@ export default function App() {
           gold={progress.gold}
           reducedMotion={reducedMotion}
           inputBlocked={debugOpen || settingsOpen}
-          onBack={() => setMenuPage(storageReturnPage.current)}
+          onBack={closeStorage}
+          backLabel={storageReturnPage.current === SCREEN.PLANETS ? "Voltar à seleção de fases" : "Voltar ao menu"}
+          onSettings={openSettings}
           onAcknowledge={acknowledgeGoldDeposit}
           onToggleDecoration={(id) => updateGold((gold) => toggleDecoration(gold, id))}
         />
@@ -440,6 +465,10 @@ export default function App() {
           completedStageId={completionStageId}
           preferredPlanetId={navigationContext.selector.planetId}
           preferredStageId={navigationContext.selector.selectedStageId}
+          storageButtonRef={selectorStorageButton}
+          previousGoldBalance={selectorGoldBalance}
+          goldCountPaused={debugOpen || settingsOpen}
+          onStorage={enterStorageFromSelector}
           onBack={() => setMenuPage(SCREEN.MENU)}
           onPlay={startStage}
           onPlayEndless={(planetId) => startStage(planetId, null, "endless")}

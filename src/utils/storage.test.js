@@ -19,7 +19,7 @@ function memoryStorage(seed = {}) {
 
 test("ouro, depósitos ainda não vistos e decorações equipadas sobrevivem ao recarregar", () => {
   const storage = memoryStorage();
-  const progress = { ...createDefaultProgress(), gold: { total: 617, seenTotal: 95, equippedIds: ["aurora", "saturn"] } };
+  const progress = { ...createDefaultProgress(), gold: { total: 617, seenTotal: 300, seenGoalIds: ["aurora", "stars"], equippedIds: ["aurora", "saturn"] } };
   assert.ok(saveProgress(progress, storage).ok);
   assert.deepEqual(loadProgress(storage).progress.gold, progress.gold);
   assert.deepEqual(progressStorage.resetSavedProgress(progress, storage).progress.gold, createDefaultProgress().gold);
@@ -35,7 +35,7 @@ test("terminar uma animação preserva o saldo acrescentado por outra aba depois
   }), { storage });
   assert.ok(result.ok);
   const saved = loadProgress(storage).progress;
-  assert.deepEqual(saved.gold, { total: 1100, seenTotal: 100, equippedIds: [] });
+  assert.deepEqual(saved.gold, { total: 1100, seenTotal: 100, seenGoalIds: ["aurora"], equippedIds: [] });
   assert.equal(saved.coins, 12);
 });
 
@@ -57,7 +57,7 @@ test("perfis antigos ou com ouro inválido mantêm as demais recompensas", () =>
     const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(profile) });
     const { progress } = loadProgress(storage);
     assert.equal(progress.coins, 45);
-    assert.deepEqual(progress.gold, { total: 0, seenTotal: 0, equippedIds: [] });
+    assert.deepEqual(progress.gold, { total: 0, seenTotal: 0, seenGoalIds: [], equippedIds: [] });
   }
 });
 
@@ -67,7 +67,7 @@ test("o jogo inicia em memória quando acessar localStorage lança uma exceção
   try {
     const { progress, source } = loadProgress();
     assert.equal(source, "error");
-    assert.deepEqual(progress.gold, { total: 0, seenTotal: 0, equippedIds: [] });
+    assert.deepEqual(progress.gold, { total: 0, seenTotal: 0, seenGoalIds: [], equippedIds: [] });
   } finally {
     if (original) Object.defineProperty(globalThis, "localStorage", original);
     else delete globalThis.localStorage;

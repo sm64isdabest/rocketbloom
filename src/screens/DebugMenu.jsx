@@ -2,6 +2,7 @@ import { useId, useRef, useState } from "react";
 import { AUDIO } from "../game/config/gameConfig.js";
 import { PLANETS } from "../game/data/planets.js";
 import { SCREEN } from "../utils/screenStates.js";
+import { getNextGoldGoal } from "../game/systems/goalSystem.js";
 
 const TABS = [
   { id: "settings", label: "Configurações" },
@@ -32,7 +33,7 @@ const DEBUG_SCREENS = [
 ];
 
 export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, onChange, onGrant, onGrantRunCoins, onGrantGold,
-  onUnlockAll, onCompleteStage, onUncompleteStage, onStartStage,
+  onGrantNextGoldGoal, onUnlockAll, onCompleteStage, onUncompleteStage, onStartStage,
   onSetSpeed, onSetGodmode, onSetDuration, onGrantPowerUp, onNavigate }) {
   const ids = useId();
   const [activeTab, setActiveTab] = useState("settings");
@@ -43,6 +44,7 @@ export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, 
   const tabRefs = useRef([]);
   const planet = PLANETS.find(({ id }) => id === planetId) ?? PLANETS[0];
   const stage = planet.stages.find(({ id }) => id === stageId) ?? planet.stages[0];
+  const nextGoldGoal = activeTab === "gold" ? getNextGoldGoal(progress.gold.total) : null;
   const setting = (key, value, label) => (
     <label className="debug-menu__setting" key={key}>
       <span>{label}</span>
@@ -132,8 +134,13 @@ export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, 
                 <button type="button" onClick={() => onGrantGold(1000)}>+1.000</button>
               </div>
             </div>
-            <button type="button" className="debug-menu__button debug-menu__button--primary"
-              onClick={() => onNavigate(SCREEN.STORAGE)}>Abrir armazém</button>
+            <div className="debug-menu__actions">
+              <button type="button" className="debug-menu__button" onClick={onGrantNextGoldGoal} disabled={!nextGoldGoal}>
+                {nextGoldGoal ? `Creditar até ${nextGoldGoal.amount.toLocaleString("pt-BR")} ouro` : "Todas as metas atingidas"}
+              </button>
+              <button type="button" className="debug-menu__button debug-menu__button--primary"
+                onClick={() => onNavigate(SCREEN.STORAGE)}>Abrir armazém</button>
+            </div>
           </div>}
 
           {activeTab === "stages" && <div className="debug-menu__section">
