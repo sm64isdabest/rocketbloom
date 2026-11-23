@@ -6,6 +6,7 @@ export const SCREEN = {
   COMMAND: "command",
   PLAYING: "playing",
   PAUSED: "paused",
+  VICTORY_LAUNCH: "victory-launch",
   VICTORY: "victory",
   DEFEAT: "defeat",
   ERROR: "error",

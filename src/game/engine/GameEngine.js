@@ -21,6 +21,8 @@ import { finishGameAudio, pauseGameAudio, playGameSound, startGameAudio } from "
 import { activatePowerUp, createPowerUpState, getNextMysteryBoxDelay, getRandomPowerUp, tickPowerUps } from "../systems/powerUps.js";
 import { createCollisionImpactState, getCollisionImpactSpeedFactor, tickCollisionImpact, triggerCollisionImpact } from "../systems/collisionImpact.js";
 
+const VICTORY_LAUNCH_DURATION_MS = 1100;
+
 function makeRunId() {
   return globalThis.crypto?.randomUUID?.() ?? `run-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
@@ -30,7 +32,7 @@ function clamp(value, min, max) {
 }
 
 export class GameEngine {
-  constructor({ canvas, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, rng = Math.random, runId = makeRunId(), explosionImage, bubbleImage, initialQuestionDelayMs = 3000 }) {
+  constructor({ canvas, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, onVictoryLaunchComplete, rng = Math.random, runId = makeRunId(), explosionImage, bubbleImage, initialQuestionDelayMs = 3000 }) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.session = session;
@@ -39,6 +41,7 @@ export class GameEngine {
     this.onHud = onHud;
     this.onPauseRequest = onPauseRequest;
     this.onOutcome = onOutcome;
+    this.onVictoryLaunchComplete = onVictoryLaunchComplete;
     this.rng = rng;
     this.visualRandomState = 0x5eed1234;
     this.visualRng = () => {
@@ -54,6 +57,7 @@ export class GameEngine {
     this.powerUpImages = this.createPowerUpImages();
     this.powerUpReveal = null;
     this.outcome = null;
+    this.victoryLaunchMs = null;
     this.stars = [];
     this.speedStreaks = [];
     this.leaves = [];
@@ -293,14 +297,20 @@ export class GameEngine {
   }
 
   tick(dt) {
-    if (this.ended || this.disposed || this.paused) return;
+    if (this.disposed || this.paused) return;
+    const frameSeconds = clamp(dt, 0, 0.05);
+    if (this.ended) {
+      if (this.victoryLaunchMs !== null && this.victoryLaunchMs < VICTORY_LAUNCH_DURATION_MS) {
+        this.tickVictoryLaunch(frameSeconds);
+      }
+      return;
+    }
     if (this.input.wantsPause()) {
       this.input.consumePause();
       this.onPauseRequest?.();
       return;
     }
 
-    const frameSeconds = clamp(dt, 0, 0.05);
     if (!frameSeconds) return;
     const frameMs = frameSeconds * 1000;
     this.elapsedMs += frameMs;
@@ -736,7 +746,14 @@ export class GameEngine {
     this.paused = false;
     this.pendingOutcome = null;
     finishGameAudio(outcome);
-    this.loop.stop();
+    this.input.setEnabled(false);
+    const launching = outcome === "victory" && !this.reducedMotion && Boolean(this.onVictoryLaunchComplete);
+    if (launching) {
+      this.victoryLaunchMs = 0;
+      this.rocket.clearDamageFeedback();
+    } else {
+      this.loop.stop();
+    }
     this.answers = [];
     this.particles = [];
     this.mysteryBox = null;
@@ -750,7 +767,19 @@ export class GameEngine {
     this.interQuestionRemainingMs = 0;
     this.answerChoiceRemainingMs = 0;
     this.render();
-    this.onOutcome?.(outcome, this.getSnapshot());
+    this.onOutcome?.(outcome, this.getSnapshot(), { launching });
+  }
+
+  tickVictoryLaunch(dt) {
+    this.victoryLaunchMs = this.reducedMotion
+      ? VICTORY_LAUNCH_DURATION_MS
+      : Math.min(VICTORY_LAUNCH_DURATION_MS, this.victoryLaunchMs + dt * 1000);
+    this.rocket.rotation *= Math.exp(-12 * dt);
+    this.render();
+    if (this.victoryLaunchMs >= VICTORY_LAUNCH_DURATION_MS) {
+      this.loop.stop();
+      this.onVictoryLaunchComplete();
+    }
   }
 
   emitHud(force = false) {
@@ -848,6 +877,13 @@ export class GameEngine {
         const size = Math.max(this.rocket.width, this.rocket.height) * 1.7;
         ctx.drawImage(this.explosionImage, this.rocket.x + (this.rocket.width - size) / 2, this.rocket.y + (this.rocket.height - size) / 2, size, size);
       }
+    } else if (this.victoryLaunchMs !== null) {
+      const progress = this.victoryLaunchMs / VICTORY_LAUNCH_DURATION_MS;
+      const distance = this.rocket.y + this.rocket.height * 1.3;
+      ctx.save();
+      ctx.translate(0, -distance * progress ** 2);
+      this.rocket.render(ctx, this.elapsedMs + this.victoryLaunchMs, this.reducedMotion);
+      ctx.restore();
     } else {
       this.rocket.render(ctx, this.elapsedMs, this.reducedMotion);
     }
@@ -864,7 +900,7 @@ export class GameEngine {
       ctx.save(); ctx.fillStyle = `rgba(205, 240, 255, ${this.shrinkFlashRemainingMs / 360})`;
       ctx.fillRect(0, 0, view.width, view.height); ctx.restore();
     }
-    if (this.showHitboxes) {
+    if (this.showHitboxes && this.victoryLaunchMs === null) {
       for (const obstacle of this.obstacles) {
         if (obstacle.alive) this.renderCollisionBox(obstacle.collisionBox, "#f97316");
       }

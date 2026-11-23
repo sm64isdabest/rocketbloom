@@ -29,7 +29,7 @@ test("o fundo repete verticalmente e desloca horizontalmente com a câmera", () 
     };
     assert.equal(renderPlanetBackground(ctx, { width: 320, height: 640 }, { id: "earth" }, { offsetX: 40, offsetY: 200 }), true);
     assert.ok(draws.length >= 2);
-    assert.equal(images[0].source, "/assets/backgrounds/terra_background_seamless.jpg");
+    assert.equal(images[0].source, "/assets/backgrounds/terra_amazonia_seamless.webp");
     assert.equal(images[0].sourceHeight, 941, "a escala usa a altura original do cenário");
     assert.ok(draws.every(([image]) => image === images[0]), "todas as cópias usam a imagem original");
     assert.deepEqual(transforms, [], "as cópias não usam transformações de espelhamento");
@@ -43,12 +43,13 @@ test("o fundo repete verticalmente e desloca horizontalmente com a câmera", () 
     assert.ok(draws.every(([image]) => image === images[0]));
     assert.deepEqual(transforms, []);
 
-    for (const [id, filename, sourceHeight] of [["mars", "marte_new.png", 855], ["saturn", "saturno_background_seamless.jpg", 941], ["neptune", "netuno_diamond_rain.png", 901]]) {
+    for (const [id, filename, sourceHeight] of [["mars", "marte_new_seamless.webp", 855], ["saturn", "saturno_background_seamless.jpg", 941], ["neptune", "netuno_diamond_rain_seamless.webp", 901]]) {
       assert.equal(renderPlanetBackground(ctx, { width: 320, height: 640 }, { id }, { offsetY: -10_000 }), true);
       assert.equal(images.at(-1).source, `/assets/backgrounds/${filename}`);
       assert.equal(images.at(-1).sourceHeight, sourceHeight, `${id} mantém sua escala vertical de referência`);
       assert.ok(draws.slice(-4).every(([image]) => image === images.at(-1)), `${id} repete sua própria imagem`);
     }
+    assert.deepEqual(transforms, [], "nenhum planeta espelha suas cópias");
   } finally {
     globalThis.Image = previousImage;
   }

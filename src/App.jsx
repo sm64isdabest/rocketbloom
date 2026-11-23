@@ -2,7 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { SCREEN } from "./utils/screenStates.js";
 import { validateCatalog } from "./game/data/catalog.js";
 import { PROJECT_IMAGES } from "./game/data/projectImages.js";
-import { getPlanetById } from "./game/data/planets.js";
+import { getPlanetById, getStageById } from "./game/data/planets.js";
 import { usePersistentProgress } from "./hooks/usePersistentProgress.js";
 import { applyRunOutcome } from "./utils/runProgress.js";
 import { BootScreen } from "./screens/BootScreen.jsx";
@@ -88,7 +88,7 @@ export default function App() {
       setDebugOpen(true);
     };
     const onKeyDown = (event) => {
-      if (event.repeat || isEditableTarget(event.target)) return;
+      if (screen === SCREEN.VICTORY_LAUNCH || event.repeat || isEditableTarget(event.target)) return;
       const key = event.key.toLowerCase();
       if (key !== "q" && key !== "p") return;
       pressedKeys.current.add(key);
@@ -134,18 +134,6 @@ export default function App() {
   }, [screen, menuPage, runKey]);
 
   useEffect(() => {
-    if (screen !== SCREEN.VICTORY) return undefined;
-    const timer = window.setTimeout(() => {
-      const destination = getOutcomeReturn("victory", outcomeSnapshot);
-      setRun(null);
-      setMenuPage(destination.menuPage);
-      setCompletionStageId(destination.completedStageId);
-      setScreen(SCREEN.MENU);
-    }, 1000);
-    return () => window.clearTimeout(timer);
-  }, [outcomeSnapshot, screen]);
-
-  useEffect(() => {
     if (!completionStageId) return undefined;
     const timer = window.setTimeout(() => setCompletionStageId(null), 2800);
     return () => window.clearTimeout(timer);
@@ -164,7 +152,7 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    if (!progress || screen === SCREEN.BOOT || screen === SCREEN.PLAYING || screen === SCREEN.ERROR) {
+    if (!progress || [SCREEN.BOOT, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH, SCREEN.ERROR].includes(screen)) {
       pauseMenuAudio();
       return undefined;
     }
@@ -240,14 +228,31 @@ export default function App() {
     setScreen((current) => (current === SCREEN.PLAYING ? SCREEN.PAUSED : current));
   }, []);
 
-  const onOutcome = useCallback((outcome, snapshot) => {
+  const onOutcome = useCallback((outcome, snapshot, { launching = false } = {}) => {
     if (snapshot) {
       const applied = applyRunOutcome(progress, snapshot, outcome);
       if (!applied.alreadyApplied) persist(applied.progress);
     }
     setOutcomeSnapshot(snapshot ?? null);
-    setScreen(outcome === "victory" ? SCREEN.VICTORY : SCREEN.DEFEAT);
+    if (outcome === "victory") {
+      setScreen(launching ? SCREEN.VICTORY_LAUNCH : SCREEN.VICTORY);
+    } else {
+      setScreen(SCREEN.DEFEAT);
+    }
   }, [persist, progress]);
+
+  const finishVictoryLaunch = useCallback(() => {
+    setScreen((current) => current === SCREEN.VICTORY_LAUNCH ? SCREEN.VICTORY : current);
+  }, []);
+
+  const returnFromVictory = () => {
+    const destination = getOutcomeReturn("victory", outcomeSnapshot);
+    setRun(null);
+    setOutcomeSnapshot(null);
+    setMenuPage(destination.menuPage);
+    setCompletionStageId(destination.completedStageId);
+    setScreen(SCREEN.MENU);
+  };
 
   const openSettings = () => {
     setSettingsReturnPage(getSettingsReturnPage(menuPage, SCREEN));
@@ -310,9 +315,11 @@ export default function App() {
   if (!progress || screen === SCREEN.BOOT) return <><FullscreenButton /><BootScreen progress={assetProgress} baseUrl={APP_BASE} />{debugMenu}</>;
 
   const planet = run ? getPlanetById(run.planetId) : null;
+  const showFlight = run && (screen === SCREEN.PLAYING || screen === SCREEN.PAUSED
+    || screen === SCREEN.VICTORY_LAUNCH || screen === SCREEN.DEFEAT);
   return (
     <>
-    <FullscreenButton hidden={screen === SCREEN.MENU && menuPage === SCREEN.COMMAND} />
+    <FullscreenButton hidden={screen === SCREEN.VICTORY_LAUNCH || (screen === SCREEN.MENU && menuPage === SCREEN.COMMAND)} />
     <div
       className={`app-shell ${progress.settings.reducedMotion || systemReducedMotion ? "motion-reduced" : ""}`}
       onClickCapture={(event) => {
@@ -352,7 +359,7 @@ export default function App() {
         />
       ) : null}
 
-      {run && (screen === SCREEN.PLAYING || screen === SCREEN.PAUSED || screen === SCREEN.DEFEAT) ? (
+      {showFlight ? (
         <PlayScreen
           key={runKey}
           planetId={run.planetId}
@@ -361,10 +368,11 @@ export default function App() {
           reducedMotion={progress.settings.reducedMotion || systemReducedMotion}
           showHitboxes={progress.settings.showHitboxes}
           paused={screen !== SCREEN.PLAYING}
-          showHud={screen !== SCREEN.DEFEAT}
+          showHud={screen === SCREEN.PLAYING || screen === SCREEN.PAUSED}
           onPause={onPause}
           onHudRef={hudRef}
           onOutcome={onOutcome}
+          onVictoryLaunchComplete={finishVictoryLaunch}
           onEngineRef={setDebugEngineRef}
         />
       ) : null}
@@ -382,7 +390,12 @@ export default function App() {
         <SettingsScreen progress={progress} onBack={() => setPauseSettingsOpen(false)} onChange={patchSettings} />
       ) : null}
       {screen === SCREEN.VICTORY ? (
-        <VictoryScreen />
+        <VictoryScreen
+          planet={planet}
+          stage={getStageById(planet, run?.stageId)}
+          snapshot={outcomeSnapshot}
+          onContinue={returnFromVictory}
+        />
       ) : null}
       {screen === SCREEN.DEFEAT ? (
         <DefeatScreen

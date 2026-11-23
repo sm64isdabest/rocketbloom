@@ -1,13 +1,14 @@
+import { OBSTACLE_SPRITES } from "../data/obstacles.js";
+
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
-const SPRITE_FILES = { plane: "plane.webp", helicopter: "helicopter.webp", balloon: "balloon.webp" };
 const SPRITE_IMAGES = new Map();
 
 function getSprite(obstacleId) {
-  const filename = SPRITE_FILES[obstacleId];
+  const filename = OBSTACLE_SPRITES[obstacleId];
   if (!filename || typeof Image === "undefined") return null;
   if (!SPRITE_IMAGES.has(obstacleId)) {
     const image = new Image();
-    image.src = `${APP_BASE}assets/obstacles/earth/${filename}`;
+    image.src = `${APP_BASE}assets/obstacles/${filename}`;
     SPRITE_IMAGES.set(obstacleId, image);
   }
   return SPRITE_IMAGES.get(obstacleId);

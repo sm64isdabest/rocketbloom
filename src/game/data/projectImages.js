@@ -1,3 +1,5 @@
+import { OBSTACLE_SPRITES } from "./obstacles.js";
+
 // Keep this list in sync with the raster and vector images in public/assets.
 export const PROJECT_IMAGES = [
   "/assets/laboratory/laboratory-background.webp",
@@ -24,14 +26,14 @@ export const PROJECT_IMAGES = [
   "/assets/rocket.webp",
   "/assets/backgrounds/marte_background.webp",
   "/assets/backgrounds/marte_background_seamless.jpg",
-  "/assets/backgrounds/marte_new.png",
+  "/assets/backgrounds/marte_new_seamless.webp",
   "/assets/backgrounds/netuno_background.webp",
   "/assets/backgrounds/netuno_background_seamless.jpg",
-  "/assets/backgrounds/netuno_diamond_rain.png",
+  "/assets/backgrounds/netuno_diamond_rain_seamless.webp",
   "/assets/backgrounds/saturno_background.webp",
   "/assets/backgrounds/saturno_background_seamless.jpg",
   "/assets/backgrounds/terra_background.webp",
-  "/assets/backgrounds/terra_background_seamless.jpg",
+  "/assets/backgrounds/terra_amazonia_seamless.webp",
   "/assets/collectibles/coin.webp",
   "/assets/collectibles/diamond.webp",
   "/assets/flames/chama_01.webp",
@@ -46,12 +48,11 @@ export const PROJECT_IMAGES = [
   "/assets/menu/close.webp",
   "/assets/menu/laboratory.webp",
   "/assets/menu/logo.webp",
+  "/assets/menu/logo-loading.webp",
   "/assets/menu/play.webp",
   "/assets/menu/settings.webp",
   "/assets/menu/shop.webp",
-  "/assets/obstacles/earth/balloon.webp",
-  "/assets/obstacles/earth/helicopter.webp",
-  "/assets/obstacles/earth/plane.webp",
+  ...Object.values(OBSTACLE_SPRITES).map((file) => `/assets/obstacles/${file}`),
   "/assets/powerups/bubble.webp",
   "/assets/powerups/bubble-shield.webp",
   "/assets/powerups/mystery-box.webp",

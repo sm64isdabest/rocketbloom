@@ -39,15 +39,15 @@ test("assets raster usam WebP", () => {
   }
 
   const seamlessBackgrounds = assetFiles.filter((path) => path.includes("/backgrounds/") && path.endsWith("_seamless.jpg"));
-  assert.equal(seamlessBackgrounds.length, 4, "cada planeta deve ter uma cópia contínua do cenário");
+  assert.equal(seamlessBackgrounds.length, 3);
   for (const path of seamlessBackgrounds) {
     const jpeg = readFileSync(path);
     assert.equal(jpeg[0], 0xff, `${path} deve ter assinatura JPEG válida`);
     assert.equal(jpeg[1], 0xd8, `${path} deve ter assinatura JPEG válida`);
   }
 
-  const approvedPng = assetFiles.filter((path) => ["/netuno_diamond_rain.png", "/marte_new.png", "/return-portal.png"].some((name) => path.endsWith(name)));
-  assert.equal(approvedPng.length, 3, "as artes aprovadas de Netuno, Marte e saída devem existir como PNG");
+  const approvedPng = assetFiles.filter((path) => path.endsWith("/return-portal.png"));
+  assert.equal(approvedPng.length, 1);
   for (const path of approvedPng) {
     assert.equal(readFileSync(path).subarray(0, 8).toString("hex"), "89504e470d0a1a0a", `${path} deve ser PNG válido`);
   }

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { GameEngine } from "../game/engine/GameEngine.js";
 
-export function GameCanvas({ session, controlMode, reducedMotion = false, showHitboxes = false, running, onHud, onPauseRequest, onOutcome, onEngineRef }) {
+export function GameCanvas({ session, controlMode, reducedMotion = false, showHitboxes = false, running, onHud, onPauseRequest, onOutcome, onVictoryLaunchComplete, onEngineRef }) {
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const runningRef = useRef(running);
@@ -24,6 +24,7 @@ export function GameCanvas({ session, controlMode, reducedMotion = false, showHi
       onHud,
       onPauseRequest,
       onOutcome: (...args) => onOutcomeRef.current?.(...args),
+      onVictoryLaunchComplete,
     });
     engineRef.current = engine;
     onEngineRef?.(engine);
@@ -36,7 +37,7 @@ export function GameCanvas({ session, controlMode, reducedMotion = false, showHi
       engineRef.current = null;
       onEngineRef?.(null);
     };
-  }, [session, onHud, onPauseRequest, onEngineRef]);
+  }, [session, onHud, onPauseRequest, onVictoryLaunchComplete, onEngineRef]);
 
   useEffect(() => {
     engineRef.current?.setControlMode(controlMode);

@@ -1,6 +1,34 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import test from "node:test";
 import { Obstacle } from "./Obstacle.js";
+import { getObstaclesForPlanet } from "../data/obstacles.js";
+
+test("Marte, Saturno e Netuno desenham seus obstáculos com sprites", () => {
+  const previousImage = globalThis.Image;
+  globalThis.Image = class {
+    complete = true;
+    naturalWidth = 96;
+    set src(value) { this.url = value; }
+  };
+  try {
+    const draws = [];
+    const ctx = new Proxy({
+      drawImage(image) { draws.push(image.url); },
+    }, { get: (target, key) => target[key] ?? (() => {}) });
+    for (const planetId of ["mars", "saturn", "neptune"]) {
+      for (const definition of getObstaclesForPlanet(planetId)) {
+        draws.length = 0;
+        new Obstacle({ ...definition, x: 0, y: 0 }).render(ctx);
+        assert.equal(draws.length, 1, `${planetId}: ${definition.id} deve desenhar uma imagem`);
+        assert.match(draws[0], new RegExp(`/${definition.id}\\.webp$`));
+        assert.ok(existsSync(new URL(`../../../public${draws[0]}`, import.meta.url)));
+      }
+    }
+  } finally {
+    globalThis.Image = previousImage;
+  }
+});
 
 test("obstacle animation changes its drawing while preserving its collision box", () => {
   const calls = [];

@@ -222,9 +222,6 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
         >
           <img src={`${APP_BASE}assets/ui/level-frames/arrow-right.webp`} alt="" aria-hidden="true" draggable="false" />
         </button>
-        {completedStageId && planet.stages.some((stage) => stage.id === completedStageId) ? (
-          <p className="phase-completion-title" role="status" aria-live="polite">FASE CONCLUÍDA</p>
-        ) : null}
         <p className="visually-hidden" aria-live="polite">{model.progressLabel}</p>
       </div>
     </main>

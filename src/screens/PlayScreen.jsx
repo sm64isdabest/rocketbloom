@@ -3,7 +3,7 @@ import { GameCanvas } from "../components/GameCanvas.jsx";
 import { Hud } from "../components/Hud.jsx";
 import { useGameSession } from "../hooks/useGameSession.js";
 
-export function PlayScreen({ planetId, stageId, controlMode, reducedMotion, showHitboxes = false, paused, showHud = true, onPause, onHudRef, onOutcome, onEngineRef }) {
+export function PlayScreen({ planetId, stageId, controlMode, reducedMotion, showHitboxes = false, paused, showHud = true, onPause, onHudRef, onOutcome, onVictoryLaunchComplete, onEngineRef }) {
   const session = useGameSession(planetId, stageId);
   const [snapshot, setSnapshot] = useState(null);
   const engineRef = useRef(null);
@@ -41,6 +41,7 @@ export function PlayScreen({ planetId, stageId, controlMode, reducedMotion, show
           onHud={handleHud}
           onPauseRequest={onPause}
           onOutcome={onOutcome}
+          onVictoryLaunchComplete={onVictoryLaunchComplete}
           onEngineRef={handleEngine}
         />
       </div>

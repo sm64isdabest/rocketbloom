@@ -27,6 +27,7 @@ function withCanvasEnvironment(run) {
   const drawnImages = [];
   const drawnImageCalls = [];
   const drawnImageAlphas = [];
+  const translations = [];
   globalThis.Image = class {
     constructor() { this.complete = true; this.naturalWidth = 128; this.naturalHeight = 128; }
     set src(value) { this._src = value; }
@@ -35,6 +36,7 @@ function withCanvasEnvironment(run) {
   const ctx = new Proxy({
     createLinearGradient: () => ({ addColorStop() {} }),
     setTransform() {},
+    translate(x, y) { translations.push([x, y]); },
     drawImage(...args) { drawnImages.push(args[0]); drawnImageCalls.push(args); drawnImageAlphas.push(this.globalAlpha); },
     roundRect(...args) { roundedCards.push(args); },
     stroke() { strokeColors.push(this.strokeStyle); },
@@ -64,7 +66,7 @@ function withCanvasEnvironment(run) {
   };
 
   try {
-    run({ canvas, scheduled, observers, strokeRects, roundedCards, strokeColors, drawnImages, drawnImageCalls, drawnImageAlphas });
+    run({ canvas, scheduled, observers, strokeRects, roundedCards, strokeColors, drawnImages, drawnImageCalls, drawnImageAlphas, translations });
   } finally {
     globalThis.window = original.window;
     globalThis.ResizeObserver = original.ResizeObserver;
@@ -91,10 +93,12 @@ function engineOptions(canvas, callbacks = {}, extras = {}) {
     runId: extras.runId ?? "engine-test-run",
     rng: extras.rng ?? (() => 0.43),
     onOutcome: callbacks.onOutcome,
+    onVictoryLaunchComplete: callbacks.onVictoryLaunchComplete,
     onHud: callbacks.onHud,
     onPauseRequest: callbacks.onPauseRequest,
     explosionImage: extras.explosionImage,
     bubbleImage: extras.bubbleImage,
+    reducedMotion: extras.reducedMotion,
     initialQuestionDelayMs: extras.initialQuestionDelayMs ?? 0,
   };
 }
@@ -452,6 +456,56 @@ test("velocidade zerada causa derrota e uma fase concluída causa vitória", () 
     assert.equal(outcomes.filter((outcome) => outcome === "victory").length, 1);
     assert.equal(victory.getSnapshot().progressMs, 10);
     victory.stop();
+  });
+});
+
+test("a vitória congela a partida e o foguete sai pelo topo antes de liberar o resultado", () => {
+  withCanvasEnvironment(({ canvas, scheduled, strokeRects, translations }) => {
+    const events = [];
+    const engine = new GameEngine(engineOptions(canvas, {
+      onOutcome: (outcome, snapshot, presentation) => events.push([outcome, snapshot, presentation]),
+      onVictoryLaunchComplete: () => events.push(["launch-complete"]),
+    }, { durationMs: 10 }));
+    engine.showHitboxes = true;
+    engine.start();
+    engine.tick(0.02);
+
+    assert.equal(events.length, 1, "o resultado da partida é registrado assim que ela termina");
+    const [[outcome, snapshot, presentation]] = events;
+    assert.equal(outcome, "victory");
+    assert.deepEqual(presentation, { launching: true });
+    assert.equal(scheduled.size, 1, "o loop continua apenas para a decolagem");
+    assert.equal(snapshot.stageProgress, 1);
+
+    translations.length = 0;
+    strokeRects.length = 0;
+    tickFor(engine, 500);
+    assert.ok(translations.some(([x, y]) => x === 0 && y < -20), "o foguete sobe no cenário da partida");
+    assert.equal(strokeRects.some(({ color }) => color === "#fb7185"), false, "a decolagem não deixa uma hitbox separada no cenário");
+    assert.equal(events.length, 1, "a tela de resultado espera a decolagem");
+    assert.equal(engine.getSnapshot().elapsedMs, snapshot.elapsedMs);
+
+    tickFor(engine, 800);
+    assert.ok(translations.some(([x, y]) => x === 0 && y < -engine.rocket.y - engine.rocket.height));
+    assert.deepEqual(events.map(([type]) => type), ["victory", "launch-complete"]);
+    assert.equal(scheduled.size, 0);
+    engine.stop();
+  });
+});
+
+test("movimento reduzido apresenta o resultado da vitória imediatamente", () => {
+  withCanvasEnvironment(({ canvas, scheduled }) => {
+    const presentations = [];
+    const engine = new GameEngine(engineOptions(canvas, {
+      onOutcome: (_outcome, _snapshot, presentation) => presentations.push(presentation),
+      onVictoryLaunchComplete: () => assert.fail("não há animação para concluir"),
+    }, { durationMs: 10, reducedMotion: true }));
+    engine.start();
+    engine.tick(0.02);
+
+    assert.deepEqual(presentations, [{ launching: false }]);
+    assert.equal(scheduled.size, 0);
+    engine.stop();
   });
 });
 
