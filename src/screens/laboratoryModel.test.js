@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { getPlantForPlanet } from "../game/data/plants.js";
 import { getLaboratoryPlantImage, getLaboratoryPlantScale, getNextPlanetIndex, shouldShowLaboratoryPlant } from "./laboratoryModel.js";
 
 test("laboratory sprites follow each planet's seedling-to-mature artwork order", () => {
@@ -17,6 +18,10 @@ test("laboratory sprites follow each planet's seedling-to-mature artwork order",
       `${planetId} should use three sprites in growth order`,
     );
   }
+});
+
+test("Saturn keeps its current three growth stages and the final ringed plant asset", () => {
+  assert.deepEqual(getPlantForPlanet("saturn").growthArt, [17, 18, 20]);
 });
 
 test("laboratory sprite stage is clamped and supports a Vite base path", () => {

@@ -6,6 +6,7 @@ import { getPauseActions, getPauseAssetUrl } from "./pauseModel.js";
 
 const pauseAssetsDirectory = fileURLToPath(new URL("../../public/assets/ui/pause/", import.meta.url));
 const pauseStyles = readFileSync(fileURLToPath(new URL("../styles/index.css", import.meta.url)), "utf8");
+const pauseOverlaySource = readFileSync(fileURLToPath(new URL("./PauseOverlay.jsx", import.meta.url)), "utf8");
 
 test("pause artwork URLs preserve the app base path with or without a trailing slash", () => {
   assert.equal(getPauseAssetUrl("return-portal.webp", "/rocketbloom/"), "/rocketbloom/assets/ui/pause/return-portal.webp");
@@ -35,4 +36,8 @@ test("pause action buttons have no gap and brighten only their artwork on hover"
   assert.match(pauseStyles, /\.pause-popup__actions\s*\{[^}]*\bgap:\s*0\s*;/);
   assert.match(pauseStyles, /\.pause-popup__action:hover\s+img\s*\{[^}]*\bfilter:\s*brightness\(1\.15\)\s*;/);
   assert.doesNotMatch(pauseStyles, /\.pause-popup__action:hover\s*\{[^}]*\btransform\s*:/);
+});
+
+test("pause settings uses the shared settings icon while other buttons keep pause artwork", () => {
+  assert.match(pauseOverlaySource, /id === "settings" \? getMenuAssetUrl\(asset, APP_BASE\) : getPauseAssetUrl\(asset, APP_BASE\)/);
 });

@@ -140,7 +140,6 @@ export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, onSet
         <button type="button" className="laboratory-scene__icon-button gold-storage__back" onClick={onBack}
           aria-label="Voltar à seleção de fases" title="Voltar à seleção de fases">
           <img className="laboratory-scene__back-icon" src={getPauseAssetUrl(RETURN_ICON_FILE, APP_BASE)} alt="" />
-          <span aria-hidden="true">Voltar</span>
         </button>
         <h1 id="gold-title" className="laboratory-scene__title" ref={titleRef} tabIndex={-1}>Cofre de Moedas</h1>
         <button type="button" className="laboratory-scene__icon-button laboratory-scene__icon-button--settings"

@@ -9,7 +9,7 @@ export function BootScreen({ progress = { total: 0, completed: 0, loaded: 0, fai
       </div>
 
       <section className="boot__content">
-        <img className="boot__logo" src={`${baseUrl}assets/menu/logo-loading.webp`} alt="RocketBloom" />
+        <img className="boot__logo" src={`${baseUrl}assets/menu/logo.webp`} alt="RocketBloom" />
         <p className="eyebrow boot__eyebrow">MISSÃO SUSTENTÁVEL <span>·</span> BASE DE LANÇAMENTO</p>
         <h1 id="boot-title" className="boot__title">Cultivando vida<br />entre as estrelas</h1>
         <p className="boot__message" aria-live="polite">

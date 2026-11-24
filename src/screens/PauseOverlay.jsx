@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getMenuAssetUrl } from "./menuModel.js";
 import { getPauseActions, getPauseAssetUrl } from "./pauseModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
@@ -29,7 +30,7 @@ export function PauseOverlay({ onResume, onQuit, onSettings, onTapRocket, reduce
         <nav className="pause-popup__actions" aria-label="Ações da fase pausada">
           {actions.map(({ id, label, asset, onClick }) => (
             <button key={id} type="button" className="pause-popup__action" onClick={onClick} aria-label={label} title={label}>
-              <img src={getPauseAssetUrl(asset, APP_BASE)} alt="" />
+              <img src={id === "settings" ? getMenuAssetUrl(asset, APP_BASE) : getPauseAssetUrl(asset, APP_BASE)} alt="" />
             </button>
           ))}
         </nav>

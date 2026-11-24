@@ -32,6 +32,7 @@ test("todas as imagens usam WebP e os sprites preservam a transparência", () =>
     "return-portal.webp",
   ];
   const requiredImages = [
+    "menu/logo.webp",
     "laboratory-background-clean.webp",
     "marte_background_seamless.webp",
     "netuno_background_seamless.webp",

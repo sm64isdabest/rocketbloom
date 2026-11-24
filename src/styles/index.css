@@ -180,8 +180,9 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 .laboratory-equipment__dome { position: absolute; bottom: 36%; left: 50%; display: block; width: 90%; height: min(36svh, 74%); object-fit: contain; transform: translateX(-50%); }
 .laboratory-equipment__dome--back { z-index: 1; }
 .laboratory-specimen { position: absolute; z-index: 2; bottom: 40%; left: 50%; display: flex; width: 64%; justify-content: center; transform: translateX(-50%); pointer-events: none; }
-.laboratory-scene--saturn .laboratory-specimen { bottom: calc(40% - clamp(10px, 3svh, 20px)); }
+.laboratory-scene--saturn .laboratory-specimen { bottom: calc(40% - clamp(8px, 2.5svh, 16px)); width: 78%; overflow: visible; }
 .laboratory-specimen__plant { display: block; max-width: 100%; max-height: 34svh; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 6px 8px rgba(3, 11, 32, .46)); transform-origin: 50% 94%; animation: laboratory-plant-sway 3.8s ease-in-out infinite; }
+.laboratory-scene--saturn .laboratory-specimen__plant { max-height: 30svh; }
 .laboratory-equipment__dome--front { z-index: 3; }
 .laboratory-equipment .laboratory-planet-display { position: absolute; z-index: 4; bottom: 19%; left: 50%; display: grid; width: clamp(32px, 5vw, 56px); aspect-ratio: 1; place-items: center; transform: translateX(-50%); }
 .laboratory-equipment .laboratory-planet-display img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 5px rgba(13, 34, 91, .65)); }
@@ -199,7 +200,7 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 .laboratory-care-button { min-height: 36px; margin-top: 8px; padding: 6px 16px; font-size: .75rem; }
 .motion-reduced .laboratory-specimen__plant { animation: none; }
 @media (max-width: 520px) { .laboratory-scene { min-height: 460px; }.laboratory-scene__background { object-position: 50% center; }.laboratory-equipment { bottom: 22%; width: min(72vw, 44svh, 420px); height: min(55svh, 500px); }.laboratory-equipment__base { height: 46%; }.laboratory-equipment__dome { height: min(36svh, 74%); }.laboratory-specimen { bottom: 40%; }.laboratory-specimen__plant { max-height: 34svh; }.laboratory-plant-caption { padding: 8px 15px 9px; } }
-@media (max-height: 570px) { .laboratory-scene { min-height: 0; }.laboratory-equipment { bottom: 18%; width: min(38vw, 74svh, 420px); height: min(75svh, 520px); }.laboratory-equipment__base { height: 55%; }.laboratory-equipment__dome { bottom: 38%; height: min(50svh, 68%); }.laboratory-specimen { bottom: 49%; }.laboratory-scene--saturn .laboratory-specimen { bottom: calc(49% - clamp(10px, 3svh, 20px)); }.laboratory-specimen__plant { max-height: 52svh; }.laboratory-equipment .laboratory-planet-display { bottom: 24%; }.laboratory-planet-navigation__arrow { top: 49%; }.laboratory-plant-caption { bottom: 5px; padding: 5px 14px; }.laboratory-plant-caption__eyebrow { display: none; } }
+@media (max-height: 570px) { .laboratory-scene { min-height: 0; }.laboratory-equipment { bottom: 18%; width: min(38vw, 74svh, 420px); height: min(75svh, 520px); }.laboratory-equipment__base { height: 55%; }.laboratory-equipment__dome { bottom: 38%; height: min(50svh, 68%); }.laboratory-specimen { bottom: 49%; }.laboratory-scene--saturn .laboratory-specimen { bottom: calc(49% - clamp(8px, 2.5svh, 16px)); width: 78%; }.laboratory-specimen__plant { max-height: 52svh; }.laboratory-scene--saturn .laboratory-specimen__plant { max-height: 46svh; }.laboratory-equipment .laboratory-planet-display { bottom: 24%; }.laboratory-planet-navigation__arrow { top: 49%; }.laboratory-plant-caption { bottom: 5px; padding: 5px 14px; }.laboratory-plant-caption__eyebrow { display: none; } }
 @media (prefers-reduced-motion: reduce) { .laboratory-specimen__plant { animation: none; } }
 
 /* RocketBloom supplied-art main menu */
@@ -1386,7 +1387,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .boot__topline span:first-child { display: inline-flex; align-items: center; gap: 10px; }
 .boot__topline i, .boot__signal { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px rgba(131, 219, 154, .9); }
 .boot__content { display: flex; width: min(100%, 480px); flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 12px 0 28px; text-align: center; }
-.boot__logo { display: block; width: min(82vw, 390px); max-height: min(32dvh, 226px); flex: none; object-fit: contain; margin: 0 0 12px; filter: drop-shadow(0 6px 18px rgba(50, 195, 135, .12)); }
+.boot__logo { display: block; width: min(72vw, 300px); max-height: min(34dvh, 260px); flex: none; object-fit: contain; margin: 0 0 12px; filter: drop-shadow(0 6px 18px rgba(50, 195, 135, .12)); }
 .boot__eyebrow { margin-bottom: 12px; color: var(--green); font-size: .61rem; }
 .boot__eyebrow span { padding: 0 4px; color: var(--amber); }
 .boot__title { margin: 0; font-size: clamp(1.65rem, 4vw, 2.25rem); line-height: 1.13; letter-spacing: -.04em; }

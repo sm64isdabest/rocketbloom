@@ -31,9 +31,11 @@ test("laboratório empilha fundo, base, cúpula traseira, planta e frente do vid
   assert.match(commandRoomSource, /onClick=\{\(\) => changePlanet\(1\)\}/);
 });
 
-test("Saturn's specimen alone gets the lower soil anchor in standard and short layouts", () => {
-  assert.match(stylesheetSource, /\.laboratory-scene--saturn \.laboratory-specimen \{ bottom: calc\(40% - clamp\(10px, 3svh, 20px\)\); \}/);
-  assert.match(stylesheetSource, /\.laboratory-scene--saturn \.laboratory-specimen \{ bottom: calc\(49% - clamp\(10px, 3svh, 20px\)\); \}/);
+test("Saturn's specimen has a wider, unclipped anchor in standard and short layouts", () => {
+  assert.match(stylesheetSource, /\.laboratory-scene--saturn \.laboratory-specimen \{ bottom: calc\(40% - clamp\(8px, 2\.5svh, 16px\)\); width: 78%; overflow: visible; \}/);
+  assert.match(stylesheetSource, /\.laboratory-scene--saturn \.laboratory-specimen \{ bottom: calc\(49% - clamp\(8px, 2\.5svh, 16px\)\); width: 78%; \}/);
+  assert.match(stylesheetSource, /\.laboratory-scene--saturn \.laboratory-specimen__plant \{ max-height: 30svh; \}/);
+  assert.match(stylesheetSource, /\.laboratory-scene--saturn \.laboratory-specimen__plant \{ max-height: 46svh; \}/);
   assert.match(stylesheetSource, /\.laboratory-specimen__plant \{[^}]*object-fit: contain; object-position: center bottom;/);
 });
 
