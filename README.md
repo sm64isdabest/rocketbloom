@@ -22,7 +22,7 @@ Um foguete é responsável por explorar quatro planetas que compõem o sistema s
 - **Terra:** cenário composto pela Floresta Amazônica, com elementos como aviões, helicópteros e balões.
 - **Marte:** cenário com obstáculos, como asteroides.
 - **Saturno:** cenário com obstáculos, como asteroides e cometas.
-- **Netuno:** cenário brilhante, contendo obstáculos como fragmentos de diamantes e cometas.
+- **Netuno:** cenário brilhante, contendo obstáculos como asteroides e cometas.
 
 ### Conceito
 
@@ -53,7 +53,6 @@ Para completar cada planeta, o jogador deverá passar por um conjunto de fases c
 ### Itens coletáveis
 
 - **Moeda:** recurso coletável durante a partida.
-- **Diamante:** recurso coletável durante a partida.
 
 ### Obstáculos
 
@@ -98,7 +97,7 @@ O jogador executa um comando e verifica se acertou a questão matemática ou se 
 
 ### Decisão importante
 
-O jogador precisa equilibrar a atenção entre responder às questões matemáticas, desviar dos obstáculos e coletar itens, como moedas e diamantes.
+O jogador precisa equilibrar a atenção entre responder às questões matemáticas, desviar dos obstáculos e coletar moedas.
 
 ## Regras
 
@@ -175,7 +174,6 @@ Não houve dificuldades identificadas.
 
 - **Resposta correta:** aumento de velocidade.
 - **Moeda coletada:** +1 moeda.
-- **Diamante coletado:** +1 diamante.
 
 ### Recompensas
 
@@ -193,7 +191,7 @@ Durante o depósito, clique na tela ou pressione **Enter**, **Espaço** ou **Esc
 
 1. Na seleção de fases, segure **Q** e pressione **P**. Na aba **Ouro**, use **Creditar até … ouro** para ganhar o valor exato da próxima meta. Feche o debug com **Esc** para ver o novo saldo e a bolinha de novidade no seletor. Depois entre pelo botão **Cofre** e veja a transformação do tesouro. Repita para percorrer as cinco imagens ou use **+1.000** para testar várias metas no mesmo depósito.
 2. Para testar o HUD, inicie uma fase, abra a mesma aba e use **+1** ou **+25** em **Moedas no HUD da partida**. Feche o debug para ver o contador ou clique em **Abrir cofre** para encerrar o voo e depositar.
-3. Após alcançar uma meta, volte ao seletor, ao menu ou ao laboratório para ver a nova faixa de moedas. Recarregue a página para conferir a persistência. O ouro de teste também fica salvo no perfil usado no teste.
+3. Após alcançar uma meta, abra o Cofre ou volte ao seletor ou ao laboratório para ver a nova faixa de moedas. Recarregue a página para conferir a persistência. O ouro de teste também fica salvo no perfil usado no teste.
 
 ## Desenvolvimento
 

@@ -44,8 +44,7 @@ const LEVELS = [
   { radius: 200, sparks: 36, rows: [[66, 67, 10], [86, 114, 16], [106, 151, 19], [128, 181, 24], [151, 229, 27], [176, 266, 33], [195, 311, 34], [208, 345, 37]],
     stacks: [[65, 182, 12], [93, 191, 16], [319, 190, 16], [350, 191, 11]], rays: 8,
     bars: [[68, 205], [118, 193], [155, 213], [257, 209], [306, 207], [343, 213]],
-    orbit: [[64, 109], [94, 68], [146, 46], [306, 44], [351, 71], [375, 112], [69, 150], [346, 155]],
-    gems: [[182, 113], [244, 146], [152, 166], [213, 195], [269, 185]] },
+    orbit: [[64, 109], [94, 68], [146, 46], [306, 44], [351, 71], [375, 112], [69, 150], [346, 155]] },
 ];
 
 function stamp(symbol, x, y, rotation = 0, scale = 1) {
@@ -81,7 +80,6 @@ export function createTreasureSvg(level) {
   const stacks = (art.stacks ?? []).map(([x, y, count]) => Array.from({ length: count }, (_, i) =>
     stamp("coin", x, y - i * 4.5, 0, 1.14)).join("")).join("");
   const bars = (art.bars ?? []).map(([x, y], i) => stamp("ingot", x, y, i % 2 ? 13 : -12)).join("");
-  const gems = (art.gems ?? []).map(([x, y], i) => stamp("gem", x, y, 0, i % 2 ? 1.2 : .9)).join("");
   const orbit = (art.orbit ?? []).map(([x, y], i) => stamp("coin", x, y, i * 23, i % 2 ? 1.1 : .83)).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 240">
     <defs>${GOLD_GRADIENT}${STEEL_GRADIENT}
@@ -94,8 +92,6 @@ export function createTreasureSvg(level) {
       <g id="ingot" stroke="#ffd578" stroke-linejoin="round">
         <path d="m-17-3 6-11h25l7 11-6 7h-27Z" fill="#a75717"/>
         <path d="m-17-3 6-11h25l7 11Z" fill="url(#gold)"/><path d="M-5-10h15" stroke="#fff2b7"/></g>
-      <g id="gem" stroke="#ffc6ff" stroke-width=".9" stroke-linejoin="round">
-        <path d="M-11-4-6-10H6l5 6L0 11Z" fill="#af59c7"/><path d="m-6-10 2 6L0 11l4-15 2-6M-11-4h22" fill="#ed9feb"/></g>
       <path id="spark" d="M0-7 1.6-1.6 7 0 1.6 1.6 0 7-1.6 1.6-7 0-1.6-1.6Z" fill="#fff2a8"/>
     </defs>
     <ellipse cx="210" cy="128" rx="${art.radius}" ry="108" fill="url(#aura)"/>
@@ -106,7 +102,7 @@ export function createTreasureSvg(level) {
     <path d="M68 196h284l-13 14H81Z" fill="url(#steel)"/>
     <path d="M99 212h36m150 0h36" stroke="#65d9ff" stroke-width="2.4" stroke-linecap="round"/>
     ${!art.rows.length || art.openChest ? renderChest(art.openChest) : ""}
-    ${renderCoins(art.rows)}${stacks}${bars}${gems}${orbit}${sparks}
+    ${renderCoins(art.rows)}${stacks}${bars}${orbit}${sparks}
   </svg>`;
 }
 

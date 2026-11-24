@@ -84,7 +84,7 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 .mission-strip > div:last-child { border-right: 0; }
 .mission-strip strong { font-size: 1.35rem; letter-spacing: -.04em; }.mission-strip strong small { color: var(--faint); font-size: .8rem; }.mission-strip > div > span:last-child { color: var(--muted); font-size: .73rem; }
 .mission-strip__plant { grid-template-columns: 33px 1fr !important; align-items: center; gap: 12px !important; }.mission-strip__plant > span { color: var(--green); font-size: 1.8rem; }.mission-strip__plant p { margin: 0; color: var(--muted); font-size: .73rem; line-height: 1.6; }.mission-strip__plant b { color: var(--ink); font-size: .8rem; }
-.resource-coin { color: var(--amber); font-size: 1.25em; font-style: normal; }.resource-diamond { color: var(--cyan); font-size: 1.25em; font-style: normal; }
+.resource-coin { color: var(--amber); font-size: 1.25em; font-style: normal; }
 .menu__footer { border-top: 1px solid rgba(190, 222, 218, .1); padding-top: 17px; }.menu__footer i { color: var(--green); font-style: normal; }.menu__footer nav { display: flex; gap: 20px; }.text-button { padding: 4px 0; border: 0; color: var(--muted); background: transparent; font: inherit; letter-spacing: .04em; text-transform: none; cursor: pointer; }.text-button:hover { color: var(--green); }
 
 /* Planet selection */
@@ -609,7 +609,6 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 }
 @media (max-width: 360px) {
   .hud__stat--coins { min-width: 0; padding-inline: 6px; }
-  .hud__stat--diamonds { padding-inline: 6px; }
   .hud__stat--speed { min-width: 42px; padding-inline: 7px; }
   .hud__speed-group { gap: 3px; }
   .hud__impact-alert { width: 23px; height: 23px; }
@@ -634,14 +633,10 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 @keyframes hud-coin-pulse {
   30% { box-shadow: 0 0 15px #ffcb63a6, inset 0 0 11px #ffc85d55; }
 }
-.hud__resource-icon--diamond { width: 32px; height: 27px; }
-.resource-diamond-icon { display: inline-block; width: 1.25em; height: 1.25em; object-fit: contain; vertical-align: middle; }
-.hud__stat--diamonds { min-width: 124px; justify-content: flex-start; }
 .hud__question { top: max(76px, calc(env(safe-area-inset-top) + 76px)); }
 @media (max-width: 680px) {
   .hud__resource-icon--coin { width: 24px; height: 24px; }
-  .hud__resource-icon--diamond { width: 27px; height: 23px; }
-  .hud__stat--coins, .hud__stat--diamonds { min-width: 0; gap: 6px; }
+  .hud__stat--coins { min-width: 0; gap: 6px; }
   .hud__question { top: max(62px, calc(env(safe-area-inset-top) + 62px)); }
 }
 
@@ -825,17 +820,6 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   box-shadow: 0 0 4px rgba(255, 193, 36, .82), inset 0 0 2px #fff5ae;
 }
 .phase-selection-wallet__coin::after { content: ""; width: 48%; height: 48%; border: max(1px, .12cqw) solid rgba(133, 79, 8, .75); border-radius: 50%; }
-.phase-selection-wallet__diamond {
-  display: inline-block;
-  width: 2.2cqw;
-  min-width: 9px;
-  aspect-ratio: 1;
-  transform: rotate(45deg) scale(.78);
-  border: max(1px, .14cqw) solid #bcf8ff;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #e4ffff 0 20%, #4ce8ff 21% 49%, #1286ec 50% 78%, #83fbff 79% 100%);
-  box-shadow: 0 0 5px rgba(47, 205, 255, .9);
-}
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -859,7 +843,6 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   }
   .phase-selection-wallet__currency { gap: .4cqw; }
   .phase-selection-wallet__coin { width: 3cqw; min-width: 9px; }
-  .phase-selection-wallet__diamond { width: 2.8cqw; min-width: 9px; }
 }
 
 /* Planet level map */

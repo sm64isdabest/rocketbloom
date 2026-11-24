@@ -1,6 +1,6 @@
 import { getCampaignUnlocks, PLANETS } from "../game/data/planets.js";
 
-const CURRENCIES = new Set(["coins", "diamonds", "money"]);
+const CURRENCIES = new Set(["coins", "money"]);
 
 export function isDebugShortcut(pressedKeys) {
   const keys = new Set([...pressedKeys].map((key) => String(key).toLowerCase()));

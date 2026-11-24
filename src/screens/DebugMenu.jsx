@@ -107,12 +107,12 @@ export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, 
           {activeTab === "progress" && <div className="debug-menu__section">
             <h2>Progresso e recursos</h2>
             <div className="debug-menu__stats">
-              <div><span>Moedas</span><b>{progress.coins}</b></div><div><span>Gemas</span><b>{progress.diamonds}</b></div><div><span>Dinheiro</span><b>{progress.money}</b></div>
+              <div><span>Moedas</span><b>{progress.coins}</b></div><div><span>Dinheiro</span><b>{progress.money}</b></div>
               <div><span>Fases concluídas</span><b>{progress.completedStageIds.length}/{PLANETS.reduce((sum, item) => sum + item.stages.length, 0)}</b></div>
               <div><span>Planetas liberados</span><b>{progress.unlockedPlanetIds.length}/{PLANETS.length}</b></div>
             </div>
             <div className="debug-menu__grant-grid">
-              {[{ key: "coins", label: "Moedas" }, { key: "diamonds", label: "Gemas" }, { key: "money", label: "Dinheiro" }].map(({ key, label }) => (
+              {[{ key: "coins", label: "Moedas" }, { key: "money", label: "Dinheiro" }].map(({ key, label }) => (
                 <div key={key} className="debug-menu__grant"><span>{label}</span><button type="button" onClick={() => onGrant(key, 100)}>+100</button><button type="button" onClick={() => onGrant(key, 1000)}>+1.000</button></div>
               ))}
             </div>

@@ -3,7 +3,7 @@ import { getCampaignUnlocks, getPlanetById } from "../game/data/planets.js";
 import { getPlantById, getPlantGrowthIndex } from "../game/data/plants.js";
 import { createGoldStorage, creditGold } from "./goldStorage.js";
 
-const NO_REWARDS = { coins: 0, diamonds: 0, money: 0, plantMoney: 0, sustainabilityPoints: 0, plantName: null, stageCompleted: false };
+const NO_REWARDS = { coins: 0, money: 0, plantMoney: 0, sustainabilityPoints: 0, plantName: null, stageCompleted: false };
 
 function unique(values) {
   return [...new Set(values)];
@@ -47,12 +47,10 @@ export function applyRunOutcome(progress, snapshot, outcome) {
 
   const replayingCompletedStage = Boolean(snapshot?.stageId && progress.completedStageIds.includes(snapshot.stageId));
   const earnedCoins = replayingCompletedStage ? 0 : (snapshot?.coins ?? 0) * REWARDS.coinValue;
-  const earnedDiamonds = replayingCompletedStage ? 0 : (snapshot?.diamonds ?? 0) * REWARDS.diamondValue;
   const next = {
     ...progress,
     gold,
     coins: progress.coins + earnedCoins,
-    diamonds: progress.diamonds + earnedDiamonds,
     unlockedPlanetIds: [...progress.unlockedPlanetIds],
     completedStageIds: [...progress.completedStageIds],
     stageProgress: { ...(progress.stageProgress ?? {}) },
@@ -64,7 +62,6 @@ export function applyRunOutcome(progress, snapshot, outcome) {
   const rewards = {
     ...NO_REWARDS,
     coins: earnedCoins,
-    diamonds: earnedDiamonds,
     replayedStage: replayingCompletedStage,
   };
 

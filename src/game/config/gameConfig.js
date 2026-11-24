@@ -38,7 +38,6 @@ export const ENDLESS = {
   pointsPerSecond: 10,
   correctAnswerPoints: 100,
   coinPoints: 25,
-  diamondPoints: 100,
 };
 
 export const COMBAT = {
@@ -48,7 +47,6 @@ export const COMBAT = {
 
 export const REWARDS = {
   coinValue: 1,
-  diamondValue: 1,
   plantMoney: 50,
   stageClearMoney: 20,
 };

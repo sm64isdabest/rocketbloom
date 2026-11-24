@@ -53,10 +53,10 @@ const PLANET_CONFIG = [
   },
   {
     id: "neptune", name: "Netuno", order: 4,
-    blurb: "Explore o brilho azul de Netuno, entre cometas e cristais de diamante.",
+    blurb: "Explore o brilho azul de Netuno, entre cometas e asteroides.",
     biome: "neptune",
     theme: { skyTop: "#030716", skyBottom: "#123a7a", accent: "#7ad4ff", starAlpha: 0.94 },
-    obstacleIds: ["comet", "diamond-shard"], plantId: "ice-orchid",
+    obstacleIds: ["comet", "asteroid"], plantId: "ice-orchid",
     difficulty: 4,
     questionLimits: { operandMax: 40, multiplierMax: 12, divisorMax: 15 },
   },

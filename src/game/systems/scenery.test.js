@@ -15,7 +15,6 @@ test("o fundo repete verticalmente e desloca horizontalmente com a câmera", () 
     constructor() { images.push(this); }
     set src(value) {
       this.source = value;
-      if (value.includes("netuno_diamond_rain")) this.naturalHeight = 901;
       if (value.includes("marte_new")) this.naturalHeight = 855;
     }
   };
@@ -43,7 +42,7 @@ test("o fundo repete verticalmente e desloca horizontalmente com a câmera", () 
     assert.ok(draws.every(([image]) => image === images[0]));
     assert.deepEqual(transforms, []);
 
-    for (const [id, filename, sourceHeight] of [["mars", "marte_new_seamless.webp", 855], ["saturn", "saturno_background_seamless.jpg", 941], ["neptune", "netuno_diamond_rain_seamless.webp", 901]]) {
+    for (const [id, filename, sourceHeight] of [["mars", "marte_new_seamless.webp", 855], ["saturn", "saturno_background_seamless.jpg", 941], ["neptune", "netuno_background_seamless.jpg", 941]]) {
       assert.equal(renderPlanetBackground(ctx, { width: 320, height: 640 }, { id }, { offsetY: -10_000 }), true);
       assert.equal(images.at(-1).source, `/assets/backgrounds/${filename}`);
       assert.equal(images.at(-1).sourceHeight, sourceHeight, `${id} mantém sua escala vertical de referência`);
@@ -64,7 +63,6 @@ test("as fases mantêm a escala e a repetição em telas desktop e celular", () 
     naturalHeight = 909;
     set src(value) {
       this.source = value;
-      if (value.includes("netuno_diamond_rain")) this.naturalHeight = 901;
       if (value.includes("marte_new")) this.naturalHeight = 855;
     }
   };
@@ -79,9 +77,9 @@ test("as fases mantêm a escala e a repetição em telas desktop e celular", () 
           draws.length = 0;
           assert.equal(renderPlanetBackground(ctx, view, planet, { offsetY: -987_654.25 }), true);
           assert.ok(draws.length >= 2, `${stage.id} cobre o viewport ${view.width}x${view.height}`);
-          const sourceHeight = planet.id === "neptune" ? 901 : planet.id === "mars" ? 855 : 941;
+          const sourceHeight = planet.id === "mars" ? 855 : 941;
           const scale = Math.max(view.width / 1600, view.height / sourceHeight);
-          const tileHeight = (planet.id === "neptune" ? 901 : planet.id === "mars" ? 855 : 909) * scale;
+          const tileHeight = (planet.id === "mars" ? 855 : 909) * scale;
           assert.ok(Math.abs(draws[0][4] - tileHeight) < 0.001, `${stage.id} preserva o tamanho dos elementos`);
           for (let index = 1; index < draws.length; index += 1) {
             assert.ok(Math.abs((draws[index][2] - draws[index - 1][2]) - tileHeight) < 0.001,

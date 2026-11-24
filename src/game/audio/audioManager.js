@@ -31,7 +31,7 @@ const SOUND_NOTES = {
   incorrect: { notes: [293.66, 246.94], duration: 0.14, wave: "triangle", volume: 0.12 },
   collision: { notes: [130.81, 98], duration: 0.1, wave: "sawtooth", volume: 0.1 },
   coin: { notes: [783.99, 1046.5], duration: 0.075, wave: "sine", volume: 0.1 },
-  diamond: { notes: [659.25, 987.77, 1318.51], duration: 0.1, wave: "sine", volume: 0.1 },
+  goldDeposit: { notes: [1174.66, 1760, 2349.32], duration: 0.09, spacing: 0.022, wave: "triangle", volume: 0.075 },
   angryTouch: { notes: [196, 164.81, 138.59], duration: 0.12, wave: "sawtooth", volume: 0.1 },
   victory: { notes: [523.25, 659.25, 783.99, 1046.5], duration: 0.2, wave: "triangle", volume: 0.12 },
   discovery: { notes: [523.25, 659.25, 783.99, 1046.5, 1318.51], duration: 0.16, wave: "sine", volume: 0.12 },

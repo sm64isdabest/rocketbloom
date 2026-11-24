@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getHudAssetUrl } from "../components/hudModel.js";
+import { playGameSound } from "../game/audio/audioManager.js";
 import { EMPTY_TREASURE, GOLD_GOALS } from "../game/config/goldConfig.js";
 import { getCrossedGoals, getGoldMeterProgress, getHighestGoldGoal } from "../game/systems/goalSystem.js";
 import { hasUnseenGoldGoals } from "../utils/goldStorage.js";
+import { Decorations } from "./Decorations.jsx";
 import { getMenuAssetUrl } from "./menuModel.js";
 import { getPauseAssetUrl, RETURN_ICON_FILE } from "./pauseModel.js";
 import { createDepositTimeline, drawDepositFrame, getDepositFrame } from "./storageAnimation.js";
@@ -70,7 +72,7 @@ export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, onSet
     const pixelRatio = Math.min(2, window.devicePixelRatio || 1);
     let start;
     let animationId;
-    let previous;
+    let previous = getDepositFrame(timeline, elapsedRef.current);
 
     const paint = (now) => {
       start ??= now - elapsedRef.current;
@@ -81,13 +83,13 @@ export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, onSet
         return;
       }
       const next = getDepositFrame(timeline, elapsed);
+      if (next.arrived > (previous?.arrived ?? 0)) playGameSound("goldDeposit");
       if (next.total !== previous?.total || next.arrived !== previous?.arrived) {
         setFrame(next);
         previous = next;
       }
       if (ctx && coinRef.current && trackRef.current) {
         const bounds = canvas.getBoundingClientRect();
-        const origin = coinRef.current.getBoundingClientRect();
         const target = trackRef.current.getBoundingClientRect();
         const width = Math.round(bounds.width * pixelRatio);
         const height = Math.round(bounds.height * pixelRatio);
@@ -97,10 +99,7 @@ export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, onSet
         }
         ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
         ctx.clearRect(0, 0, bounds.width, bounds.height);
-        drawDepositFrame(ctx, timeline, elapsed, {
-          x: origin.left - bounds.left + origin.width / 2,
-          y: origin.top - bounds.top + origin.height / 2,
-        }, {
+        drawDepositFrame(ctx, timeline, elapsed, bounds, {
           x: target.left - bounds.left + target.width / 2,
           y: target.top - bounds.top + target.height / 2,
         }, coinRef.current);
@@ -134,6 +133,8 @@ export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, onSet
     }}>
       <img className="laboratory-scene__background gold-storage__background"
         src={`${APP_BASE}assets/laboratory/laboratory-background-clean.png`} alt="" />
+      <Decorations total={total} />
+      {animating ? <canvas ref={canvasRef} className="gold-storage__flights" aria-hidden="true" /> : null}
 
       <header className="laboratory-scene__topbar gold-storage__header">
         <button type="button" className="laboratory-scene__icon-button gold-storage__back" onClick={onBack}
@@ -159,7 +160,6 @@ export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, onSet
                 <span><strong>+{format.format(gold.total - total)}</strong> a depositar</span>
               </div>
               <button className="gold-storage__skip" ref={skipRef} type="button">Pular animação</button>
-              <canvas ref={canvasRef} className="gold-storage__flights" aria-hidden="true" />
             </>
           ) : null}
           <div className="gold-storage__balance">{format.format(total)} ouro</div>

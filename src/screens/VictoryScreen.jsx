@@ -26,7 +26,6 @@ export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, 
     ["Respostas certas", numberFormat.format(snapshot.correctAnswers)],
     ["Respostas erradas", numberFormat.format(snapshot.incorrectAnswers)],
     ["Moedas coletadas", numberFormat.format(snapshot.coins)],
-    ["Diamantes coletados", numberFormat.format(snapshot.diamonds)],
   ] : [];
 
   return (

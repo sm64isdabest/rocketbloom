@@ -17,6 +17,18 @@ function memoryStorage(seed = {}) {
   };
 }
 
+test("perfil antigo descarta diamantes e preserva ouro e progresso", () => {
+  const old = { ...createDefaultProgress(), diamonds: 45, coins: 18, gold: { total: 312 }, completedStageIds: ["earth-1"] };
+  const store = memoryStorage({ [STORAGE_KEY]: JSON.stringify(old) });
+  const { progress } = loadProgress(store);
+  assert.equal(Object.hasOwn(progress, "diamonds"), false);
+  assert.equal(progress.coins, 18);
+  assert.equal(progress.gold.total, 312);
+  assert.deepEqual(progress.completedStageIds, ["earth-1"]);
+  assert.ok(saveProgress(progress, store).ok);
+  assert.equal(Object.hasOwn(JSON.parse(store.getItem(STORAGE_KEY)), "diamonds"), false);
+});
+
 test("ouro, depósitos ainda não vistos e metas vistas sobrevivem ao recarregar", () => {
   const storage = memoryStorage();
   const progress = { ...createDefaultProgress(), gold: { total: 617, seenTotal: 300, seenGoalIds: ["aurora", "stars"] } };
@@ -191,7 +203,6 @@ test("reset salva uma nova campanha e preserva as preferências", () => {
   const previous = {
     ...createDefaultProgress(),
     coins: 82,
-    diamonds: 6,
     unlockedPlanetIds: ["earth", "mars"],
     completedStageIds: ["earth-1"],
     endlessHighScores: { earth: 500 },

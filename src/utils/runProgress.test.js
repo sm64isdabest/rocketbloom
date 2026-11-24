@@ -5,7 +5,7 @@ import { applyRunOutcome } from "./runProgress.js";
 
 test("uma conclusão duplicada não reaplica moedas, créditos ou resgate", () => {
   let progress = createDefaultProgress();
-  const firstStage = { runId: "run-a", planetId: "earth", stageId: "earth-1", coins: 2, diamonds: 1 };
+  const firstStage = { runId: "run-a", planetId: "earth", stageId: "earth-1", coins: 2 };
   const first = applyRunOutcome(progress, firstStage, "victory");
   progress = first.progress;
   const duplicate = applyRunOutcome(progress, firstStage, "victory");
@@ -17,12 +17,12 @@ test("uma conclusão duplicada não reaplica moedas, créditos ou resgate", () =
 
 test("concluir as três fases da Terra desbloqueia Marte", () => {
   let progress = applyRunOutcome(createDefaultProgress(), {
-    runId: "run-b", planetId: "earth", stageId: "earth-1", coins: 0, diamonds: 0,
+    runId: "run-b", planetId: "earth", stageId: "earth-1", coins: 0,
   }, "victory").progress;
   assert.deepEqual(progress.rescuedPlantIds, ["victoria-amazonica"]);
   assert.equal(progress.plantGrowthStages["victoria-amazonica"], 0);
   for (let phase = 2; phase <= 3; phase += 1) {
-    progress = applyRunOutcome(progress, { runId: `earth-${phase}`, planetId: "earth", stageId: `earth-${phase}`, coins: 0, diamonds: 0 }, "victory").progress;
+    progress = applyRunOutcome(progress, { runId: `earth-${phase}`, planetId: "earth", stageId: `earth-${phase}`, coins: 0 }, "victory").progress;
   }
   assert.ok(progress.unlockedPlanetIds.includes("mars"));
   assert.deepEqual(progress.rescuedPlantIds, ["victoria-amazonica"]);
@@ -42,11 +42,10 @@ test("uma fase avança apenas a planta do planeta correspondente", () => {
 
 test("infinito guarda o maior placar por planeta sem conceder recompensas da campanha", () => {
   const original = { ...createDefaultProgress(), coins: 9, endlessHighScores: { mars: 450 } };
-  const attempt = { mode: "endless", planetId: "earth", stageId: null, runId: "endless-1", endlessScore: 325, coins: 5, diamonds: 3 };
+  const attempt = { mode: "endless", planetId: "earth", stageId: null, runId: "endless-1", endlessScore: 325, coins: 5 };
   const first = applyRunOutcome(original, attempt, "defeat").progress;
   assert.deepEqual(first.endlessHighScores, { earth: 325, mars: 450 });
   assert.equal(first.coins, original.coins);
-  assert.equal(first.diamonds, original.diamonds);
   assert.deepEqual(first.completedStageIds, []);
   assert.deepEqual(first.stageProgress, {});
   const lower = applyRunOutcome(first, { ...attempt, runId: "endless-2", endlessScore: 200 }, "exit").progress;
@@ -56,24 +55,21 @@ test("infinito guarda o maior placar por planeta sem conceder recompensas da cam
 
 test("itens coletados durante uma derrota são salvos sem marcar a fase como concluída", () => {
   const result = applyRunOutcome(createDefaultProgress(), {
-    runId: "run-defeat", planetId: "earth", stageId: "earth-1", coins: 3, diamonds: 2,
+    runId: "run-defeat", planetId: "earth", stageId: "earth-1", coins: 3,
   }, "defeat");
   assert.equal(result.progress.coins, 3);
-  assert.equal(result.progress.diamonds, 2);
   assert.deepEqual(result.progress.completedStageIds, []);
 });
 
-test("rejogar uma fase concluída não credita novamente moedas e diamantes", () => {
+test("rejogar uma fase concluída não credita novamente moedas", () => {
   const completed = applyRunOutcome(createDefaultProgress(), {
-    runId: "first-clear", planetId: "earth", stageId: "earth-1", coins: 2, diamonds: 1,
+    runId: "first-clear", planetId: "earth", stageId: "earth-1", coins: 2,
   }, "victory").progress;
   const replay = applyRunOutcome(completed, {
-    runId: "replay", planetId: "earth", stageId: "earth-1", coins: 5, diamonds: 3,
+    runId: "replay", planetId: "earth", stageId: "earth-1", coins: 5,
   }, "victory");
   assert.equal(replay.progress.coins, completed.coins);
-  assert.equal(replay.progress.diamonds, completed.diamonds);
   assert.equal(replay.rewards.coins, 0);
-  assert.equal(replay.rewards.diamonds, 0);
 });
 test("ouro é creditado uma vez por voo, inclusive repetição, derrota, modo infinito e saída", () => {
   let progress = createDefaultProgress();
@@ -82,7 +78,7 @@ test("ouro é creditado uma vez por voo, inclusive repetição, derrota, modo in
     ["endless", "defeat"], ["endless", "exit"],
   ]) {
     const total = progress.gold.total;
-    const run = { runId: `gold-${total}`, mode, planetId: "earth", stageId: "earth-1", coins: 12, diamonds: 8 };
+    const run = { runId: `gold-${total}`, mode, planetId: "earth", stageId: "earth-1", coins: 12 };
     const result = applyRunOutcome(progress, run, outcome);
     assert.equal(result.progress.gold.total, total + 12);
     assert.equal(result.progress.gold.seenTotal, 0);
@@ -95,10 +91,9 @@ test("ouro é creditado uma vez por voo, inclusive repetição, derrota, modo in
 test("sair cedo de uma fase nova guarda apenas ouro, sem avançar o progresso da campanha", () => {
   const progress = createDefaultProgress();
   const result = applyRunOutcome(progress, {
-    runId: "gold-exit", planetId: "earth", stageId: "earth-1", coins: 4, diamonds: 3, stageProgress: 0.5,
+    runId: "gold-exit", planetId: "earth", stageId: "earth-1", coins: 4, stageProgress: 0.5,
   }, "exit");
   assert.equal(result.progress.gold.total, 4);
   assert.equal(result.progress.coins, 0);
-  assert.equal(result.progress.diamonds, 0);
   assert.deepEqual(result.progress.stageProgress, {});
 });

@@ -21,7 +21,7 @@ function savePosition(position) {
   }
 }
 
-export function FullscreenButton({ hidden = false }) {
+export function FullscreenButton({ hidden = false, docked = false }) {
   const [position, setPosition] = useState(() => getSavedPosition() ?? {
     x: Math.max(EDGE_GAP, window.innerWidth - BUTTON_SIZE - EDGE_GAP),
     y: EDGE_GAP,
@@ -94,16 +94,18 @@ export function FullscreenButton({ hidden = false }) {
     <button
       type="button"
       className="fullscreen-float"
-      style={{ left: `${position.x}px`, top: `${position.y}px` }}
+      style={docked
+        ? { right: "max(12px, env(safe-area-inset-right))", top: "max(12px, env(safe-area-inset-top))", cursor: "pointer" }
+        : { left: `${position.x}px`, top: `${position.y}px` }}
       aria-label={isFullscreen ? "Sair da tela cheia" : "Entrar em tela cheia"}
       aria-pressed={isFullscreen}
       title={isFullscreen ? "Sair da tela cheia" : "Entrar em tela cheia"}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
+      onPointerDown={docked ? undefined : onPointerDown}
+      onPointerMove={docked ? undefined : onPointerMove}
+      onPointerUp={docked ? undefined : onPointerUp}
+      onPointerCancel={docked ? undefined : onPointerUp}
       onClick={(event) => {
-        if (suppressClick.current) {
+        if (!docked && suppressClick.current) {
           suppressClick.current = false;
           event.preventDefault();
           return;

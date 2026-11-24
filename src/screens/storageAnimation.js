@@ -33,18 +33,20 @@ export function getDepositFrame(timeline, elapsed) {
   return { total, arrived };
 }
 
-export function drawDepositFrame(ctx, timeline, elapsed, source, target, coin) {
+export function drawDepositFrame(ctx, timeline, elapsed, { width, height }, target, coin) {
   const { x, y } = target;
-  const rise = Math.min(58, Math.abs(x - source.x) * 0.22, Math.max(0, source.y - 17) + (y - source.y) / 4);
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const startSize = Math.min(250, Math.min(width, height) * 0.36);
   for (const [index, flight] of timeline.flights.entries()) {
     if (elapsed < flight.start) break;
     if (elapsed < flight.arrival) {
       const progress = (elapsed - flight.start) / FLIGHT_MS;
       const eased = progress * progress * (3 - 2 * progress);
-      const size = 30 - eased * 8;
+      const size = startSize + (30 - startSize) * eased;
+      const arc = (index % 2 === 0 ? -1 : 1) * Math.sin(Math.PI * eased) * startSize * 0.45;
       ctx.save();
-      ctx.translate(source.x + (x - source.x) * eased,
-        source.y + (y - source.y) * eased - 4 * rise * eased * (1 - eased));
+      ctx.translate(centerX + (x - centerX) * eased + arc, centerY + (y - centerY) * eased);
       ctx.scale(0.34 + 0.66 * Math.abs(Math.cos(progress * Math.PI * 2)), 1);
       ctx.shadowBlur = 11;
       ctx.shadowColor = "#ffc358";

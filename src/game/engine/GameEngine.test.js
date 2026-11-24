@@ -545,12 +545,11 @@ test("modo infinito ultrapassa o tempo da fase e tem placar de sobrevivência pr
     engine.setDebugDuration(10);
     engine.correctAnswers = 2;
     engine.coins = 3;
-    engine.diamonds = 1;
     tickFor(engine, 1200);
     const snapshot = engine.getSnapshot();
     assert.deepEqual(outcomes, []);
     assert.equal(snapshot.stageId, null);
-    assert.equal(snapshot.endlessScore, 385);
+    assert.equal(snapshot.endlessScore, 285);
     assert.equal(snapshot.stageProgress, 0);
     engine.stop();
   });
@@ -792,15 +791,13 @@ test("redução temporária do impacto preserva movimento e não causa derrota",
   });
 });
 
-test("moedas e diamantes coletados atualizam o HUD uma vez por item", () => {
+test("moedas coletadas atualizam o HUD uma vez por item", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
     engine.collectibles.push(new Collectible({ id: "coin", kind: "coin", x: engine.rocket.x, y: engine.rocket.y, width: 24, height: 24 }));
-    engine.collectibles.push(new Collectible({ id: "diamond", kind: "diamond", x: engine.rocket.x, y: engine.rocket.y, width: 24, height: 24 }));
     engine.tick(0.016);
     engine.tick(0.016);
     assert.equal(engine.getSnapshot().coins, 1);
-    assert.equal(engine.getSnapshot().diamonds, 1);
     assert.equal(engine.collectibles.length, 0);
     engine.stop();
   });
@@ -1065,7 +1062,7 @@ test("o voo prolongado com a dificuldade final de Netuno completa com acertos e 
 
       if (forcedCollisions < 2 && engine.elapsedMs >= nextForcedCollisionMs && engine.currentRound?.status === "awaiting-resolution"
         && engine.answerChoiceRemainingMs > 300) {
-        const hazard = new Obstacle({ id: "diamond-shard", x: engine.rocket.x, y: engine.rocket.y - 28, width: 40, height: 40 });
+        const hazard = new Obstacle({ id: "asteroid", x: engine.rocket.x, y: engine.rocket.y - 28, width: 40, height: 40 });
         engine.obstacles.push(hazard);
         forcedCollisions += 1;
         nextForcedCollisionMs += 12_000;
@@ -1108,11 +1105,10 @@ test("visualização desenha as caixas reais de colisão das entidades vivas e p
     const inactiveObstacle = new Obstacle({ id: "asteroid", x: 5, y: 10, width: 10, height: 10 });
     inactiveObstacle.alive = false;
     const coin = new Collectible({ id: "coin", kind: "coin", x: 100, y: 120, width: 18, height: 18 });
-    const diamond = new Collectible({ id: "diamond", kind: "diamond", x: 145, y: 155, width: 20, height: 22 });
     const inactiveCoin = new Collectible({ id: "coin", kind: "coin", x: 200, y: 210, width: 16, height: 16 });
     inactiveCoin.alive = false;
     engine.obstacles = [obstacle, inactiveObstacle];
-    engine.collectibles = [coin, diamond, inactiveCoin];
+    engine.collectibles = [coin, inactiveCoin];
     engine.showHitboxes = true;
 
     engine.render();
@@ -1121,7 +1117,6 @@ test("visualização desenha as caixas reais de colisão das entidades vivas e p
     assert.deepEqual(hitboxes, [
       { x: 55, y: 80, width: 10, height: 10, color: "#f97316", lineWidth: 2 },
       { x: 100, y: 120, width: 18, height: 18, color: "#facc15", lineWidth: 2 },
-      { x: 145, y: 155, width: 20, height: 22, color: "#38bdf8", lineWidth: 2 },
       { x: engine.rocket.x, y: engine.rocket.y, width: engine.rocket.width, height: engine.rocket.height, color: "#fb7185", lineWidth: 2 },
     ]);
 

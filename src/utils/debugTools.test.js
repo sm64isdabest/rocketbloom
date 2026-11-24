@@ -14,7 +14,6 @@ test("debug shortcut requires Q and P to be held together in either order", () =
 test("debug currency grants only a supported resource and never drops below zero", () => {
   const progress = createDefaultProgress();
   assert.equal(addDebugCurrency(progress, "coins", 250).coins, 250);
-  assert.equal(addDebugCurrency(progress, "diamonds", 12).diamonds, 12);
   assert.equal(addDebugCurrency(progress, "money", 40).money, 40);
   assert.throws(() => addDebugCurrency(progress, "invalid", 1), /Recurso/);
   assert.equal(addDebugCurrency({ ...progress, coins: 4 }, "coins", -10).coins, 0);

@@ -13,7 +13,6 @@ test("valores de velocidade e derrota estão definidos", () => {
 
 test("recompensas numéricas ficam na configuração", () => {
   assert.equal(REWARDS.coinValue, 1);
-  assert.equal(REWARDS.diamondValue, 1);
   assert.ok(REWARDS.plantMoney > 0);
 });
 
@@ -24,9 +23,9 @@ test("elementos de fase ficam maiores sem alterar o tamanho do foguete", async (
 
   assert.deepEqual([ROCKET.width, ROCKET.height], [52, 88]);
   assert.equal(MYSTERY_BOX.size, 55);
-  assert.deepEqual(COLLECTIBLES.map(({ width, height }) => [width, height]), [[38, 38], [43, 50]]);
+  assert.deepEqual(COLLECTIBLES.map(({ width, height }) => [width, height]), [[38, 38]]);
   assert.deepEqual(OBSTACLES.map(({ width, height }) => [width, height]), [
-    [90, 85], [64, 86], [55, 73], [60, 60], [96, 46], [44, 55],
+    [90, 85], [64, 86], [55, 73], [60, 60], [96, 46],
   ]);
 });
 

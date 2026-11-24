@@ -10,7 +10,6 @@ export function createDefaultProgress() {
     version: PROGRESS_VERSION,
     coins: 0,
     gold: createGoldStorage(),
-    diamonds: 0,
     money: 0,
     unlockedPlanetIds: ["earth"],
     seenPlanetIds: [],
@@ -45,7 +44,6 @@ function isValidProgress(value) {
     Array.isArray(value.completedStageIds) &&
     Array.isArray(value.rescuedPlantIds) &&
     Number.isFinite(value.coins) && value.coins >= 0 &&
-    Number.isFinite(value.diamonds) && value.diamonds >= 0 &&
     Number.isFinite(value.money) && value.money >= 0
   );
 }
@@ -77,6 +75,7 @@ export function loadProgress(providedStorage) {
       };
     }
 
+    delete parsed.diamonds;
     const storedMusic = typeof parsed.settings?.music === "boolean" ? parsed.settings.music : parsed.settings?.sound !== false;
     const storedEffects = typeof parsed.settings?.soundEffects === "boolean" ? parsed.settings.soundEffects : parsed.settings?.sound !== false;
     const musicVolume = Number.isFinite(parsed.settings?.musicVolume)

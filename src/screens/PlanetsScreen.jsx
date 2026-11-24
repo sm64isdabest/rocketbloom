@@ -145,10 +145,6 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
               <img src={`${APP_BASE}assets/ui/coin.webp`} alt="" aria-hidden="true" />
               <span>{numberFormat.format(progress.coins ?? 0)}</span>
             </div>
-            <div className="phase-selection-wallet" aria-label={`${numberFormat.format(progress.diamonds ?? 0)} diamantes`}>
-              <img src={`${APP_BASE}assets/ui/diamond.webp`} alt="" aria-hidden="true" />
-              <span>{numberFormat.format(progress.diamonds ?? 0)}</span>
-            </div>
             <StorageEntryButton gold={progress.gold} previousBalance={previousGoldBalance} reducedMotion={reducedMotion}
               paused={goldCountPaused} buttonRef={storageButtonRef} onClick={() => onStorage(planet.id, selectedStageId)} />
           </div>

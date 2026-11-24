@@ -418,7 +418,8 @@ export default function App() {
   const decoration = <Decorations total={progress.gold.total} />;
   return (
     <>
-    <FullscreenButton hidden={settingsOpen || [SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH].includes(screen)
+    <FullscreenButton docked={screen === SCREEN.MENU && menuPage === SCREEN.STORAGE}
+      hidden={settingsOpen || [SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH].includes(screen)
       || (screen === SCREEN.MENU && menuPage === SCREEN.COMMAND)} />
     <div
       className={`app-shell ${reducedMotion ? "motion-reduced" : ""}`}
@@ -430,7 +431,6 @@ export default function App() {
       {screen === SCREEN.MENU && menuPage === SCREEN.MENU ? (
         <MenuScreen
           progress={progress}
-          decoration={decoration}
           warning={warning}
           onPlay={() => setMenuPage(SCREEN.PLANETS)}
           onSettings={openSettings}

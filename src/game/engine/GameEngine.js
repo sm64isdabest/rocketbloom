@@ -94,7 +94,6 @@ export class GameEngine {
     this.elapsedMs = 0;
     this.progressMs = 0;
     this.coins = 0;
-    this.diamonds = 0;
     this.score = 0;
     this.correctAnswers = 0;
     this.incorrectAnswers = 0;
@@ -610,13 +609,12 @@ export class GameEngine {
       collectible.update(dt, this.reducedMotion);
       if (aabbOverlaps(this.rocket, collectible)) {
         collectible.alive = false;
-        if (collectible.kind === "diamond") this.diamonds += 1;
-        else this.coins = collectCoins(this.coins);
-        playGameSound(collectible.kind === "diamond" ? "diamond" : "coin");
-        this.questionFeedback = collectible.kind === "diamond" ? "Diamante coletado +1" : "Moeda coletada +1";
+        this.coins = collectCoins(this.coins);
+        playGameSound("coin");
+        this.questionFeedback = "Moeda coletada +1";
         this.feedbackTimerMs = 700;
         this.spawnParticles(collectible.x + collectible.width / 2, collectible.y + collectible.height / 2,
-          collectible.kind === "diamond" ? "#7ad4ff" : "#f6ce62", 8);
+          "#f6ce62", 8);
         this.emitHud(true);
       }
     }
@@ -832,7 +830,6 @@ export class GameEngine {
       collisionAlertRemainingMs: this.collisionAlertRemainingMs,
       collisionAlertSequence: this.collisionAlertSequence,
       coins: this.coins,
-      diamonds: this.diamonds,
       score: this.score,
       correctAnswers: this.correctAnswers,
       incorrectAnswers: this.incorrectAnswers,
@@ -847,8 +844,7 @@ export class GameEngine {
         mode: "endless",
         endlessScore: Math.floor(this.elapsedMs / 1000) * ENDLESS.pointsPerSecond
           + this.correctAnswers * ENDLESS.correctAnswerPoints
-          + this.coins * ENDLESS.coinPoints
-          + this.diamonds * ENDLESS.diamondPoints,
+          + this.coins * ENDLESS.coinPoints,
       } : {}),
       question: this.currentRound?.status === "waiting-next-question" ? null : this.currentRound?.question ?? null,
       answerState: this.currentRound?.status ?? "preparing",
@@ -952,7 +948,7 @@ export class GameEngine {
       }
       for (const collectible of this.collectibles) {
         if (!collectible.alive) continue;
-        this.renderCollisionBox(collectible, collectible.kind === "diamond" ? "#38bdf8" : "#facc15");
+        this.renderCollisionBox(collectible, "#facc15");
       }
       for (const laser of this.answerLasers) {
         if (laser.alive) this.renderCollisionBox(laser, laser.color);

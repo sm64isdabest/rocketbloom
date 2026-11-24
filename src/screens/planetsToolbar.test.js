@@ -19,7 +19,6 @@ test("barra do seletor mostra os subtítulos definidos para os quatro planetas",
 test("barra reúne os dados dinâmicos e conserva os handlers e ícones originais", () => {
   assert.ok(toolbar);
   assert.match(toolbar, /numberFormat\.format\(progress\.coins \?\? 0\)/);
-  assert.match(toolbar, /numberFormat\.format\(progress\.diamonds \?\? 0\)/);
   assert.match(toolbar, /onClick=\{onBack\}[^>]*aria-label="Voltar ao menu"[^>]*>\s*<img[^>]*getPauseAssetUrl\(RETURN_ICON_FILE, APP_BASE\)/);
   assert.match(toolbar, /onClick=\{onSettings\}/);
   assert.match(toolbar, /getMenuAssetUrl\("settings\.webp", APP_BASE\)/);

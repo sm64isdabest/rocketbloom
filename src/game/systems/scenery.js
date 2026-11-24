@@ -4,7 +4,7 @@ const BACKGROUND_FILES = {
   earth: { file: "terra_amazonia_seamless.webp", sourceHeight: 941 },
   mars: { file: "marte_new_seamless.webp", sourceHeight: 855 },
   saturn: { file: "saturno_background_seamless.jpg", sourceHeight: 941 },
-  neptune: { file: "netuno_diamond_rain_seamless.webp", sourceHeight: 901 },
+  neptune: { file: "netuno_background_seamless.jpg", sourceHeight: 941 },
 };
 const backgroundImages = new Map();
 let leafImage;
@@ -106,11 +106,6 @@ function drawNeptune(ctx, width, height, accent) {
   ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
   ctx.globalAlpha = 0.4; ctx.strokeStyle = "#8ce7ff"; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.ellipse(x, y, radius * 1.55, radius * .4, -.2, 0, Math.PI * 2); ctx.stroke();
-  ctx.globalAlpha = 0.48; ctx.fillStyle = accent;
-  for (let index = 0; index < 3; index += 1) {
-    const px = width * (.2 + index * .16); const py = height * (.36 + index % 2 * .09);
-    ctx.beginPath(); ctx.moveTo(px, py - 5); ctx.lineTo(px + 4, py); ctx.lineTo(px, py + 5); ctx.lineTo(px - 4, py); ctx.closePath(); ctx.fill();
-  }
   ctx.restore();
 }
 

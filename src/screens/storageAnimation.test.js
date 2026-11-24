@@ -1,6 +1,27 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createDepositTimeline, getDepositFrame } from "./storageAnimation.js";
+import { createDepositTimeline, drawDepositFrame, getDepositFrame } from "./storageAnimation.js";
+
+test("a moeda gigante nasce no centro e encolhe ao chegar à barra", () => {
+  const timeline = createDepositTimeline(0, 1);
+  const { start, arrival } = timeline.flights[0];
+  const positions = [];
+  const sizes = [];
+  const ctx = {
+    save() {}, restore() {}, scale() {},
+    translate(x, y) { positions.push([x, y]); },
+    drawImage(_image, _x, _y, width) { sizes.push(width); },
+  };
+  const view = { width: 360, height: 640 };
+  const bar = { x: 180, y: 520 };
+  const coin = { naturalWidth: 64 };
+  drawDepositFrame(ctx, timeline, start, view, bar, coin);
+  drawDepositFrame(ctx, timeline, arrival - 1, view, bar, coin);
+  assert.deepEqual(positions[0], [180, 320]);
+  assert.ok(sizes[0] >= 100);
+  assert.ok(Math.abs(positions[1][1] - 520) < 1);
+  assert.ok(sizes[1] < 40);
+});
 
 test("a contagem começa quando a primeira moeda chega e termina no saldo exato", () => {
   const timeline = createDepositTimeline(9, 12);
