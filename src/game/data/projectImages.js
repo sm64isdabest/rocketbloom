@@ -1,5 +1,6 @@
 import { OBSTACLE_SPRITES } from "./obstacles.js";
-import { CAMPAIGN_CONFIG } from "./planets.js";
+import { CAMPAIGN_CONFIG, PLANETS } from "./planets.js";
+import { PLANTS } from "./plants.js";
 
 // Keep this list in sync with the raster and vector images in public/assets.
 export const PROJECT_IMAGES = [
@@ -10,7 +11,12 @@ export const PROJECT_IMAGES = [
   "/assets/laboratory/laboratory-equipment-base.png",
   "/assets/laboratory/arrow-left.webp",
   "/assets/laboratory/arrow-right.webp",
-  ...Array.from({ length: 20 }, (_, index) => `/assets/laboratory/plant-${String(index + 1).padStart(2, "0")}.png`),
+  ...PLANTS.flatMap(({ growthArt }) =>
+    growthArt.map((id) => `/assets/laboratory/plant-${String(id).padStart(2, "0")}.png`),
+  ),
+  ...["irrigation", "pollination", "cleaning", "can", "bee", "dirt", "brush", "pot"].map(
+    (file) => `/assets/laboratory/care/${file}.webp`,
+  ),
   "/assets/explosion.webp",
   "/assets/folha-verde-cartunesca-brilhante.webp",
   "/assets/lasers/idle/frame_01.webp",
@@ -59,7 +65,7 @@ export const PROJECT_IMAGES = [
   "/assets/powerups/star.webp",
   "/assets/powerups/turbo.webp",
   "/assets/ui/coin.webp",
-  "/assets/ui/endless.webp",
+  ...PLANETS.map(({ endlessIcon }) => `/assets/ui/${endlessIcon}`),
   "/assets/ui/warning-alert.webp",
   "/assets/ui/selection-rocket.webp",
   "/assets/ui/level-frames/arrow-left.webp",

@@ -21,22 +21,26 @@ test("concluir as três fases da Terra desbloqueia Marte", () => {
   }, "victory").progress;
   assert.deepEqual(progress.rescuedPlantIds, ["victoria-amazonica"]);
   assert.equal(progress.plantGrowthStages["victoria-amazonica"], 0);
+  assert.deepEqual(progress.laboratoryNotices, ["earth"]);
   for (let phase = 2; phase <= 3; phase += 1) {
     progress = applyRunOutcome(progress, { runId: `earth-${phase}`, planetId: "earth", stageId: `earth-${phase}`, coins: 0 }, "victory").progress;
   }
   assert.ok(progress.unlockedPlanetIds.includes("mars"));
   assert.deepEqual(progress.rescuedPlantIds, ["victoria-amazonica"]);
-  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 4);
+  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 0, "os cuidados avançam a planta, após o voo");
   const replay = applyRunOutcome(progress, { runId: "earth-replay", planetId: "earth", stageId: "earth-3" }, "victory");
-  assert.equal(replay.progress.plantGrowthStages["victoria-amazonica"], 4);
+  assert.equal(replay.progress.plantGrowthStages["victoria-amazonica"], 0);
   assert.equal(replay.progress.money, progress.money);
 });
 
-test("uma fase avança apenas a planta do planeta correspondente", () => {
+test("uma vitória emite aviso mesmo ao rejogar uma fase", () => {
   let progress = createDefaultProgress();
   progress = applyRunOutcome(progress, { runId: "growth-earth-1", planetId: "earth", stageId: "earth-1" }, "victory").progress;
   progress = applyRunOutcome(progress, { runId: "growth-earth-2", planetId: "earth", stageId: "earth-2" }, "victory").progress;
-  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 2);
+  progress.laboratoryNotices = [];
+  progress = applyRunOutcome(progress, { runId: "growth-earth-replay", planetId: "earth", stageId: "earth-1" }, "victory").progress;
+  assert.deepEqual(progress.laboratoryNotices, ["earth"]);
+  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 0);
   assert.equal(progress.plantGrowthStages["mars-lichen"], undefined);
 });
 

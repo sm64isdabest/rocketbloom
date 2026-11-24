@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { PLANETS } from "../game/data/planets.js";
 import { playGameSound } from "../game/audio/audioManager.js";
+import { hasLaboratoryAttention } from "../utils/laboratoryProgress.js";
 import { canNavigateToPlanet, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
 import { getMenuAssetUrl } from "./menuModel.js";
 import { getPauseAssetUrl, RETURN_ICON_FILE } from "./pauseModel.js";
@@ -42,6 +43,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
     : null;
   const [selectedPlanetId, setSelectedPlanetId] = useState(initialPlanetId);
   const [selectedStageId, setSelectedStageId] = useState(initialStageId);
+  const [endlessSelected, setEndlessSelected] = useState(false);
   const [revealingPlanetId, setRevealingPlanetId] = useState(null);
   const [hoveredSelector, setHoveredSelector] = useState(false);
   const [selectionPulse, setSelectionPulse] = useState(0);
@@ -49,10 +51,15 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   const activeStageElementRef = useRef(null);
   const planet = PLANETS.find(({ id }) => id === selectedPlanetId) ?? PLANETS[0];
   const model = getPlanetSelectorModel(planet, progress);
+  const laboratoryAttention = hasLaboratoryAttention(progress);
   const planetIndex = PLANETS.findIndex(({ id }) => id === planet.id);
   const previousPlanet = PLANETS[planetIndex - 1];
   const nextPlanet = PLANETS[planetIndex + 1];
   const numberFormat = new Intl.NumberFormat("pt-BR");
+  const endlessRecord = `Recorde: ${numberFormat.format(model.endless.highScore)} pts`;
+  const endlessLabel = model.endless.unlocked
+    ? `${endlessRecord}. ${endlessSelected ? "Ative novamente para jogar." : "Ative para selecionar."}`
+    : "Conclua as três fases para desbloquear.";
 
   useEffect(() => {
     if (!planet || !model.unlocked || discoveryHandled.current.has(planet.id)) return;
@@ -69,6 +76,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   const baseClass = `phase-selection-canvas phase-selection-canvas--${planet.id}${revealingPlanetId === planet.id ? " is-revealing" : ""}`;
 
   const launchStage = (stageId, targetElement) => {
+    setEndlessSelected(false);
     setOrbitTargetElement(activeStageElementRef, targetElement);
     if (getStageClickAction(selectedStageId, stageId) === "select") {
       setSelectedStageId(stageId);
@@ -80,9 +88,21 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   };
   const selectPlanet = (planetId) => {
     setRevealingPlanetId(null);
+    setEndlessSelected(false);
     setSelectedStageId(null);
     setSelectedPlanetId(planetId);
     onSelectionChange?.(planetId, null);
+  };
+
+  const selectEndless = () => {
+    if (endlessSelected) {
+      onPlayEndless(planet.id);
+      return;
+    }
+    setSelectedStageId(null);
+    setEndlessSelected(true);
+    onSelectionChange?.(planet.id, null);
+    setSelectionPulse((pulse) => pulse + 1);
   };
 
   return (
@@ -156,8 +176,15 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
             <button type="button" className="phase-selection-settings" onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
               <img src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" aria-hidden="true" />
             </button>
-            <button type="button" className="phase-selection-laboratory" onClick={() => onCommandRoom(planet.id, selectedStageId)} aria-label="Abrir Laboratório" title="Laboratório">
+            <button type="button" className="phase-selection-laboratory" onClick={() => onCommandRoom(planet.id, selectedStageId)}
+              aria-label="Abrir Laboratório" aria-describedby={laboratoryAttention ? "laboratory-attention" : undefined} title="Laboratório">
               <img src={getMenuAssetUrl("laboratory.webp", APP_BASE)} alt="" aria-hidden="true" />
+              {laboratoryAttention ? (
+                <>
+                  <img className="phase-selection-laboratory__notice" src={`${APP_BASE}assets/ui/warning-alert.webp`} alt="" />
+                  <span id="laboratory-attention" className="visually-hidden">Há novidades ou cuidados no laboratório.</span>
+                </>
+              ) : null}
             </button>
           </nav>
         </header>
@@ -176,7 +203,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
                 }}
               >
                 <button
-                  ref={stage.id === orbitStage?.id ? activeStageElementRef : undefined}
+                  ref={!endlessSelected && stage.id === orbitStage?.id ? activeStageElementRef : undefined}
                   type="button"
                   className="phase-selection-stage__button"
                   disabled={!stage.available}
@@ -202,20 +229,23 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           })}
         </ol>
 
-        <button
-          type="button"
-          className="phase-selection-endless"
-          disabled={!model.endless.unlocked}
-          onClick={() => onPlayEndless(planet.id)}
-        >
-          <img src={`${APP_BASE}assets/ui/endless.webp`} alt="" />
-          <span>
-            <strong>Modo infinito</strong>
-            <small>{model.endless.unlocked
-              ? `Recorde: ${numberFormat.format(model.endless.highScore)} pts`
-              : `Bloqueado · Conclua as ${model.stages.length} fases`}</small>
-          </span>
-        </button>
+        <div className="phase-selection-endless-slot"
+          style={{ "--endless-anchor": `${STAGE_POSITIONS[planet.id][1][1] / PANEL_HEIGHT * 100}%` }}>
+          <button
+            type="button"
+            className="phase-selection-endless"
+            ref={endlessSelected ? activeStageElementRef : undefined}
+            disabled={!model.endless.unlocked}
+            aria-pressed={endlessSelected}
+            aria-describedby="endless-description"
+            onClick={selectEndless}
+          >
+            <img src={`${APP_BASE}assets/ui/${planet.endlessIcon}`} alt="" draggable="false" />
+            <span>Modo infinito</span>
+          </button>
+          <span id="endless-description" className="visually-hidden">{endlessLabel}</span>
+          {model.endless.unlocked ? <span className="phase-selection-endless-score" aria-hidden="true">{endlessRecord}</span> : null}
+        </div>
 
         <button
           type="button"

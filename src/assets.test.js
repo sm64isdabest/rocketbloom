@@ -23,7 +23,7 @@ test("assets raster usam WebP", () => {
   }
 
   const plantSprites = assetFiles.filter((path) => path.includes("/laboratory/plant-") && /\.png$/i.test(path));
-  assert.equal(plantSprites.length, 20, "cada planeta deve ter cinco sprites de crescimento");
+  assert.equal(plantSprites.length, 12, "cada planeta deve ter três sprites de crescimento");
   for (const path of plantSprites) {
     const png = readFileSync(path);
     assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", `${path} deve ser um PNG válido`);

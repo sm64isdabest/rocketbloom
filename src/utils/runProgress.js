@@ -1,6 +1,6 @@
 import { REWARDS } from "../game/config/gameConfig.js";
 import { getCampaignUnlocks, getPlanetById } from "../game/data/planets.js";
-import { getPlantById, getPlantGrowthIndex } from "../game/data/plants.js";
+import { getPlantById } from "../game/data/plants.js";
 import { createGoldStorage, creditGold } from "./goldStorage.js";
 
 const NO_REWARDS = { coins: 0, money: 0, plantMoney: 0, sustainabilityPoints: 0, plantName: null, stageCompleted: false };
@@ -72,13 +72,11 @@ export function applyRunOutcome(progress, snapshot, outcome) {
     );
   }
 
-  if (outcome !== "victory" || !snapshot?.stageId || next.completedStageIds.includes(snapshot.stageId)) {
-    return { progress: next, rewards, alreadyApplied: false };
-  }
-
-  const planet = getPlanetById(snapshot.planetId);
+  const planet = outcome === "victory" ? getPlanetById(snapshot?.planetId) : null;
   const stageIndex = planet?.stages.findIndex((stage) => stage.id === snapshot.stageId) ?? -1;
   if (!planet || stageIndex < 0) return { progress: next, rewards, alreadyApplied: false };
+  next.laboratoryNotices = unique([...(progress.laboratoryNotices ?? []), planet.id]);
+  if (replayingCompletedStage) return { progress: next, rewards, alreadyApplied: false };
 
   const stage = planet.stages[stageIndex];
   next.completedStageIds = unique([...next.completedStageIds, snapshot.stageId]);
@@ -90,10 +88,7 @@ export function applyRunOutcome(progress, snapshot, outcome) {
   if (plant) {
     const firstRescue = !next.rescuedPlantIds.includes(plant.id);
     next.rescuedPlantIds = unique([...next.rescuedPlantIds, plant.id]);
-    next.plantGrowthStages[plant.id] = Math.max(
-      next.plantGrowthStages[plant.id] ?? 0,
-      getPlantGrowthIndex(plant, stageIndex, planet.stages.length),
-    );
+    next.plantGrowthStages[plant.id] ??= 0;
     if (firstRescue) {
       rewards.money += plant.moneyReward;
       rewards.plantMoney += plant.moneyReward;

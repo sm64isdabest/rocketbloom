@@ -6,6 +6,7 @@ import { PROJECT_IMAGES } from "./game/data/projectImages.js";
 import { getPlanetById, getStageById } from "./game/data/planets.js";
 import { usePersistentProgress } from "./hooks/usePersistentProgress.js";
 import { applyRunOutcome } from "./utils/runProgress.js";
+import { completeLaboratoryCare, getLaboratoryVisitPlanet, prepareLaboratoryVisit } from "./utils/laboratoryProgress.js";
 import { acknowledgeGold, creditGold, creditNextGoldGoal } from "./utils/goldStorage.js";
 import { Decorations } from "./screens/Decorations.jsx";
 import { BootScreen } from "./screens/BootScreen.jsx";
@@ -50,6 +51,7 @@ export default function App() {
   const [systemReducedMotion, setSystemReducedMotion] = useState(false);
   const reducedMotion = Boolean(progress?.settings.reducedMotion || systemReducedMotion);
   const [completionStageId, setCompletionStageId] = useState(null);
+  const [laboratoryPlanetId, setLaboratoryPlanetId] = useState(null);
   const hudRef = useRef(null);
   const debugEngineRef = useRef(null);
   const setDebugEngineRef = useCallback((engine) => { debugEngineRef.current = engine; }, []);
@@ -99,7 +101,7 @@ export default function App() {
       setDebugOpen(true);
     };
     const onKeyDown = (event) => {
-      if (settingsOpen || screen === SCREEN.FLIGHT_INTRO || screen === SCREEN.VICTORY_LAUNCH
+      if (settingsOpen || document.querySelector("dialog[open]") || screen === SCREEN.FLIGHT_INTRO || screen === SCREEN.VICTORY_LAUNCH
         || event.repeat || isEditableTarget(event.target)) return;
       const key = event.key.toLowerCase();
       if (key !== "q" && key !== "p") return;
@@ -266,9 +268,21 @@ export default function App() {
     setScreen(SCREEN.MENU);
   };
 
+  const visitLaboratoryPlant = (planetId) => {
+    persist((current) => prepareLaboratoryVisit(current, planetId));
+  };
+
   const enterLaboratory = (planetId, selectedStageId) => {
     dispatchNavigationContext({ type: "open-laboratory", planetId, selectedStageId });
+    const visitPlanet = getLaboratoryVisitPlanet(progress, planetId);
+    setLaboratoryPlanetId(visitPlanet.id);
+    visitLaboratoryPlant(visitPlanet.id);
     setMenuPage(SCREEN.COMMAND);
+  };
+
+  const finishLaboratoryCare = (planetId, stageId, gameId) => {
+    persist((current) => completeLaboratoryCare(current, planetId, stageId, gameId));
+    playGameSound("discovery");
   };
 
   const exitLaboratory = () => {
@@ -472,6 +486,9 @@ export default function App() {
         <CommandRoomScreen
           progress={progress}
           decoration={decoration}
+          initialPlanetId={laboratoryPlanetId}
+          onVisitPlanet={visitLaboratoryPlant}
+          onCareComplete={finishLaboratoryCare}
           onBack={exitLaboratory}
           onSettings={openSettings}
         />

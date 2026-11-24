@@ -3,7 +3,7 @@ import { getActiveQuestion, getHudAssetUrl, getPowerUpAssetUrl } from "./hudMode
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const numberFormat = new Intl.NumberFormat("pt-BR");
 
-export function Hud({ snapshot, endless, onPause }) {
+export function Hud({ snapshot, endlessIcon, onPause }) {
   const activeQuestion = getActiveQuestion(snapshot);
 
   return (
@@ -14,9 +14,9 @@ export function Hud({ snapshot, endless, onPause }) {
           <img className="hud__resource-icon hud__resource-icon--coin" src={getHudAssetUrl("coin.webp", APP_BASE)} alt="" aria-hidden="true" />
           <b>{String(snapshot?.coins ?? 0).padStart(2, "0")}</b>
         </span>
-        {endless ? (
+        {endlessIcon ? (
           <div className="hud__endless-score">
-            <img src={getHudAssetUrl("endless.webp", APP_BASE)} alt="" />
+            <img src={getHudAssetUrl(endlessIcon, APP_BASE)} alt="" />
             <span><small>Pontuação</small><strong>{numberFormat.format(snapshot?.endlessScore ?? 0)}</strong></span>
           </div>
         ) : null}

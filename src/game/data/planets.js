@@ -100,6 +100,7 @@ export const PLANETS = PLANET_CONFIG.map((planet) => {
   return {
     ...planet,
     stages,
+    endlessIcon: `endless/${planet.id}.webp`,
     endlessStage: {
       ...stages.at(-1),
       id: `${planet.id}-endless`,

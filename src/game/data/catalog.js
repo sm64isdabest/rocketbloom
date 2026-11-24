@@ -63,7 +63,8 @@ export function validateCatalog() {
       errors.push(`Planeta ${planet.id} aponta para planta inexistente.`);
     }
     const plant = PLANTS.find((entry) => entry.id === planet.plantId);
-    if (plant && (plant.planetId !== planet.id || plant.growthStages?.length !== 5 || !plant.palette || !(plant.moneyReward >= 0))) {
+    if (plant && (plant.planetId !== planet.id || plant.growthStages?.length !== CAMPAIGN_CONFIG.stagesPerPlanet
+      || plant.growthArt?.length !== plant.growthStages.length || !plant.palette || !(plant.moneyReward >= 0))) {
       errors.push(`Planta ${plant.id} possui dados de resgate ou crescimento inválidos.`);
     }
     for (const obstacleId of planet.obstacleIds) {

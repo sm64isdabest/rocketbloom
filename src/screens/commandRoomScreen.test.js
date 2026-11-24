@@ -55,5 +55,5 @@ test("laboratório retorna ao seletor de origem e atualiza sua referência ao en
   assert.match(planetsSource, /onSelectionChange\?\.\(planet\.id, stageId\)/);
   assert.match(appSource, /onSelectionChange=\{\(planetId, selectedStageId\) => dispatchNavigationContext/);
   assert.ok(planetsSource.includes("const orbitStage = getOrbitStage(model.stages, selectedStageId)"));
-  assert.ok(planetsSource.includes("ref={stage.id === orbitStage?.id ? activeStageElementRef : undefined}"));
+  assert.ok(planetsSource.includes("ref={!endlessSelected && stage.id === orbitStage?.id ? activeStageElementRef : undefined}"));
 });

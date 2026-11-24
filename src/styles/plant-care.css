@@ -1,0 +1,559 @@
+.plant-care {
+  --care-accent: #88e6ff;
+  --care-accent-rgb: 100, 209, 255;
+  --care-panel: #101d3a;
+  position: fixed;
+  width: min(820px, calc(100% - 28px));
+  max-width: none;
+  max-height: calc(100dvh - 28px);
+  padding: clamp(13px, 2.2vw, 21px);
+  border: 1px solid rgba(var(--care-accent-rgb), .54);
+  border-radius: 24px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  color: #f6fbff;
+  background: linear-gradient(150deg, rgba(var(--care-accent-rgb), .12), transparent 42%), var(--care-panel);
+  box-shadow: inset 0 0 0 3px #101b35, 0 0 38px rgba(var(--care-accent-rgb), .26), 0 30px 68px #030618ad;
+}
+
+.plant-care--bees {
+  --care-accent: #ffdc8b;
+  --care-accent-rgb: 255, 189, 87;
+  --care-panel: #261f2c;
+}
+
+.plant-care--clean {
+  --care-accent: #c2b5ff;
+  --care-accent-rgb: 169, 147, 255;
+  --care-panel: #1d1d3b;
+}
+
+.plant-care::backdrop {
+  background: rgba(2, 5, 22, .7);
+  backdrop-filter: blur(5px);
+}
+
+.plant-care__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 13px;
+  padding: 1px 2px 0;
+}
+
+.plant-care__context {
+  margin: 0 0 5px;
+  color: var(--care-accent);
+  font-size: .73rem;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.plant-care__context span { margin: 0 .3em; }
+
+.plant-care__header h2 {
+  margin: 0 0 5px;
+  outline: none;
+  font-size: clamp(1.37rem, 4vw, 2.1rem);
+  line-height: 1;
+  letter-spacing: -.035em;
+}
+
+.plant-care__instructions {
+  margin: 0;
+  color: #e6edff;
+  font-size: clamp(.77rem, 2.55vw, .92rem);
+  line-height: 1.35;
+}
+
+.plant-care__close {
+  flex: none;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  padding: 3px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.plant-care__close img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.plant-care__close:hover { filter: brightness(1.24); }
+
+.plant-care button:focus-visible {
+  outline: 3px solid #fff9df;
+  outline-offset: 3px;
+}
+
+.plant-care__scene {
+  --care-scene-height: clamp(216px, 43dvh, 365px);
+  position: relative;
+  isolation: isolate;
+  height: var(--care-scene-height);
+  overflow: hidden;
+  border: 1px solid rgba(var(--care-accent-rgb), .48);
+  border-radius: 16px;
+  background: radial-gradient(ellipse at 50% 63%, rgba(var(--care-accent-rgb), .32), transparent 64%), #172440;
+  user-select: none;
+}
+
+.plant-care__scene::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  background: linear-gradient(180deg, #060d2a19, transparent 45%, #050c2c81);
+  pointer-events: none;
+}
+
+.plant-care__backdrop {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 62%;
+  pointer-events: none;
+}
+
+.plant-care__workbench {
+  position: relative;
+  width: min(460px, 100%, calc(var(--care-scene-height) * 1.46));
+  height: 100%;
+  margin: auto;
+}
+
+.plant-care__pot,
+.plant-care__plant {
+  position: absolute;
+  left: 50%;
+  display: block;
+  object-fit: contain;
+  object-position: center bottom;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.plant-care__pot {
+  z-index: 1;
+  bottom: 5%;
+  width: 58%;
+  height: 42%;
+  filter: drop-shadow(0 13px 8px #070518a8);
+}
+
+.plant-care__plant {
+  z-index: 2;
+  bottom: 35%;
+  width: 58%;
+  height: 54%;
+  filter: drop-shadow(0 6px 6px #0705189f);
+}
+
+.plant-care--bees .plant-care__plant {
+  bottom: 34%;
+  height: 46%;
+}
+
+.plant-care__target {
+  position: absolute;
+  z-index: 4;
+  top: var(--care-y);
+  left: var(--care-x);
+  display: grid;
+  width: clamp(46px, 10vw, 61px);
+  aspect-ratio: 1;
+  place-items: center;
+  padding: 0;
+  border: 2px solid rgba(var(--care-accent-rgb), .76);
+  border-radius: 50%;
+  color: #fff;
+  background: #101738bd;
+  box-shadow: 0 3px 0 #080f2966, inset 0 0 0 2px rgba(var(--care-accent-rgb), .2);
+  cursor: pointer;
+  touch-action: manipulation;
+  transform: translate(-50%, -50%);
+  transition: background .15s, border-color .15s, box-shadow .15s;
+}
+
+.plant-care__target:hover,
+.plant-care__target[data-available="true"] {
+  border-color: #fff0c2;
+  box-shadow: 0 0 14px rgba(var(--care-accent-rgb), .72), inset 0 0 0 2px rgba(var(--care-accent-rgb), .35);
+}
+
+.plant-care__target-check {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  width: 21px;
+  height: 21px;
+  place-items: center;
+  border: 1px solid #efffdf;
+  border-radius: 50%;
+  color: #143726;
+  background: #9aefb0;
+  font-size: .79rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.plant-care__root {
+  color: #e9faff;
+  font-size: 1.08rem;
+  font-weight: 900;
+  text-shadow: 0 2px #06243b;
+}
+
+.plant-care__root[aria-pressed="true"] {
+  border-color: #f1fcff;
+  background: linear-gradient(#2181a4, #123f69);
+  box-shadow: 0 0 20px #51dfffaa, inset 0 0 0 3px #83dcff63;
+}
+
+.plant-care__root[data-done="true"] {
+  border-color: #9aefb0;
+  color: #c2ffd3;
+  background: #215740;
+}
+
+.plant-care__pour {
+  --care-can-flip: 1;
+  --care-can-tilt: -6deg;
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--care-y) - 1%);
+  left: var(--care-x);
+  width: clamp(65px, 19vw, 113px);
+  aspect-ratio: 1;
+  pointer-events: none;
+  transform: translate(-86%, -86%) scaleX(var(--care-can-flip)) rotate(var(--care-can-tilt));
+  transform-origin: 86% 45%;
+  transition: transform .19s, top .19s, left .19s;
+}
+
+.plant-care__pour img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 5px #04152baf);
+}
+
+.plant-care__pour[data-facing-left="true"] { --care-can-flip: -1; }
+.plant-care__pour[data-pouring="true"] { --care-can-tilt: 18deg; }
+
+.plant-care__water-stream {
+  position: absolute;
+  top: 45%;
+  left: 85%;
+  width: 24px;
+  height: 48px;
+  opacity: 0;
+  transform: rotate(-12deg);
+}
+
+.plant-care__pour[data-pouring="true"] .plant-care__water-stream { opacity: 1; }
+
+.plant-care__water-stream i {
+  position: absolute;
+  top: 10px;
+  left: 8px;
+  width: 4px;
+  height: 11px;
+  border-radius: 5px;
+  background: #99faff;
+  box-shadow: 0 0 6px #5de7ff;
+  animation: plant-care-droplet .48s linear infinite;
+  animation-play-state: paused;
+}
+
+.plant-care__pour[data-pouring="true"] i { animation-play-state: running; }
+.plant-care__water-stream i:nth-child(2) { left: 13px; animation-delay: -.16s; }
+.plant-care__water-stream i:nth-child(3) { left: 18px; animation-delay: -.32s; }
+
+@keyframes plant-care-droplet {
+  from { opacity: .25; transform: translateY(0); }
+  40% { opacity: 1; }
+  to { opacity: .18; transform: translateY(35px); }
+}
+
+.plant-care__flower { background: #40304ee3; }
+.plant-care__flower[data-done="true"] { border-color: #a0e6a1; }
+
+.plant-care__flower-head {
+  position: relative;
+  width: 86%;
+  height: 86%;
+  overflow: hidden;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.plant-care__flower-head img {
+  position: absolute;
+  top: -4%;
+  left: -20%;
+  width: 141%;
+  max-width: none;
+  filter: drop-shadow(0 2px 2px #261435);
+}
+
+.plant-care__flower-bee {
+  position: absolute;
+  top: -39%;
+  right: -35%;
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 3px #23122d);
+  animation: plant-care-bee-land .33s ease-out both;
+  pointer-events: none;
+}
+
+@keyframes plant-care-bee-land {
+  from { opacity: 0; transform: translate(19px, -14px) rotate(16deg); }
+  to { opacity: 1; transform: translate(0, 0) rotate(-6deg); }
+}
+
+.plant-care__patch {
+  width: clamp(48px, 11vw, 70px);
+  border: 1px dashed #eee1ffb3;
+  background: #22143c54;
+  box-shadow: none;
+  cursor: grab;
+  touch-action: none;
+}
+
+.plant-care__patch:active { cursor: grabbing; }
+
+.plant-care__patch img {
+  width: 106%;
+  height: 97%;
+  object-fit: contain;
+  opacity: var(--care-dirt);
+  transform: scale(calc(.65 + var(--care-dirt) * .35));
+  transition: opacity .18s ease-out, transform .18s ease-out;
+  pointer-events: none;
+}
+
+.plant-care__patch[data-done="true"] {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  cursor: default;
+}
+
+.plant-care__patch .plant-care__target-check { right: 1px; bottom: 1px; }
+
+.plant-care__brush {
+  position: absolute;
+  z-index: 5;
+  top: var(--care-y);
+  left: var(--care-x);
+  width: clamp(68px, 21vw, 127px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 6px #14102d9d);
+  pointer-events: none;
+  transform: translate(-12%, -86%) rotate(-10deg);
+  transition: transform .18s ease-out, top .18s ease-out, left .18s ease-out;
+}
+
+.plant-care__brush[data-used="true"] { transform: translate(-13%, -86%) rotate(-25deg); }
+
+.plant-care__controls {
+  display: grid;
+  grid-template-columns: minmax(126px, 1fr) auto minmax(106px, 1fr);
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 13px;
+}
+
+.plant-care__status {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  color: #ecf3ff;
+  font-size: clamp(.72rem, 2.5vw, .84rem);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.plant-care__status-meter { display: flex; gap: 4px; }
+
+.plant-care__status-meter span {
+  width: clamp(14px, 5vw, 26px);
+  height: 6px;
+  border: 1px solid rgba(var(--care-accent-rgb), .46);
+  border-radius: 8px;
+  background: rgba(var(--care-accent-rgb), .1);
+}
+
+.plant-care__status-meter span[data-done="true"] {
+  border-color: var(--care-accent);
+  background: var(--care-accent);
+  box-shadow: 0 0 8px rgba(var(--care-accent-rgb), .56);
+}
+
+.plant-care__tools {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(7px, 2vw, 15px);
+  min-width: 0;
+}
+
+.plant-care__action {
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 1px solid var(--care-accent);
+  border-radius: 11px;
+  color: #111c33;
+  background: linear-gradient(180deg, #fff3, transparent), var(--care-accent);
+  box-shadow: inset 0 1px #ffffffa8, 0 3px 0 rgba(var(--care-accent-rgb), .38);
+  font-size: clamp(.78rem, 2.6vw, .94rem);
+  font-weight: 900;
+  line-height: 1.15;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.plant-care__controls > .plant-care__action { grid-column: 3; justify-self: end; }
+.plant-care__action:hover:not(:disabled, [aria-disabled="true"]) { filter: brightness(1.12); }
+
+.plant-care__action:disabled,
+.plant-care__action[aria-disabled="true"] {
+  border-color: #b5c7f05c;
+  color: #d1d9ee;
+  background: #2b3653;
+  box-shadow: none;
+  cursor: default;
+}
+
+.plant-care__action--water {
+  min-width: clamp(73px, 13vw, 99px);
+  touch-action: none;
+  user-select: none;
+}
+
+.plant-care__action--water[data-pouring="true"] {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 5px #12497155;
+}
+
+.plant-care__gauge {
+  display: grid;
+  gap: 4px;
+  color: #f0f9ff;
+  font-size: .73rem;
+  font-weight: 800;
+}
+
+.plant-care__gauge progress {
+  width: clamp(75px, 22vw, 141px);
+  height: 10px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 9px;
+  appearance: none;
+  background: #223958;
+}
+
+.plant-care__gauge progress::-webkit-progress-bar { background: #223958; border-radius: 9px; }
+.plant-care__gauge progress::-webkit-progress-value { background: linear-gradient(90deg, #4c97ff, #81ecff); border-radius: 9px; }
+.plant-care__gauge progress::-moz-progress-bar { background: linear-gradient(90deg, #4c97ff, #81ecff); border-radius: 9px; }
+
+.plant-care__bee-tray {
+  display: flex;
+  gap: 5px;
+  padding: 3px;
+  border: 1px solid #ffdd8a42;
+  border-radius: 11px;
+  background: #1c132ab8;
+}
+
+.plant-care__bee {
+  position: relative;
+  display: grid;
+  width: 45px;
+  height: 44px;
+  place-items: center;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #ffffff10;
+  cursor: grab;
+  touch-action: manipulation;
+}
+
+.plant-care__bee img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+
+.plant-care__bee:hover:not(:disabled),
+.plant-care__bee[aria-pressed="true"] {
+  border-color: var(--care-accent);
+  background: #ffce733d;
+}
+
+.plant-care__bee[aria-pressed="true"] { cursor: grabbing; }
+.plant-care__bee:disabled { cursor: default; }
+.plant-care__bee:disabled img { opacity: .25; }
+
+.plant-care__bee span {
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+  color: #bcf7b9;
+  font-size: .8rem;
+  font-weight: 900;
+}
+
+.plant-care__success .plant-care__scene::after {
+  z-index: 0;
+  background: radial-gradient(ellipse at 50% 48%, #e3ff9e5e, transparent 57%);
+}
+
+.plant-care__success .plant-care__plant {
+  height: 61%;
+  filter: drop-shadow(0 0 14px #f8f79b9c) drop-shadow(0 6px 6px #131d3299);
+  animation: plant-care-bloom .45s ease-out both;
+}
+
+@keyframes plant-care-bloom {
+  from { opacity: .45; transform: translateX(-50%) scale(.8); }
+  to { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+.plant-care__controls--success { display: flex; justify-content: center; }
+
+@media (max-width: 560px) {
+  .plant-care { width: calc(100% - 18px); max-height: calc(100dvh - 18px); border-radius: 19px; }
+  .plant-care__scene { --care-scene-height: clamp(208px, 39dvh, 300px); }
+  .plant-care__controls { grid-template-columns: minmax(0, 1fr) auto; }
+  .plant-care__controls > .plant-care__action { grid-column: 2; }
+  .plant-care__controls[data-has-tools="true"] .plant-care__tools { grid-row: 1; grid-column: 1 / -1; }
+  .plant-care__controls[data-has-tools="true"] .plant-care__status,
+  .plant-care__controls[data-has-tools="true"] > .plant-care__action { grid-row: 2; }
+}
+
+@media (max-height: 500px) {
+  .plant-care { padding-top: 10px; padding-bottom: 10px; }
+  .plant-care__header { margin-bottom: 8px; }
+  .plant-care__scene { --care-scene-height: clamp(141px, 48dvh, 220px); }
+  .plant-care__controls { margin-top: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plant-care *,
+  .plant-care *::before,
+  .plant-care *::after { animation: none !important; transition: none !important; }
+}
+
+.motion-reduced .plant-care *,
+.motion-reduced .plant-care *::before,
+.motion-reduced .plant-care *::after { animation: none !important; transition: none !important; }

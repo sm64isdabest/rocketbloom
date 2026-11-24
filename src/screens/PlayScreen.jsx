@@ -48,7 +48,7 @@ export function PlayScreen({ planetId, stageId, mode, controlMode, reducedMotion
           onEngineRef={handleEngine}
         />
       </div>
-      {showHud ? <Hud snapshot={snapshot} endless={mode === "endless"} onPause={onPause} /> : null}
+      {showHud ? <Hud snapshot={snapshot} endlessIcon={mode === "endless" ? session.planet.endlessIcon : null} onPause={onPause} /> : null}
       {introducing ? (
         <div className="flight-intro" role="status">
           <img className="flight-intro__planet" src={`${APP_BASE}assets/ui/planets/${planetId}-icon.webp`} alt="" />

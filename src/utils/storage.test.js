@@ -254,11 +254,12 @@ test("migra crescimento existente a partir das fases já concluídas", () => {
     completedStageIds: ["earth-1", "earth-2", "mars-1"],
     rescuedPlantIds: ["victoria-amazonica"],
     plantGrowthStages: { "victoria-amazonica": 1 },
+    laboratoryNotices: undefined,
   };
   const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
   const loaded = loadProgress(storage);
   assert.deepEqual(loaded.progress.rescuedPlantIds.sort(), ["mars-lichen", "victoria-amazonica"]);
-  assert.equal(loaded.progress.plantGrowthStages["victoria-amazonica"], 2);
+  assert.equal(loaded.progress.plantGrowthStages["victoria-amazonica"], 1);
   assert.equal(loaded.progress.plantGrowthStages["mars-lichen"], 0);
 });
 
@@ -268,12 +269,29 @@ test("um save antigo libera Marte ao carregar três fases da Terra concluídas",
     coins: 80,
     completedStageIds: ["earth-1", "earth-2", "earth-3", "earth-4"],
     endlessHighScores: { earth: 725, mars: -10, unknown: 100 },
+    laboratoryNotices: undefined,
   };
   const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
   const { progress } = loadProgress(storage);
   assert.deepEqual(progress.unlockedPlanetIds, ["earth", "mars"]);
   assert.deepEqual(progress.completedStageIds, ["earth-1", "earth-2", "earth-3"]);
   assert.deepEqual(progress.endlessHighScores, { earth: 725 });
-  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 4);
+  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 2);
   assert.equal(progress.coins, 80);
+});
+
+test("recarregar um perfil novo preserva uma atividade sorteada e o estágio atual", () => {
+  const storage = memoryStorage();
+  const profile = {
+    ...createDefaultProgress(),
+    completedStageIds: ["earth-1", "earth-2", "earth-3"],
+    plantGrowthStages: { "victoria-amazonica": 0 },
+    laboratoryNotices: ["earth"],
+    laboratoryActivities: { "earth-2": "clean" },
+  };
+  assert.equal(saveProgress(profile, storage).ok, true);
+  const { progress } = loadProgress(storage);
+  assert.deepEqual(progress.laboratoryNotices, ["earth"]);
+  assert.deepEqual(progress.laboratoryActivities, { "earth-2": "clean" });
+  assert.equal(progress.plantGrowthStages["victoria-amazonica"], 0);
 });

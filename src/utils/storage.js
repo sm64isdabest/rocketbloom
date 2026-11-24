@@ -1,9 +1,11 @@
 import { AUDIO, PROGRESS_VERSION, STORAGE_KEY } from "../game/config/gameConfig.js";
 import { getCampaignUnlocks, PLANETS } from "../game/data/planets.js";
-import { getPlantGrowthIndex, PLANTS } from "../game/data/plants.js";
+import { PLANTS } from "../game/data/plants.js";
+import { LABORATORY_GAME_IDS } from "./laboratoryProgress.js";
 import { createGoldStorage } from "./goldStorage.js";
 
 const campaignStageIds = new Set(PLANETS.flatMap(({ stages }) => stages.map(({ id }) => id)));
+const laboratoryStageIds = new Set(PLANETS.flatMap(({ stages }) => stages.slice(1).map(({ id }) => id)));
 
 export function createDefaultProgress() {
   return {
@@ -18,6 +20,8 @@ export function createDefaultProgress() {
     endlessHighScores: {},
     rescuedPlantIds: [],
     plantGrowthStages: {},
+    laboratoryNotices: [],
+    laboratoryActivities: {},
     sustainabilityPoints: 0,
     processedRunIds: [],
     settings: {
@@ -93,6 +97,12 @@ export function loadProgress(providedStorage) {
     const endlessHighScores = Object.fromEntries(Object.entries(sanitizeProgressMap(parsed.endlessHighScores, Number.MAX_SAFE_INTEGER))
       .filter(([id]) => PLANETS.some((planet) => planet.id === id))
       .map(([id, score]) => [id, Math.floor(score)]));
+    const currentLaboratory = Array.isArray(parsed.laboratoryNotices);
+    const storedActivities = parsed.laboratoryActivities;
+    const laboratoryActivities = storedActivities && typeof storedActivities === "object" && !Array.isArray(storedActivities)
+      ? Object.fromEntries(Object.entries(storedActivities)
+        .filter(([id, game]) => laboratoryStageIds.has(id) && completedStageIds.includes(id) && LABORATORY_GAME_IDS.includes(game)))
+      : {};
 
     return {
       progress: {
@@ -108,7 +118,11 @@ export function loadProgress(providedStorage) {
           : [],
         stageProgress,
         endlessHighScores,
-        plantGrowthStages: migratePlantGrowth(parsed),
+        plantGrowthStages: migratePlantGrowth(parsed, currentLaboratory),
+        laboratoryNotices: currentLaboratory
+          ? [...new Set(parsed.laboratoryNotices.filter((id) => PLANETS.some((planet) => planet.id === id)))]
+          : [],
+        laboratoryActivities,
         rescuedPlantIds: migrateRescuedPlants(parsed),
         sustainabilityPoints: Number.isFinite(parsed.sustainabilityPoints) && parsed.sustainabilityPoints >= 0
           ? parsed.sustainabilityPoints : 0,
@@ -151,14 +165,19 @@ function migrateRescuedPlants(progress) {
   return [...rescued].filter((id) => PLANTS.some((plant) => plant.id === id));
 }
 
-function migratePlantGrowth(progress) {
-  const stored = sanitizeProgressMap(progress.plantGrowthStages, 4);
+function migratePlantGrowth(progress, currentLaboratory) {
+  const saved = sanitizeProgressMap(progress.plantGrowthStages, currentLaboratory ? 2 : 4);
+  const stored = {};
   for (const planet of PLANETS) {
-    const plant = PLANTS.find((entry) => entry.id === planet.plantId);
+    const id = planet.plantId;
+    if (currentLaboratory) {
+      if (Object.hasOwn(saved, id)) stored[id] = Math.floor(saved[id]);
+      continue;
+    }
+    // O laboratório anterior tinha cinco artes e avançava a planta após cada voo.
+    const legacyGrowth = Math.round((saved[id] ?? 0) / 2);
     const stageIndex = planet.stages.findLastIndex((stage) => progress.completedStageIds.includes(stage.id));
-    if (!plant || stageIndex < 0) continue;
-    const earnedStage = getPlantGrowthIndex(plant, stageIndex, planet.stages.length);
-    stored[plant.id] = Math.max(stored[plant.id] ?? 0, earnedStage);
+    if (stageIndex >= 0 || Object.hasOwn(saved, id)) stored[id] = Math.max(legacyGrowth, stageIndex);
   }
   return stored;
 }
