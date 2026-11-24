@@ -233,7 +233,7 @@ function BeeCare({ onFinish, ...scene }) {
               }}
             >
               <span className="plant-care__flower-head" aria-hidden="true">
-                <img src={`${labAssets}plant-05.webp`} alt="" draggable="false" />
+                <img src={`${labAssets}plant-05.png`} alt="" draggable="false" />
               </span>
               {occupied && <img className="plant-care__flower-bee" src={`${careAssets}bee.webp`} alt="" draggable="false" />}
               {occupied && <GameIcon name="check" className="plant-care__target-check" />}

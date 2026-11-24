@@ -12,7 +12,7 @@ export const PROJECT_IMAGES = [
   "/assets/laboratory/arrow-left.webp",
   "/assets/laboratory/arrow-right.webp",
   ...PLANTS.flatMap(({ growthArt }) =>
-    growthArt.map((id) => `/assets/laboratory/plant-${String(id).padStart(2, "0")}.webp`),
+    growthArt.map((id) => `/assets/laboratory/plant-${String(id).padStart(2, "0")}.png`),
   ),
   ...["irrigation", "pollination", "cleaning", "can", "bee", "dirt", "brush", "pot"].map(
     (file) => `/assets/laboratory/care/${file}.webp`,
@@ -34,6 +34,7 @@ export const PROJECT_IMAGES = [
   "/assets/backgrounds/marte_background.webp",
   "/assets/backgrounds/marte_background_seamless.webp",
   "/assets/backgrounds/marte_new_seamless.webp",
+  "/assets/backgrounds/marte-red-seamless.png",
   "/assets/backgrounds/netuno_background.webp",
   "/assets/backgrounds/netuno_background_seamless.webp",
   "/assets/backgrounds/saturno_background.webp",

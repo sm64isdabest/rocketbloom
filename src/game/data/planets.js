@@ -73,7 +73,7 @@ function buildStages(planet) {
     return {
       id: `${planet.id}-${stageNumber}`,
       planetId: planet.id,
-      name: `Fase ${stageNumber}`,
+      name: `Nível ${stageNumber}`,
       difficulty: mathDifficulty,
       durationMs: CAMPAIGN_CONFIG.baseStageDurationMs + index * CAMPAIGN_CONFIG.durationIncreasePerStageMs,
       speedMultiplier: interpolate(difficulty.speedMultiplier),

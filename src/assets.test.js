@@ -21,7 +21,11 @@ function hasWebpAlpha(image) {
   return false;
 }
 
-test("todas as imagens usam WebP e os sprites preservam a transparência", () => {
+function hasPngAlpha(image) {
+  return image.toString("hex", 0, 8) === "89504e470d0a1a0a" && [4, 6].includes(image[25]);
+}
+
+test("os modelos de crescimento e o terreno de Marte usam PNG transparente", () => {
   const imageFiles = imageDirectories.flatMap(getImageFiles);
   assert.ok(imageFiles.length > 0, "as imagens WebP devem existir");
 
@@ -44,16 +48,23 @@ test("todas as imagens usam WebP e os sprites preservam a transparência", () =>
   }
 
   const levelSprites = imageFiles.filter((path) => path.includes("/levels/"));
-  const plantSprites = imageFiles.filter((path) => path.includes("/laboratory/plant-"));
+  const plantSprites = imageFiles.filter((path) => /\/laboratory\/plant-\d+\.png$/i.test(path));
+  const transparentPngs = imageFiles.filter((path) => path.endsWith("marte-red-seamless.png") || plantSprites.includes(path));
   assert.equal(levelSprites.length, 12, "cada fase deve ter sua arte");
   assert.equal(plantSprites.length, 12, "cada planeta deve ter três sprites de crescimento");
+  assert.equal(transparentPngs.length, 13, "os 12 estágios e o terreno recortado devem ser PNG");
 
   for (const path of imageFiles) {
-    assert.match(path, /\.webp$/i, `${path} deve usar extensão WebP`);
     const image = readFileSync(path);
-    assert.equal(image.toString("ascii", 0, 4), "RIFF", `${path} deve ter assinatura RIFF`);
-    assert.equal(image.toString("ascii", 8, 12), "WEBP", `${path} deve ter assinatura WebP`);
-    if (levelSprites.includes(path) || plantSprites.includes(path)
+    if (transparentPngs.includes(path)) {
+      assert.match(path, /\.png$/i);
+      assert.ok(hasPngAlpha(image), `${path} deve ser PNG RGBA`);
+    } else {
+      assert.match(path, /\.webp$/i, `${path} deve continuar em WebP`);
+      assert.equal(image.toString("ascii", 0, 4), "RIFF", `${path} deve ter assinatura RIFF`);
+      assert.equal(image.toString("ascii", 8, 12), "WEBP", `${path} deve ter assinatura WebP`);
+    }
+    if (levelSprites.includes(path)
       || transparentLayers.some((filename) => path.endsWith(`/${filename}`))) {
       assert.ok(hasWebpAlpha(image), `${path} deve preservar o canal alfa`);
     }

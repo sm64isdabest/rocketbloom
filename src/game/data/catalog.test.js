@@ -10,6 +10,7 @@ test("catálogo de dados está consistente", () => {
   assert.equal(PLANETS.reduce((count, planet) => count + planet.stages.length, 0), 12);
   for (const planet of PLANETS) {
     assert.deepEqual(planet.stages.map((stage) => stage.id), Array.from({ length: 3 }, (_, index) => `${planet.id}-${index + 1}`));
+    assert.deepEqual(planet.stages.map((stage) => stage.name), ["Nível 1", "Nível 2", "Nível 3"]);
     assert.equal(planet.endlessStage.durationMs, Infinity);
   }
 });
