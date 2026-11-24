@@ -3,8 +3,8 @@ const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const BACKGROUND_FILES = {
   earth: { file: "terra_amazonia_seamless.webp", sourceHeight: 941 },
   mars: { file: "marte_new_seamless.webp", sourceHeight: 855 },
-  saturn: { file: "saturno_background_seamless.jpg", sourceHeight: 941 },
-  neptune: { file: "netuno_background_seamless.jpg", sourceHeight: 941 },
+  saturn: { file: "saturno_background_seamless.webp", sourceHeight: 941 },
+  neptune: { file: "netuno_background_seamless.webp", sourceHeight: 941 },
 };
 const backgroundImages = new Map();
 let leafImage;

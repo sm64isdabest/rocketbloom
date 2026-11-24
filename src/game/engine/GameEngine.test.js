@@ -504,7 +504,7 @@ test("velocidade zerada causa derrota e uma fase concluída causa vitória", () 
 });
 
 test("a vitória congela a partida e o foguete sai pelo topo antes de liberar o resultado", () => {
-  withCanvasEnvironment(({ canvas, scheduled, strokeRects, translations }) => {
+  withCanvasEnvironment(({ canvas, scheduled, strokeRects, translations, drawnImages }) => {
     const events = [];
     const engine = new GameEngine(engineOptions(canvas, {
       onOutcome: (outcome, snapshot, presentation) => events.push([outcome, snapshot, presentation]),
@@ -523,17 +523,66 @@ test("a vitória congela a partida e o foguete sai pelo topo antes de liberar o 
 
     translations.length = 0;
     strokeRects.length = 0;
-    tickFor(engine, 500);
-    assert.ok(translations.some(([x, y]) => x === 0 && y < -20), "o foguete sobe no cenário da partida");
+    drawnImages.length = 0;
+    tickFor(engine, 900);
+    assert.equal(translations.some(([x, y]) => x === 0 && y < 0), false, "o foguete carrega antes de subir");
     assert.equal(strokeRects.some(({ color }) => color === "#fb7185"), false, "a decolagem não deixa uma hitbox separada no cenário");
+    assert.equal(drawnImages.some(({ src }) => src?.includes("/lasers/")), false, "a rota da decolagem fica livre de lasers");
     assert.equal(events.length, 1, "a tela de resultado espera a decolagem");
-    assert.equal(engine.getSnapshot().elapsedMs, snapshot.elapsedMs);
 
-    tickFor(engine, 800);
-    assert.ok(translations.some(([x, y]) => x === 0 && y < -engine.rocket.y - engine.rocket.height));
+    const lastRise = () => -translations.findLast(([x]) => x === 0)[1];
+    tickFor(engine, 600);
+    const firstRise = lastRise();
+    assert.ok(firstRise > 20, "o foguete sobe no cenário da partida");
+    tickFor(engine, 600);
+    assert.ok(lastRise() - firstRise > firstRise, "o foguete acelera ao subir");
+    tickFor(engine, 700);
+    assert.ok(lastRise() > engine.rocket.y + engine.rocket.height);
+    assert.equal(events.length, 1, "o resultado espera depois que o foguete sai da tela");
+    assert.deepEqual(engine.getSnapshot(), snapshot, "a decolagem não altera as estatísticas da partida");
+
+    tickFor(engine, 350);
     assert.deepEqual(events.map(([type]) => type), ["victory", "launch-complete"]);
     assert.equal(scheduled.size, 0);
+    tickFor(engine, 300);
+    assert.equal(events.length, 2);
     engine.stop();
+  });
+});
+
+test("a decolagem acompanha o tempo real em frames lentos", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    let completed = 0;
+    const engine = new GameEngine(engineOptions(canvas, { onVictoryLaunchComplete: () => { completed += 1; } }));
+    engine.finish("victory");
+    engine.tick(0.05, 0.9);
+    assert.equal(engine.victoryLaunchMs, 900);
+    engine.tick(0.05, 1.9);
+    assert.equal(completed, 0);
+    engine.tick(0.05, 0.35);
+    assert.equal(completed, 1);
+    engine.stop();
+  });
+});
+
+test("trocar de aba durante a decolagem encerra a animação uma vez", () => {
+  withCanvasEnvironment(({ canvas, scheduled }) => {
+    const previousDocument = globalThis.document;
+    globalThis.document = { visibilityState: "visible", addEventListener() {}, removeEventListener() {} };
+    try {
+      let completed = 0;
+      const engine = new GameEngine(engineOptions(canvas, { onVictoryLaunchComplete: () => { completed += 1; } }));
+      engine.start();
+      engine.finish("victory");
+      globalThis.document.visibilityState = "hidden";
+      engine.onVisibilityChange();
+      engine.onVisibilityChange();
+      assert.equal(completed, 1);
+      assert.equal(scheduled.size, 0);
+      engine.stop();
+    } finally {
+      globalThis.document = previousDocument;
+    }
   });
 });
 
@@ -726,6 +775,44 @@ test("a velocidade recupera o valor-base depois da janela e da recuperação do 
     assert.equal(engine.getSnapshot().speed, 98, "a recuperação gradual continua perceptível a meio do percurso");
     tickFor(engine, 600);
     assert.equal(engine.getSnapshot().speed, 120, "a velocidade retorna ao valor atualizado da partida");
+    engine.stop();
+  });
+});
+
+test("alerta de baixa velocidade entra a 60 km/h e só sai quando alcança 70 km/h", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const snapshots = [];
+    const engine = new GameEngine(engineOptions(canvas, { onHud: (snapshot) => snapshots.push(snapshot) }));
+    for (const [speed, alert] of [[65, false], [60, true], [65, true], [70, false], [65, false]]) {
+      engine.setDebugSpeed(speed);
+      assert.equal(snapshots.at(-1).lowSpeedAlert, alert);
+    }
+    engine.stop();
+  });
+});
+
+test("alerta de baixa velocidade acompanha a recuperação do impacto depois do aviso de colisão", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const collide = () => {
+      engine.obstacles.push(new Obstacle({ id: "asteroid", x: engine.rocket.x, y: engine.rocket.y, width: 44, height: 44 }));
+      engine.tick(0.016);
+    };
+
+    collide();
+    assert.ok(engine.getSnapshot().collisionAlertRemainingMs > 0);
+    assert.equal(engine.getSnapshot().lowSpeedAlert, false, "um impacto acima de 60 km/h conserva o HUD normal");
+
+    engine.setDebugSpeed(100);
+    collide();
+    assert.equal(engine.getSnapshot().speed, 56);
+    assert.equal(engine.getSnapshot().lowSpeedAlert, true);
+    tickFor(engine, 1600);
+    assert.equal(engine.getSnapshot().collisionAlertRemainingMs, 0);
+    assert.equal(engine.getSnapshot().lowSpeedAlert, true);
+    tickFor(engine, 1600);
+    assert.equal(engine.getSnapshot().speed, 100);
+    assert.equal(engine.getSnapshot().lowSpeedAlert, false);
     engine.stop();
   });
 });

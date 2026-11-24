@@ -1,15 +1,17 @@
 import { useCallback, useRef, useState } from "react";
 import { GameCanvas } from "../components/GameCanvas.jsx";
 import { Hud } from "../components/Hud.jsx";
+import { getHudAssetUrl } from "../components/hudModel.js";
 import { useGameSession } from "../hooks/useGameSession.js";
 
 const APP_BASE = import.meta.env.BASE_URL;
 
 export function PlayScreen({ planetId, stageId, mode, controlMode, reducedMotion, showHitboxes = false, paused, showHud = true,
-  introducing, launching, onPause, onHudRef, onOutcome, onVictoryLaunchComplete, onEngineRef }) {
+  introducing, launching, muted, onToggleMute, onPause, onHudRef, onOutcome, onVictoryLaunchComplete, onEngineRef }) {
   const session = useGameSession(planetId, stageId, mode);
   const [snapshot, setSnapshot] = useState(null);
   const engineRef = useRef(null);
+  const lowSpeedAlert = showHud && !paused && snapshot?.lowSpeedAlert;
 
   const handleHud = useCallback(
     (next) => {
@@ -48,7 +50,17 @@ export function PlayScreen({ planetId, stageId, mode, controlMode, reducedMotion
           onEngineRef={handleEngine}
         />
       </div>
-      {showHud ? <Hud snapshot={snapshot} endlessIcon={mode === "endless" ? session.planet.endlessIcon : null} onPause={onPause} /> : null}
+      {lowSpeedAlert ? (
+        <>
+          <div className="flight-low-speed-vignette" aria-hidden="true" />
+          <div className="flight-low-speed" role="status">
+            <img src={getHudAssetUrl("warning-alert.webp", APP_BASE)} alt="" />
+            <strong>Velocidade baixa</strong>
+          </div>
+        </>
+      ) : null}
+      {showHud ? <Hud snapshot={snapshot} endlessIcon={mode === "endless" ? session.planet.endlessIcon : null}
+        muted={muted} onToggleMute={onToggleMute} onPause={onPause} /> : null}
       {introducing ? (
         <div className="flight-intro" role="status">
           <img className="flight-intro__planet" src={`${APP_BASE}assets/ui/planets/${planetId}-icon.webp`} alt="" />

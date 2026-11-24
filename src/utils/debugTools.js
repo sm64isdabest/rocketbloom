@@ -1,16 +1,13 @@
 import { getCampaignUnlocks, PLANETS } from "../game/data/planets.js";
 
-const CURRENCIES = new Set(["coins", "money"]);
-
 export function isDebugShortcut(pressedKeys) {
   const keys = new Set([...pressedKeys].map((key) => String(key).toLowerCase()));
   return keys.has("q") && keys.has("p");
 }
 
-export function addDebugCurrency(progress, currency, amount) {
-  if (!CURRENCIES.has(currency)) throw new Error("Recurso de debug inválido.");
+export function addDebugCoins(progress, amount) {
   const safeAmount = Number.isFinite(amount) ? amount : 0;
-  return { ...progress, [currency]: Math.max(0, (progress[currency] ?? 0) + safeAmount) };
+  return { ...progress, coins: Math.max(0, (progress.coins ?? 0) + safeAmount) };
 }
 
 export function unlockAllPlanets(progress) {

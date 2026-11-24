@@ -8,8 +8,8 @@ const pauseAssetsDirectory = fileURLToPath(new URL("../../public/assets/ui/pause
 const pauseStyles = readFileSync(fileURLToPath(new URL("../styles/index.css", import.meta.url)), "utf8");
 
 test("pause artwork URLs preserve the app base path with or without a trailing slash", () => {
-  assert.equal(getPauseAssetUrl("return-portal.png", "/rocketbloom/"), "/rocketbloom/assets/ui/pause/return-portal.png");
-  assert.equal(getPauseAssetUrl("return-portal.png", "/rocketbloom"), "/rocketbloom/assets/ui/pause/return-portal.png");
+  assert.equal(getPauseAssetUrl("return-portal.webp", "/rocketbloom/"), "/rocketbloom/assets/ui/pause/return-portal.webp");
+  assert.equal(getPauseAssetUrl("return-portal.webp", "/rocketbloom"), "/rocketbloom/assets/ui/pause/return-portal.webp");
 });
 
 test("pause actions map the door, green arrow, and gear to quit, resume, and settings", () => {
@@ -18,14 +18,14 @@ test("pause actions map the door, green arrow, and gear to quit, resume, and set
   const onSettings = () => {};
 
   assert.deepEqual(getPauseActions({ onQuit, onResume, onSettings }), [
-    { id: "quit", label: "Sair da fase", asset: "return-portal.png", onClick: onQuit },
+    { id: "quit", label: "Sair da fase", asset: "return-portal.webp", onClick: onQuit },
     { id: "resume", label: "Continuar", asset: "continue.webp", onClick: onResume },
     { id: "settings", label: "Configurações", asset: "settings.webp", onClick: onSettings },
   ]);
 });
 
 test("the supplied pause artwork exists in the public assets directory", () => {
-  for (const filename of ["return-portal.png", "continue.webp", "settings.webp", "rocket-newspaper.webp"]) {
+  for (const filename of ["return-portal.webp", "continue.webp", "settings.webp", "rocket-newspaper.webp"]) {
     assert.equal(existsSync(`${pauseAssetsDirectory}/${filename}`), true, `${filename} must exist in public/assets/ui/pause`);
   }
   assert.equal(existsSync(`${pauseAssetsDirectory}/leave.webp`), false, "the old door artwork must be removed");

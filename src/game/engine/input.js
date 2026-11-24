@@ -52,7 +52,7 @@ export function createInputController(target, controlMode = "pointer", prepareTa
 
   const onKeyDown = (event) => {
     if (!enabled) return;
-    if (["ArrowLeft", "ArrowRight", "Escape", " "].includes(event.key)) event.preventDefault();
+    if (["ArrowLeft", "ArrowRight", "Escape"].includes(event.key)) event.preventDefault();
     state.keys.add(event.key);
   };
 

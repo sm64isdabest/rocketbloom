@@ -6,6 +6,7 @@ let menuAudioActive = false;
 let gameplayMusic = null;
 let menuMusic = null;
 let masterGain = null;
+let victoryLaunchAudio = null;
 const activeOscillators = new Set();
 let preferences = {
   music: true,
@@ -86,6 +87,68 @@ function playSequence(notes, duration, wave, volume, spacing = duration * 0.82) 
   notes.forEach((frequency, index) => playTone(frequency, startAt + index * spacing, duration, wave, volume));
 }
 
+function stopVictoryLaunchSound() {
+  if (!victoryLaunchAudio) return;
+  const { source } = victoryLaunchAudio;
+  victoryLaunchAudio = null;
+  source.stop(audioContext.currentTime);
+}
+
+export function playVictoryLaunchSound({ chargeMs, ascentMs, tailMs }) {
+  pauseGameAudio();
+  if (preferences.muteAll || !preferences.soundEffects || preferences.soundEffectsVolume <= AUDIO.minVolume) return;
+  const context = getContext();
+  if (!context) return;
+  if (context.state === "suspended") context.resume().catch(() => {});
+
+  const startAt = context.currentTime + 0.015;
+  const ignitionAt = startAt + chargeMs / 1000;
+  const exitAt = ignitionAt + ascentMs / 1000;
+  const endAt = exitAt + tailMs / 1000;
+  const noise = context.createBuffer(1, context.sampleRate, context.sampleRate);
+  const samples = noise.getChannelData(0);
+  for (let index = 0; index < samples.length; index += 1) {
+    samples[index] = Math.random() * 2 - 1;
+  }
+
+  const source = context.createBufferSource();
+  source.buffer = noise;
+  source.loop = true;
+  const filter = context.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.Q.value = 0.8;
+  filter.frequency.setValueAtTime(95, startAt);
+  filter.frequency.exponentialRampToValueAtTime(310, ignitionAt);
+  filter.frequency.exponentialRampToValueAtTime(1250, ignitionAt + 0.2);
+  filter.frequency.exponentialRampToValueAtTime(570, exitAt);
+  filter.frequency.exponentialRampToValueAtTime(140, endAt);
+
+  const envelope = context.createGain();
+  envelope.gain.setValueAtTime(0.0001, startAt);
+  envelope.gain.exponentialRampToValueAtTime(0.14, startAt + 0.12);
+  envelope.gain.exponentialRampToValueAtTime(0.48, ignitionAt);
+  envelope.gain.exponentialRampToValueAtTime(1.05, ignitionAt + 0.16);
+  envelope.gain.exponentialRampToValueAtTime(0.24, exitAt);
+  envelope.gain.exponentialRampToValueAtTime(0.0001, endAt);
+
+  const volume = context.createGain();
+  volume.gain.setValueAtTime(scaleAudioVolume(1, preferences.soundEffectsVolume), context.currentTime);
+  source.connect(filter);
+  filter.connect(envelope);
+  envelope.connect(volume);
+  volume.connect(masterGain ?? context.destination);
+  victoryLaunchAudio = { source, volume };
+  source.onended = () => {
+    if (victoryLaunchAudio?.source === source) victoryLaunchAudio = null;
+    source.disconnect();
+    filter.disconnect();
+    envelope.disconnect();
+    volume.disconnect();
+  };
+  source.start(startAt);
+  source.stop(endAt);
+}
+
 function stopMusic() {
   gameplayMusic?.pause();
 }
@@ -150,6 +213,13 @@ export function configureAudio(nextPreferences = {}) {
     }
     activeOscillators.clear();
   }
+  if (victoryLaunchAudio) {
+    if (preferences.muteAll || !preferences.soundEffects || preferences.soundEffectsVolume <= AUDIO.minVolume) {
+      stopVictoryLaunchSound();
+    } else {
+      victoryLaunchAudio.volume.gain.setValueAtTime(scaleAudioVolume(1, preferences.soundEffectsVolume), audioContext.currentTime);
+    }
+  }
   if (gameplayMusic) gameplayMusic.volume = scaleAudioVolume(1, preferences.musicVolume);
   if (menuMusic) menuMusic.volume = scaleAudioVolume(1, preferences.musicVolume);
   if (preferences.muteAll || !preferences.music || preferences.musicVolume <= AUDIO.minVolume) {
@@ -168,6 +238,7 @@ export function startGameAudio() {
 export function pauseGameAudio() {
   gameAudioActive = false;
   stopMusic();
+  stopVictoryLaunchSound();
 }
 
 export function startMenuAudio() {

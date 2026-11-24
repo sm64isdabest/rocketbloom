@@ -132,7 +132,7 @@ export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, onSet
       finish();
     }}>
       <img className="laboratory-scene__background gold-storage__background"
-        src={`${APP_BASE}assets/laboratory/laboratory-background-clean.png`} alt="" />
+        src={`${APP_BASE}assets/laboratory/laboratory-background-clean.webp`} alt="" />
       <Decorations total={total} />
       {animating ? <canvas ref={canvasRef} className="gold-storage__flights" aria-hidden="true" /> : null}
 

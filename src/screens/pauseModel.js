@@ -1,4 +1,4 @@
-export const RETURN_ICON_FILE = "return-portal.png";
+export const RETURN_ICON_FILE = "return-portal.webp";
 
 export function getPauseAssetUrl(filename, basePath = import.meta.env?.BASE_URL ?? "/") {
   const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;

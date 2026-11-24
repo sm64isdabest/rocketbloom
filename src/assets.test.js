@@ -3,65 +3,58 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const assetsDirectory = fileURLToPath(new URL("../public/assets/", import.meta.url));
+const imageDirectories = ["../public/assets/", "./assets/", "../artwork/", "../docs/demos/"]
+  .map((path) => fileURLToPath(new URL(path, import.meta.url)));
 
-function getAssetFiles(directory) {
+function getImageFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = `${directory}/${entry.name}`;
-    return entry.isDirectory() ? getAssetFiles(path) : [path];
+    if (entry.isDirectory()) return getImageFiles(path);
+    return /\.(webp|png|jpe?g|gif|bmp|tiff?|avif|svg|ico)$/i.test(path) ? [path] : [];
   });
 }
 
-test("assets raster usam WebP", () => {
-  const assetFiles = getAssetFiles(assetsDirectory);
-  const levelSprites = assetFiles.filter((path) => path.includes("/levels/") && /\.png$/i.test(path));
-  assert.equal(levelSprites.length, 12, "cada fase deve ter seu PNG original");
-  for (const path of levelSprites) {
-    const png = readFileSync(path);
-    assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", `${path} deve ser um PNG válido`);
-    assert.equal(png[25], 6, `${path} deve preservar o canal alfa`);
+function hasWebpAlpha(image) {
+  const chunk = image.toString("ascii", 12, 16);
+  if (chunk === "VP8X") return Boolean(image[20] & 0x10);
+  if (chunk === "VP8L") return Boolean(image.readUInt32LE(21) & (1 << 28));
+  return false;
+}
+
+test("todas as imagens usam WebP e os sprites preservam a transparência", () => {
+  const imageFiles = imageDirectories.flatMap(getImageFiles);
+  assert.ok(imageFiles.length > 0, "as imagens WebP devem existir");
+
+  const transparentLayers = [
+    "laboratory-dome-back.webp",
+    "laboratory-dome-front.webp",
+    "laboratory-equipment-base.webp",
+    "return-portal.webp",
+  ];
+  const requiredImages = [
+    "laboratory-background-clean.webp",
+    "marte_background_seamless.webp",
+    "netuno_background_seamless.webp",
+    "saturno_background_seamless.webp",
+    ...transparentLayers,
+  ];
+  for (const filename of requiredImages) {
+    assert.ok(imageFiles.some((path) => path.endsWith(`/${filename}`)), `${filename} deve existir`);
   }
 
-  const plantSprites = assetFiles.filter((path) => path.includes("/laboratory/plant-") && /\.png$/i.test(path));
+  const levelSprites = imageFiles.filter((path) => path.includes("/levels/"));
+  const plantSprites = imageFiles.filter((path) => path.includes("/laboratory/plant-"));
+  assert.equal(levelSprites.length, 12, "cada fase deve ter sua arte");
   assert.equal(plantSprites.length, 12, "cada planeta deve ter três sprites de crescimento");
-  for (const path of plantSprites) {
-    const png = readFileSync(path);
-    assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", `${path} deve ser um PNG válido`);
-    assert.equal(png[25], 6, `${path} deve preservar o canal alfa`);
-  }
 
-  const laboratoryCompositionSprites = assetFiles.filter((path) => path.includes("/laboratory/laboratory-") && /\.png$/i.test(path));
-  assert.equal(laboratoryCompositionSprites.length, 4, "o laboratório deve ter fundo, base e duas camadas transparentes da cúpula");
-  for (const path of laboratoryCompositionSprites) {
-    const png = readFileSync(path);
-    assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", `${path} deve ser um PNG válido`);
-    assert.equal(png[25], 6, `${path} deve preservar o canal alfa`);
-  }
-
-  const seamlessBackgrounds = assetFiles.filter((path) => path.includes("/backgrounds/") && path.endsWith("_seamless.jpg"));
-  assert.equal(seamlessBackgrounds.length, 3);
-  for (const path of seamlessBackgrounds) {
-    const jpeg = readFileSync(path);
-    assert.equal(jpeg[0], 0xff, `${path} deve ter assinatura JPEG válida`);
-    assert.equal(jpeg[1], 0xd8, `${path} deve ter assinatura JPEG válida`);
-  }
-
-  const approvedPng = assetFiles.filter((path) => path.endsWith("/return-portal.png"));
-  assert.equal(approvedPng.length, 1);
-  for (const path of approvedPng) {
-    assert.equal(readFileSync(path).subarray(0, 8).toString("hex"), "89504e470d0a1a0a", `${path} deve ser PNG válido`);
-  }
-
-  const rasterAssets = assetFiles.filter((path) => /\.(png|jpe?g|gif|bmp|tiff?|avif)$/i.test(path)
-    && !levelSprites.includes(path) && !plantSprites.includes(path) && !laboratoryCompositionSprites.includes(path)
-    && !seamlessBackgrounds.includes(path) && !approvedPng.includes(path));
-  assert.deepEqual(rasterAssets, [], "os demais assets raster devem usar WebP");
-
-  const webpAssets = assetFiles.filter((path) => path.endsWith(".webp"));
-  assert.ok(webpAssets.length > 0, "assets WebP devem existir");
-  for (const path of webpAssets) {
-    const signature = readFileSync(path).subarray(0, 12).toString("ascii");
-    assert.equal(signature.slice(0, 4), "RIFF", `${path} deve ter assinatura RIFF`);
-    assert.equal(signature.slice(8, 12), "WEBP", `${path} deve ter assinatura WebP`);
+  for (const path of imageFiles) {
+    assert.match(path, /\.webp$/i, `${path} deve usar extensão WebP`);
+    const image = readFileSync(path);
+    assert.equal(image.toString("ascii", 0, 4), "RIFF", `${path} deve ter assinatura RIFF`);
+    assert.equal(image.toString("ascii", 8, 12), "WEBP", `${path} deve ter assinatura WebP`);
+    if (levelSprites.includes(path) || plantSprites.includes(path)
+      || transparentLayers.some((filename) => path.endsWith(`/${filename}`))) {
+      assert.ok(hasWebpAlpha(image), `${path} deve preservar o canal alfa`);
+    }
   }
 });

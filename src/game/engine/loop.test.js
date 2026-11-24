@@ -66,3 +66,15 @@ test("parar dentro de um tick de vitória não agenda outro frame", () => {
     assert.equal(callbacks.size, 0);
   });
 });
+
+test("o loop oferece tempo real para apresentação e tempo limitado para física", () => {
+  withAnimationFrameMocks(({ fireNext }) => {
+    const frames = [];
+    const loop = createGameLoop((dt, frameSeconds) => frames.push([dt, frameSeconds]));
+    loop.start();
+    fireNext(0);
+    fireNext(150);
+    assert.deepEqual(frames, [[0, 0], [0.05, 0.15]]);
+    loop.stop();
+  });
+});

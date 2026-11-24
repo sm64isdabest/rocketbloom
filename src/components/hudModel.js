@@ -2,6 +2,11 @@ export function getActiveQuestion(snapshot) {
   return snapshot?.question ?? null;
 }
 
+export function getStageProgressPercent(snapshot) {
+  if (!Number.isFinite(snapshot?.stageDurationMs)) return null;
+  return Math.floor(Math.max(0, Math.min(1, snapshot.stageProgress)) * 100);
+}
+
 export function getHudAssetUrl(filename, basePath = "/") {
   const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;
   return `${normalizedBase}assets/ui/${filename}`;

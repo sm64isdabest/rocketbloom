@@ -37,7 +37,7 @@ export function CommandRoomScreen({ progress, onBack, onSettings, decoration, in
 
   return (
     <main className={`laboratory-scene laboratory-scene--${planet.id}`} aria-label="Laboratório orbital">
-      <img className="laboratory-scene__background" src={asset("assets/laboratory/laboratory-background-clean.png")} alt="" aria-hidden="true" />
+      <img className="laboratory-scene__background" src={asset("assets/laboratory/laboratory-background-clean.webp")} alt="" aria-hidden="true" />
       {decoration}
 
       <header className="laboratory-scene__topbar">
@@ -51,8 +51,8 @@ export function CommandRoomScreen({ progress, onBack, onSettings, decoration, in
       </header>
 
       <div className="laboratory-equipment">
-        <img className="laboratory-equipment__base" src={asset("assets/laboratory/laboratory-equipment-base.png")} alt="" aria-hidden="true" />
-        <img className="laboratory-equipment__dome laboratory-equipment__dome--back" src={asset("assets/laboratory/laboratory-dome-back.png")} alt="" aria-hidden="true" />
+        <img className="laboratory-equipment__base" src={asset("assets/laboratory/laboratory-equipment-base.webp")} alt="" aria-hidden="true" />
+        <img className="laboratory-equipment__dome laboratory-equipment__dome--back" src={asset("assets/laboratory/laboratory-dome-back.webp")} alt="" aria-hidden="true" />
 
         <div className={`laboratory-specimen ${plantVisible ? "is-visible" : "is-empty"}`} aria-live="polite" key={`${planet.id}-${growthStage}`}>
           {plantVisible ? (
@@ -65,7 +65,7 @@ export function CommandRoomScreen({ progress, onBack, onSettings, decoration, in
           ) : null}
         </div>
 
-        <img className="laboratory-equipment__dome laboratory-equipment__dome--front" src={asset("assets/laboratory/laboratory-dome-front.png")} alt="" aria-hidden="true" />
+        <img className="laboratory-equipment__dome laboratory-equipment__dome--front" src={asset("assets/laboratory/laboratory-dome-front.webp")} alt="" aria-hidden="true" />
 
         <div className="laboratory-planet-display">
           <img src={asset(`assets/ui/planets/${planet.id}-icon.webp`)} alt="" aria-hidden="true" />

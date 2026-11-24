@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { PLANETS } from "../game/data/planets.js";
 import { createDefaultProgress } from "./storage.js";
-import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets, uncompleteDebugStage } from "./debugTools.js";
+import { addDebugCoins, completeDebugStage, isDebugShortcut, unlockAllPlanets, uncompleteDebugStage } from "./debugTools.js";
 
 test("debug shortcut requires Q and P to be held together in either order", () => {
   assert.equal(isDebugShortcut(new Set(["q", "p"])), true);
@@ -11,12 +11,10 @@ test("debug shortcut requires Q and P to be held together in either order", () =
   assert.equal(isDebugShortcut(new Set(["p"])), false);
 });
 
-test("debug currency grants only a supported resource and never drops below zero", () => {
-  const progress = createDefaultProgress();
-  assert.equal(addDebugCurrency(progress, "coins", 250).coins, 250);
-  assert.equal(addDebugCurrency(progress, "money", 40).money, 40);
-  assert.throws(() => addDebugCurrency(progress, "invalid", 1), /Recurso/);
-  assert.equal(addDebugCurrency({ ...progress, coins: 4 }, "coins", -10).coins, 0);
+test("debug coin grants leave campaign credits intact and never drop below zero", () => {
+  const progress = { ...createDefaultProgress(), money: 40 };
+  assert.deepEqual(addDebugCoins(progress, 250), { ...progress, coins: 250 });
+  assert.equal(addDebugCoins({ ...progress, coins: 4 }, -10).coins, 0);
 });
 
 test("debug unlock opens every planet without marking campaign phases complete", () => {

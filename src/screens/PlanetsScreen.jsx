@@ -1,4 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { GameIcon } from "../components/GameIcon.jsx";
+import { MuteButton } from "../components/MuteButton.jsx";
 import { PLANETS } from "../game/data/planets.js";
 import { playGameSound } from "../game/audio/audioManager.js";
 import { hasLaboratoryAttention } from "../utils/laboratoryProgress.js";
@@ -35,7 +37,7 @@ const stageStatusLabel = (stage) => {
 };
 
 export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, preferredStageId, onBack, onPlay, onPlayEndless,
-  onMarkPlanetSeen, onSettings, onCommandRoom, onSelectionChange, reducedMotion, storageButtonRef, previousGoldBalance, goldCountPaused, onStorage, decoration }) {
+  onMarkPlanetSeen, onSettings, muted, onToggleMute, onCommandRoom, onSelectionChange, reducedMotion, storageButtonRef, previousGoldBalance, goldCountPaused, onStorage, decoration }) {
   const validPreferredPlanetId = PLANETS.some(({ id }) => id === preferredPlanetId) ? preferredPlanetId : null;
   const initialPlanetId = validPreferredPlanetId ?? getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const initialStageId = PLANETS.find(({ id }) => id === initialPlanetId)?.stages.some(({ id }) => id === preferredStageId)
@@ -124,22 +126,12 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           aria-hidden="true"
         />
         {decoration}
-        <svg
+        <img
           className="phase-selection-route"
-          viewBox={`0 0 ${PANEL_WIDTH} ${PANEL_HEIGHT}`}
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <polyline
-            points={STAGE_POSITIONS[planet.id].map(([x, y]) => `${x},${y}`).join(" ")}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeDasharray="6 7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+          src={`${APP_BASE}assets/ui/planets/${planet.id}-route.webp`}
+          alt=""
+          draggable="false"
+        />
         {orbitStage && (
           <Suspense fallback={null}>
             <OrbitalRocket
@@ -173,6 +165,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
             <button type="button" className="phase-selection-back" onClick={onBack} aria-label="Voltar ao menu" title="Voltar ao menu">
               <img src={getPauseAssetUrl(RETURN_ICON_FILE, APP_BASE)} alt="" />
             </button>
+            <MuteButton muted={muted} onToggle={onToggleMute} />
             <button type="button" className="phase-selection-settings" onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
               <img src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" aria-hidden="true" />
             </button>
@@ -214,12 +207,12 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
                 >
                   <img
                     className="phase-selection-stage__frame"
-                    src={`${APP_BASE}assets/levels/${LEVEL_ASSET_PLANET[planet.id]}/${LEVEL_ASSET_PLANET[planet.id]}_${stageIndex + 1}.png`}
+                    src={`${APP_BASE}assets/levels/${LEVEL_ASSET_PLANET[planet.id]}/${LEVEL_ASSET_PLANET[planet.id]}_${stageIndex + 1}.webp`}
                     alt=""
                     aria-hidden="true"
                     draggable="false"
                   />
-                  {stage.completed && <span className="phase-selection-stage__check" aria-hidden="true">✓</span>}
+                  {stage.completed && <GameIcon name="check" className="phase-selection-stage__check" />}
                   {stage.progressPercent > 0 && !stage.completed && (
                     <span className="phase-selection-stage__progress" aria-hidden="true">{stage.progressPercent}%</span>
                   )}

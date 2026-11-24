@@ -42,7 +42,7 @@ test("o fundo repete verticalmente e desloca horizontalmente com a câmera", () 
     assert.ok(draws.every(([image]) => image === images[0]));
     assert.deepEqual(transforms, []);
 
-    for (const [id, filename, sourceHeight] of [["mars", "marte_new_seamless.webp", 855], ["saturn", "saturno_background_seamless.jpg", 941], ["neptune", "netuno_background_seamless.jpg", 941]]) {
+    for (const [id, filename, sourceHeight] of [["mars", "marte_new_seamless.webp", 855], ["saturn", "saturno_background_seamless.webp", 941], ["neptune", "netuno_background_seamless.webp", 941]]) {
       assert.equal(renderPlanetBackground(ctx, { width: 320, height: 640 }, { id }, { offsetY: -10_000 }), true);
       assert.equal(images.at(-1).source, `/assets/backgrounds/${filename}`);
       assert.equal(images.at(-1).sourceHeight, sourceHeight, `${id} mantém sua escala vertical de referência`);

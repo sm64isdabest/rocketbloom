@@ -2,21 +2,23 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { GOLD_GOALS } from "../game/config/goldConfig.js";
-import { createTreasureSvg, getTreasureArt, preloadStorageAssets, STORAGE_ICON } from "./storageAssets.js";
+import { getTreasureArt, preloadStorageAssets, STORAGE_ICON } from "./storageAssets.js";
 
-test("cada meta tem um SVG próprio e progressivamente mais moedas", () => {
-  let coins = 0;
-  const arts = new Set();
-  for (const treasure of [{ level: 0 }, ...GOLD_GOALS.map((goal) => goal.treasure)]) {
-    const svg = createTreasureSvg(treasure.level);
-    assert.match(svg, /^<svg[^>]*viewBox="0 0 420 240"/);
-    const nextCoins = (svg.match(/href="#coin"/g) ?? []).length;
-    if (treasure.level) assert.ok(nextCoins > coins);
-    coins = nextCoins;
-    arts.add(getTreasureArt(treasure.level));
+test("cada meta e estado do ícone tem uma arte WebP própria com transparência", () => {
+  const arts = [
+    ...Object.values(STORAGE_ICON),
+    getTreasureArt(0),
+    ...GOLD_GOALS.map(({ treasure }) => getTreasureArt(treasure.level)),
+  ];
+  const contents = new Set();
+  for (const art of arts) {
+    const image = readFileSync(new URL(art));
+    assert.match(art, /\.webp$/);
+    assert.equal(image.toString("ascii", 8, 16), "WEBPVP8L");
+    assert.ok(image.readUInt32LE(21) & (1 << 28), "a arte preserva a transparência");
+    contents.add(image.toString("base64"));
   }
-  assert.equal(arts.size, GOLD_GOALS.length + 1);
-  assert.notEqual(STORAGE_ICON.normal, STORAGE_ICON.highlight);
+  assert.equal(contents.size, arts.length);
   assert.equal(getTreasureArt(-1), getTreasureArt(0));
 });
 
@@ -31,7 +33,7 @@ test("cada meta referencia uma sobreposição WebP distinta com transparência",
   }
 });
 
-test("pré-carrega cada SVG uma vez inclusive quando uma imagem falha", async () => {
+test("pré-carrega cada imagem uma vez inclusive quando uma imagem falha", async () => {
   const attempted = [];
   class FakeImage {
     set src(url) {

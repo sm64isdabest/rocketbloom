@@ -2,17 +2,17 @@ import { OBSTACLE_SPRITES } from "./obstacles.js";
 import { CAMPAIGN_CONFIG, PLANETS } from "./planets.js";
 import { PLANTS } from "./plants.js";
 
-// Keep this list in sync with the raster and vector images in public/assets.
+// Keep this list in sync with the images in public/assets.
 export const PROJECT_IMAGES = [
   "/assets/laboratory/laboratory-background.webp",
-  "/assets/laboratory/laboratory-background-clean.png",
-  "/assets/laboratory/laboratory-dome-back.png",
-  "/assets/laboratory/laboratory-dome-front.png",
-  "/assets/laboratory/laboratory-equipment-base.png",
+  "/assets/laboratory/laboratory-background-clean.webp",
+  "/assets/laboratory/laboratory-dome-back.webp",
+  "/assets/laboratory/laboratory-dome-front.webp",
+  "/assets/laboratory/laboratory-equipment-base.webp",
   "/assets/laboratory/arrow-left.webp",
   "/assets/laboratory/arrow-right.webp",
   ...PLANTS.flatMap(({ growthArt }) =>
-    growthArt.map((id) => `/assets/laboratory/plant-${String(id).padStart(2, "0")}.png`),
+    growthArt.map((id) => `/assets/laboratory/plant-${String(id).padStart(2, "0")}.webp`),
   ),
   ...["irrigation", "pollination", "cleaning", "can", "bee", "dirt", "brush", "pot"].map(
     (file) => `/assets/laboratory/care/${file}.webp`,
@@ -28,16 +28,16 @@ export const PROJECT_IMAGES = [
   "/assets/lasers/idle/frame_07.webp",
   "/assets/lasers/idle/frame_08.webp",
   ...["terra", "marte", "saturno", "netuno"].flatMap((assetName) =>
-    Array.from({ length: CAMPAIGN_CONFIG.stagesPerPlanet }, (_, index) => `/assets/levels/${assetName}/${assetName}_${index + 1}.png`),
+    Array.from({ length: CAMPAIGN_CONFIG.stagesPerPlanet }, (_, index) => `/assets/levels/${assetName}/${assetName}_${index + 1}.webp`),
   ),
   "/assets/rocket.webp",
   "/assets/backgrounds/marte_background.webp",
-  "/assets/backgrounds/marte_background_seamless.jpg",
+  "/assets/backgrounds/marte_background_seamless.webp",
   "/assets/backgrounds/marte_new_seamless.webp",
   "/assets/backgrounds/netuno_background.webp",
-  "/assets/backgrounds/netuno_background_seamless.jpg",
+  "/assets/backgrounds/netuno_background_seamless.webp",
   "/assets/backgrounds/saturno_background.webp",
-  "/assets/backgrounds/saturno_background_seamless.jpg",
+  "/assets/backgrounds/saturno_background_seamless.webp",
   "/assets/backgrounds/terra_background.webp",
   "/assets/backgrounds/terra_amazonia_seamless.webp",
   "/assets/collectibles/coin.webp",
@@ -65,7 +65,11 @@ export const PROJECT_IMAGES = [
   "/assets/powerups/star.webp",
   "/assets/powerups/turbo.webp",
   "/assets/ui/coin.webp",
+  ...["chest", "check", "effects", "fullscreen-enter", "fullscreen-exit", "keyboard", "mouse", "music", "pause", "sound-off", "sound-on"].map(
+    (icon) => `/assets/ui/controls/${icon}.webp`,
+  ),
   ...PLANETS.map(({ endlessIcon }) => `/assets/ui/${endlessIcon}`),
+  ...PLANETS.map(({ id }) => `/assets/ui/planets/${id}-route.webp`),
   "/assets/ui/warning-alert.webp",
   "/assets/ui/selection-rocket.webp",
   "/assets/ui/level-frames/arrow-left.webp",
@@ -74,7 +78,7 @@ export const PROJECT_IMAGES = [
   "/assets/ui/level-frames/gold.webp",
   "/assets/ui/level-frames/orange.webp",
   "/assets/ui/pause/continue.webp",
-  "/assets/ui/pause/return-portal.png",
+  "/assets/ui/pause/return-portal.webp",
   "/assets/ui/pause/rocket-newspaper.webp",
   "/assets/ui/pause/settings.webp",
   "/assets/ui/planets/earth-icon.webp",

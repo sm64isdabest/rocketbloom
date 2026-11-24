@@ -191,18 +191,17 @@
   position: absolute;
   right: -4px;
   bottom: -4px;
-  display: grid;
+  display: block;
   width: 21px;
   height: 21px;
-  place-items: center;
+  padding: 2px;
   border: 1px solid #efffdf;
   border-radius: 50%;
-  color: #143726;
-  background: #9aefb0;
-  font-size: .79rem;
-  font-weight: 900;
-  line-height: 1;
+  background: #164431;
+  object-fit: contain;
 }
+
+.plant-care__root-check { width: 1.1em; height: 1.1em; object-fit: contain; }
 
 .plant-care__root {
   color: #e9faff;
@@ -502,15 +501,14 @@
 
 .plant-care__bee[aria-pressed="true"] { cursor: grabbing; }
 .plant-care__bee:disabled { cursor: default; }
-.plant-care__bee:disabled img { opacity: .25; }
+.plant-care__bee:disabled img:not(.plant-care__bee-check) { opacity: .25; }
 
-.plant-care__bee span {
+.plant-care__bee .plant-care__bee-check {
   position: absolute;
-  right: 5px;
-  bottom: 3px;
-  color: #bcf7b9;
-  font-size: .8rem;
-  font-weight: 900;
+  right: 4px;
+  bottom: 2px;
+  width: 18px;
+  height: 18px;
 }
 
 .plant-care__success .plant-care__scene::after {

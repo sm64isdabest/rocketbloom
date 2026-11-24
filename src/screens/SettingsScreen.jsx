@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { GameIcon } from "../components/GameIcon.jsx";
 import { AUDIO } from "../game/config/gameConfig.js";
 import { getMenuAssetUrl } from "./menuModel.js";
 import { clampAudioVolume, getAudioVolumeChange } from "./settingsModel.js";
@@ -97,7 +98,7 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
           <div id={`${ids}-panel`} className="settings-popup__tab-panel" role="tabpanel" aria-labelledby={`${ids}-tab-${activeTab}`} tabIndex={0}>
           {activeTab === "audio" ? <fieldset className="settings-popup__audio" aria-label="Áudio">
             <section className="settings-popup__audio-card" aria-labelledby={`${ids}-music-title`}>
-              <span className="settings-popup__audio-icon" aria-hidden="true">🎵</span>
+              <span className="settings-popup__audio-icon"><GameIcon name="music" /></span>
               <div className="settings-popup__audio-body">
                 <h2 id={`${ids}-music-title`} className="settings-popup__volume-label">
                   <span id={`${ids}-music-label`}>Música</span> <output htmlFor={`${ids}-music`}>{musicVolume}%</output>
@@ -121,7 +122,7 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
             </section>
 
             <section className="settings-popup__audio-card" aria-labelledby={`${ids}-effects-title`}>
-              <span className="settings-popup__audio-icon" aria-hidden="true">✨</span>
+              <span className="settings-popup__audio-icon"><GameIcon name="effects" /></span>
               <div className="settings-popup__audio-body">
                 <h2 id={`${ids}-effects-title`} className="settings-popup__volume-label">
                   <span id={`${ids}-effects-label`}>Efeitos sonoros</span> <output htmlFor={`${ids}-effects`}>{soundEffectsVolume}%</output>
@@ -145,7 +146,7 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
             </section>
 
             <section className="settings-popup__audio-card" aria-labelledby={`${ids}-interface-title`}>
-              <span className="settings-popup__audio-icon" aria-hidden="true">🖱️</span>
+              <span className="settings-popup__audio-icon"><GameIcon name="mouse" /></span>
               <div className="settings-popup__audio-body">
                 <h2 id={`${ids}-interface-title`} className="settings-popup__volume-label">
                   <span id={`${ids}-interface-label`}>Sons da interface</span> <output htmlFor={`${ids}-interface`}>{interfaceSoundsVolume}%</output>
@@ -169,7 +170,7 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
             </section>
 
             <section className="settings-popup__audio-card settings-popup__audio-card--switch" aria-labelledby={`${ids}-mute-title`}>
-              <span className="settings-popup__audio-icon" aria-hidden="true">🔇</span>
+              <span className="settings-popup__audio-icon"><GameIcon name={muteAll ? "sound-off" : "sound-on"} /></span>
               <div className="settings-popup__audio-body">
                 <h2 id={`${ids}-mute-title`} className="settings-popup__volume-label">Silenciar todos</h2>
                 <p id={`${ids}-mute-description`} className="settings-popup__description">Pausa todos os sons sem perder seus volumes.</p>
@@ -194,10 +195,10 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
             <p className="settings-popup__description">As setas do teclado continuam disponíveis em qualquer modo.</p>
             <div className="control-options settings-popup__control-options" role="group" aria-label="Controle principal">
               <button type="button" className={`control-option ${controlMode === "pointer" ? "is-selected" : ""}`} aria-pressed={controlMode === "pointer"} onClick={() => onChange({ controlMode: "pointer" })}>
-                <span aria-hidden="true">☝</span><b>Toque e mouse</b><small>Arraste o foguete para os lados</small>
+                <GameIcon name="mouse" className="control-option__icon" /><b>Toque e mouse</b><small>Arraste o foguete para os lados</small>
               </button>
               <button type="button" className={`control-option ${controlMode === "keyboard" ? "is-selected" : ""}`} aria-pressed={controlMode === "keyboard"} onClick={() => onChange({ controlMode: "keyboard" })}>
-                <span aria-hidden="true">⌨</span><b>Teclado</b><small>Use ← → ou A e D para pilotar</small>
+                <GameIcon name="keyboard" className="control-option__icon" /><b>Teclado</b><small>Use as setas esquerda e direita ou A e D para pilotar</small>
               </button>
             </div>
             <p className="settings-popup__note">Pausar a missão: Esc ou P.</p>

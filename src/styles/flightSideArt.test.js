@@ -20,11 +20,12 @@ test("flight screen fills the viewport and keeps its game canvas centered", () =
 test("flight side panels use illustrated art on both sides", async () => {
   const left = [...stylesheet.matchAll(/\.play::before\s*\{([^}]*)\}/g)].map((match) => match[1]).join(" ");
   const right = [...stylesheet.matchAll(/\.play::after\s*\{([^}]*)\}/g)].map((match) => match[1]).join(" ");
-  assert.match(left, /background-image:\s*url\([^)]*flight-side-left\.svg["']?\)/);
-  assert.match(right, /background-image:\s*url\([^)]*flight-side-right\.svg["']?\)/);
-  await Promise.all(["left", "right"].map(async (side) => {
-    const image = await readFile(new URL(`../assets/flight-side-${side}.svg`, import.meta.url), "utf8");
-    assert.match(image, /<svg[\s>]/);
-    assert.doesNotMatch(image, /fill=\"black\"/i);
-  }));
+  assert.match(left, /background-image:\s*url\([^)]*flight-side-left\.webp["']?\)/);
+  assert.match(right, /background-image:\s*url\([^)]*flight-side-right\.webp["']?\)/);
+  const [leftImage, rightImage] = await Promise.all(
+    ["left", "right"].map((side) => readFile(new URL(`../assets/flight-side-${side}.webp`, import.meta.url))),
+  );
+  assert.equal(leftImage.toString("ascii", 8, 12), "WEBP");
+  assert.equal(rightImage.toString("ascii", 8, 12), "WEBP");
+  assert.notDeepEqual(leftImage, rightImage);
 });

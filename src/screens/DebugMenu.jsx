@@ -3,6 +3,9 @@ import { AUDIO } from "../game/config/gameConfig.js";
 import { PLANETS } from "../game/data/planets.js";
 import { SCREEN } from "../utils/screenStates.js";
 import { getNextGoldGoal } from "../game/systems/goalSystem.js";
+import { getMenuAssetUrl } from "./menuModel.js";
+
+const APP_BASE = import.meta.env.BASE_URL;
 
 const TABS = [
   { id: "settings", label: "Configurações" },
@@ -32,7 +35,7 @@ const DEBUG_SCREENS = [
   { id: "defeat", label: "Derrota" },
 ];
 
-export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, onChange, onGrant, onGrantRunCoins, onGrantGold,
+export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, onChange, onGrantCoins, onGrantRunCoins, onGrantGold,
   onGrantNextGoldGoal, onUnlockAll, onCompleteStage, onUncompleteStage, onStartStage,
   onSetSpeed, onSetGodmode, onSetDuration, onGrantPowerUp, onNavigate }) {
   const ids = useId();
@@ -77,7 +80,9 @@ export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, 
       <section className="debug-menu" role="dialog" aria-modal="true" aria-labelledby={`${ids}-title`}>
         <header className="debug-menu__header">
           <div><p className="debug-menu__eyebrow">ROCKETBLOOM · FERRAMENTAS INTERNAS</p><h1 id={`${ids}-title`}>Menu de debug</h1></div>
-          <button type="button" className="debug-menu__close" onClick={onClose} autoFocus aria-label="Fechar menu de debug">×</button>
+          <button type="button" className="debug-menu__close" onClick={onClose} autoFocus aria-label="Fechar menu de debug">
+            <img src={getMenuAssetUrl("close.webp", APP_BASE)} alt="" />
+          </button>
         </header>
         <div className="debug-menu__tabs" role="tablist" aria-label="Seções do menu de debug">
           {TABS.map((tab, index) => (
@@ -107,14 +112,16 @@ export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, 
           {activeTab === "progress" && <div className="debug-menu__section">
             <h2>Progresso e recursos</h2>
             <div className="debug-menu__stats">
-              <div><span>Moedas</span><b>{progress.coins}</b></div><div><span>Dinheiro</span><b>{progress.money}</b></div>
+              <div><span>Moedas</span><b>{progress.coins}</b></div>
               <div><span>Fases concluídas</span><b>{progress.completedStageIds.length}/{PLANETS.reduce((sum, item) => sum + item.stages.length, 0)}</b></div>
               <div><span>Planetas liberados</span><b>{progress.unlockedPlanetIds.length}/{PLANETS.length}</b></div>
             </div>
             <div className="debug-menu__grant-grid">
-              {[{ key: "coins", label: "Moedas" }, { key: "money", label: "Dinheiro" }].map(({ key, label }) => (
-                <div key={key} className="debug-menu__grant"><span>{label}</span><button type="button" onClick={() => onGrant(key, 100)}>+100</button><button type="button" onClick={() => onGrant(key, 1000)}>+1.000</button></div>
-              ))}
+              <div className="debug-menu__grant">
+                <span>Moedas</span>
+                <button type="button" onClick={() => onGrantCoins(100)}>+100</button>
+                <button type="button" onClick={() => onGrantCoins(1000)}>+1.000</button>
+              </div>
             </div>
             <button type="button" className="debug-menu__button" onClick={onUnlockAll}>Desbloquear todos os planetas</button>
           </div>}

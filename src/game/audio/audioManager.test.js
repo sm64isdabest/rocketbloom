@@ -75,6 +75,70 @@ test("defeat plays a short low explosive burst through the configured effects vo
   }
 });
 
+test("victory launch builds a filtered roar and silences it with the effects settings", async () => {
+  const sources = [];
+  const gainChanges = [];
+  const frequencyChanges = [];
+  const audioParam = (changes) => ({
+    setValueAtTime(value, time) { changes.push({ value, time }); },
+    exponentialRampToValueAtTime(value, time) { changes.push({ value, time }); },
+  });
+  class FakeAudioContext {
+    currentTime = 1;
+    sampleRate = 8000;
+    state = "running";
+    destination = {};
+    createBuffer(_channels, length) {
+      const samples = new Float32Array(length);
+      return { getChannelData: () => samples };
+    }
+    createBufferSource() {
+      const source = {
+        starts: [], stops: [], connect() {}, disconnect() {},
+        start(time) { this.starts.push(time); },
+        stop(time) { this.stops.push(time); },
+      };
+      sources.push(source);
+      return source;
+    }
+    createBiquadFilter() {
+      return { frequency: audioParam(frequencyChanges), Q: { value: 0 }, connect() {}, disconnect() {} };
+    }
+    createGain() {
+      return { gain: audioParam(gainChanges), connect() {}, disconnect() {} };
+    }
+  }
+
+  const priorWindow = globalThis.window;
+  globalThis.window = { AudioContext: FakeAudioContext, addEventListener() {} };
+  try {
+    const { configureAudio, playVictoryLaunchSound } = await import("./audioManager.js?victory-launch");
+    const play = () => playVictoryLaunchSound?.({ chargeMs: 900, ascentMs: 1900, tailMs: 350 });
+    configureAudio({ soundEffects: false, soundEffectsVolume: 100 });
+    play();
+    configureAudio({ soundEffects: true, soundEffectsVolume: 0 });
+    play();
+    configureAudio({ muteAll: true, soundEffectsVolume: 40 });
+    play();
+    assert.equal(sources.length, 0);
+
+    configureAudio({ muteAll: false });
+    play();
+    assert.equal(sources.length, 1, "the launch synthesizes an exhaust roar");
+    const [source] = sources;
+    assert.ok(source.buffer.getChannelData(0).some((sample) => sample !== 0));
+    assert.ok(source.stops[0] - source.starts[0] >= 3.15 - 1e-9);
+    assert.ok(frequencyChanges.some(({ value, time }) => value > 500 && time > 1.9));
+    assert.ok(gainChanges.some(({ value }) => value === 0.4));
+
+    configureAudio({ muteAll: true });
+    assert.equal(source.stops.at(-1), 1, "global mute cancels a roar already underway");
+  } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+  }
+});
+
 test("menu play click uses the independent interface-sound channel", async () => {
   const frequencies = [];
   class FakeAudioContext {

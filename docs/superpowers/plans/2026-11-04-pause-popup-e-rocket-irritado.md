@@ -34,10 +34,10 @@
 ### Task 1: Adicionar assets, popup e acesso às configurações
 
 **Files:**
-- Create: `public/assets/ui/pause/leave.png` (imagem anexada `leave 1.png`)
-- Create: `public/assets/ui/pause/continue.png` (imagem anexada `playbutton 1.png`)
-- Create: `public/assets/ui/pause/settings.png` (imagem anexada `image 2.png`)
-- Create: `public/assets/ui/pause/rocket-newspaper.png` (imagem anexada `ChatGPT Image 15 de set. de 2026, 21_18_02 1.png`)
+- Create: `public/assets/ui/pause/return-portal.webp` (imagem anexada `leave 1.png`)
+- Create: `public/assets/ui/pause/continue.webp` (imagem anexada `playbutton 1.png`)
+- Create: `public/assets/ui/pause/settings.webp` (imagem anexada `image 2.png`)
+- Create: `public/assets/ui/pause/rocket-newspaper.webp` (imagem anexada `ChatGPT Image 15 de set. de 2026, 21_18_02 1.png`)
 - Create: `src/screens/pauseModel.js`
 - Create: `src/screens/pauseModel.test.js`
 - Modify: `src/screens/PauseOverlay.jsx`
@@ -56,7 +56,7 @@
 
 - [x] **Step 1: Escrever testes falhos para URL dos assets do popup**
 
-Criar testes em `pauseModel.test.js` cobrindo base `/rocketbloom/` e base `/rocketbloom`, esperando `/rocketbloom/assets/ui/pause/leave.png` em ambos.
+Criar testes em `pauseModel.test.js` cobrindo base `/rocketbloom/` e base `/rocketbloom`, esperando `/rocketbloom/assets/ui/pause/return-portal.webp` em ambos.
 
 - [x] **Step 2: Rodar os testes direcionados e confirmar falha**
 

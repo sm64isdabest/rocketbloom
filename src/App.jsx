@@ -24,7 +24,7 @@ import { configureAudio, pauseMenuAudio, playGameSound, playInterfaceSound, star
 import { hasLoadedAllImages, preloadImages } from "./utils/preloadImages.js";
 import { canPlayEndless } from "./screens/planetSelectorModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
-import { addDebugCurrency, completeDebugStage, isDebugShortcut, unlockAllPlanets, uncompleteDebugStage } from "./utils/debugTools.js";
+import { addDebugCoins, completeDebugStage, isDebugShortcut, unlockAllPlanets, uncompleteDebugStage } from "./utils/debugTools.js";
 import { FullscreenButton } from "./components/FullscreenButton.jsx";
 import { getOutcomeReturn } from "./utils/outcomeFlow.js";
 import { initialNavigationContext, navigationContextReducer } from "./utils/navigationContext.js";
@@ -50,6 +50,7 @@ export default function App() {
   const [outcomeSnapshot, setOutcomeSnapshot] = useState(null);
   const [systemReducedMotion, setSystemReducedMotion] = useState(false);
   const reducedMotion = Boolean(progress?.settings.reducedMotion || systemReducedMotion);
+  const muted = progress?.settings.muteAll === true;
   const [completionStageId, setCompletionStageId] = useState(null);
   const [laboratoryPlanetId, setLaboratoryPlanetId] = useState(null);
   const hudRef = useRef(null);
@@ -332,6 +333,8 @@ export default function App() {
     window.requestAnimationFrame(() => settingsTrigger.current?.focus());
   }, []);
 
+  const toggleMute = () => patchSettings({ muteAll: !muted });
+
   const resetCampaign = () => {
     const result = resetProgress();
     if (!result.ok) return result;
@@ -402,7 +405,7 @@ export default function App() {
       canGrantRunCoins={Boolean(run && [SCREEN.PLAYING, SCREEN.PAUSED].includes(screen))}
       onClose={closeDebug}
       onChange={patchSettings}
-      onGrant={(currency, amount) => persist((current) => addDebugCurrency(current, currency, amount))}
+      onGrantCoins={(amount) => persist((current) => addDebugCoins(current, amount))}
       onGrantRunCoins={(amount) => debugEngineRef.current?.grantDebugCoins(amount)}
       onGrantGold={(amount) => updateGold((gold) => creditGold(gold, amount))}
       onGrantNextGoldGoal={() => updateGold(creditNextGoldGoal)}
@@ -438,7 +441,8 @@ export default function App() {
     <div
       className={`app-shell ${reducedMotion ? "motion-reduced" : ""}`}
       onClickCapture={(event) => {
-        if (event.target.closest?.("button")) playInterfaceSound("menuClick");
+        const button = event.target.closest?.("button");
+        if (button && !button.classList.contains("mute-button")) playInterfaceSound("menuClick");
       }}
     >
       <div inert={settingsOpen || (debugOpen && screen === SCREEN.MENU && menuPage === SCREEN.STORAGE)}>
@@ -446,6 +450,8 @@ export default function App() {
         <MenuScreen
           progress={progress}
           warning={warning}
+          muted={muted}
+          onToggleMute={toggleMute}
           onPlay={() => setMenuPage(SCREEN.PLANETS)}
           onSettings={openSettings}
         />
@@ -478,6 +484,8 @@ export default function App() {
           reducedMotion={reducedMotion}
           onMarkPlanetSeen={markPlanetSeen}
           onSettings={openSettings}
+          muted={muted}
+          onToggleMute={toggleMute}
           onCommandRoom={enterLaboratory}
           onSelectionChange={(planetId, selectedStageId) => dispatchNavigationContext({ type: "select-stage", planetId, selectedStageId })}
         />
@@ -502,6 +510,8 @@ export default function App() {
           mode={run.mode}
           controlMode={progress.settings.controlMode}
           reducedMotion={reducedMotion}
+          muted={muted}
+          onToggleMute={toggleMute}
           introducing={screen === SCREEN.FLIGHT_INTRO}
           launching={screen === SCREEN.VICTORY_LAUNCH}
           showHitboxes={progress.settings.showHitboxes}

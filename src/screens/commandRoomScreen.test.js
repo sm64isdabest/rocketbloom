@@ -17,11 +17,11 @@ test("laboratório usa o ícone compartilhado e mantém o retorno da base", () =
 
 test("laboratório empilha fundo, base, cúpula traseira, planta e frente do vidro", () => {
   const layers = [
-    "laboratory-background-clean.png",
-    "laboratory-equipment-base.png",
-    "laboratory-dome-back.png",
+    "laboratory-background-clean.webp",
+    "laboratory-equipment-base.webp",
+    "laboratory-dome-back.webp",
     "laboratory-specimen__plant",
-    "laboratory-dome-front.png",
+    "laboratory-dome-front.webp",
   ].map((layer) => commandRoomSource.indexOf(layer));
 
   assert.ok(layers.every((index) => index >= 0));

@@ -17,13 +17,17 @@ import { renderPlanetBackground, renderPlanetScenery } from "../systems/scenery.
 import { createInputController } from "./input.js";
 import { createGameLoop } from "./loop.js";
 import { fitCanvasToContainer } from "./resize.js";
-import { finishGameAudio, pauseGameAudio, playGameSound, startGameAudio } from "../audio/audioManager.js";
+import { finishGameAudio, pauseGameAudio, playGameSound, playVictoryLaunchSound, startGameAudio } from "../audio/audioManager.js";
 import { activatePowerUp, createPowerUpState, getNextMysteryBoxDelay, getRandomPowerUp, tickPowerUps } from "../systems/powerUps.js";
 import { renderPowerUpIntro } from "../systems/powerUpPresentation.js";
 import { createCollisionImpactState, getCollisionImpactSpeedFactor, tickCollisionImpact, triggerCollisionImpact } from "../systems/collisionImpact.js";
 import { collectCoins } from "../systems/coinManager.js";
 
-const VICTORY_LAUNCH_DURATION_MS = 1100;
+const VICTORY_LAUNCH = { chargeMs: 900, ascentMs: 1900, tailMs: 350 };
+const VICTORY_ASCENT_END_MS = VICTORY_LAUNCH.chargeMs + VICTORY_LAUNCH.ascentMs;
+const VICTORY_LAUNCH_DURATION_MS = VICTORY_ASCENT_END_MS + VICTORY_LAUNCH.tailMs;
+const LOW_SPEED_ALERT_ENTER_KMH = 60;
+const LOW_SPEED_ALERT_EXIT_KMH = 70;
 const POWER_UP_FEEDBACK = {
   turbo: "TURBO!",
   star: "ESTRELA! Invencível",
@@ -85,6 +89,7 @@ export class GameEngine {
     this.particles = [];
     this.entitySequence = 0;
     this.speed = SPEED.start;
+    this.lowSpeedAlert = false;
     this.collisionImpact = createCollisionImpactState();
     this.collisionAlertRemainingMs = 0;
     this.collisionAlertSequence = 0;
@@ -119,10 +124,13 @@ export class GameEngine {
     this.feedbackTimerMs = 0;
 
     this.input = createInputController(canvas, controlMode, (x, y) => this.prepareAnswerSelection(x, y));
-    this.loop = createGameLoop((dt) => this.tick(dt));
+    this.loop = createGameLoop((dt, frameSeconds) => this.tick(dt, frameSeconds));
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.onVisibilityChange = () => {
-      if (document.visibilityState === "hidden" && !this.paused && !this.ended) {
+      if (document.visibilityState !== "hidden") return;
+      if (this.victoryLaunchMs !== null && this.victoryLaunchMs < VICTORY_LAUNCH_DURATION_MS) {
+        this.completeVictoryLaunch(false);
+      } else if (!this.paused && !this.ended) {
         this.pause();
         this.onPauseRequest?.();
       }
@@ -302,12 +310,12 @@ export class GameEngine {
     this.feedbackTimerMs = 0;
   }
 
-  tick(dt) {
+  tick(dt, presentationSeconds = dt) {
     if (this.disposed || this.paused) return;
     const frameSeconds = clamp(dt, 0, 0.05);
     if (this.ended) {
       if (this.victoryLaunchMs !== null && this.victoryLaunchMs < VICTORY_LAUNCH_DURATION_MS) {
-        this.tickVictoryLaunch(frameSeconds);
+        this.tickVictoryLaunch(Math.max(0, presentationSeconds));
       }
       return;
     }
@@ -385,11 +393,12 @@ export class GameEngine {
       return;
     }
 
+    const alertChanged = this.updateLowSpeedAlert();
     this.render();
     this.hudAcc += frameSeconds;
-    if (this.hudAcc >= 0.2) {
+    if (alertChanged || this.hudAcc >= 0.2) {
       this.hudAcc = 0;
-      this.emitHud();
+      this.emitHud(alertChanged);
     }
   }
 
@@ -657,6 +666,14 @@ export class GameEngine {
     return this.speed * getCollisionImpactSpeedFactor(this.collisionImpact);
   }
 
+  updateLowSpeedAlert() {
+    const speed = this.getEffectiveSpeed();
+    const nextAlert = this.lowSpeedAlert ? speed < LOW_SPEED_ALERT_EXIT_KMH : speed <= LOW_SPEED_ALERT_ENTER_KMH;
+    const changed = nextAlert !== this.lowSpeedAlert;
+    this.lowSpeedAlert = nextAlert;
+    return changed;
+  }
+
   spawnMysteryBox() {
     // Tenta posições afastadas da nave e dos obstáculos que ocupam o topo da fase.
     const maxX = Math.max(0, this.view.width - MYSTERY_BOX.size);
@@ -777,13 +794,14 @@ export class GameEngine {
     this.outcome = outcome;
     this.paused = false;
     this.pendingOutcome = null;
-    finishGameAudio(outcome);
     this.input.setEnabled(false);
     const launching = outcome === "victory" && !this.reducedMotion && Boolean(this.onVictoryLaunchComplete);
     if (launching) {
       this.victoryLaunchMs = 0;
       this.rocket.clearDamageFeedback();
+      playVictoryLaunchSound(VICTORY_LAUNCH);
     } else {
+      finishGameAudio(outcome);
       this.loop.stop();
     }
     this.answers = [];
@@ -798,24 +816,32 @@ export class GameEngine {
     this.currentRound && (this.currentRound.status = "resolved");
     this.interQuestionRemainingMs = 0;
     this.answerChoiceRemainingMs = 0;
+    this.updateLowSpeedAlert();
     this.render();
     this.onOutcome?.(outcome, this.getSnapshot(), { launching });
   }
 
   tickVictoryLaunch(dt) {
-    this.victoryLaunchMs = this.reducedMotion
-      ? VICTORY_LAUNCH_DURATION_MS
-      : Math.min(VICTORY_LAUNCH_DURATION_MS, this.victoryLaunchMs + dt * 1000);
+    this.victoryLaunchMs += dt * 1000;
+    if (this.reducedMotion || this.victoryLaunchMs >= VICTORY_LAUNCH_DURATION_MS) {
+      this.completeVictoryLaunch();
+      return;
+    }
     this.rocket.rotation *= Math.exp(-12 * dt);
     this.render();
-    if (this.victoryLaunchMs >= VICTORY_LAUNCH_DURATION_MS) {
-      this.loop.stop();
-      this.onVictoryLaunchComplete();
-    }
+  }
+
+  completeVictoryLaunch(playSound = true) {
+    this.victoryLaunchMs = VICTORY_LAUNCH_DURATION_MS;
+    this.loop.stop();
+    if (playSound) finishGameAudio("victory");
+    else pauseGameAudio();
+    this.onVictoryLaunchComplete();
   }
 
   emitHud(force = false) {
-    this.onHud?.(this.getSnapshot(), force);
+    const alertChanged = this.updateLowSpeedAlert();
+    this.onHud?.(this.getSnapshot(), force || alertChanged);
   }
 
   getDifficultyProgress() {
@@ -827,6 +853,7 @@ export class GameEngine {
     return {
       runId: this.runId,
       speed: Math.round(this.getEffectiveSpeed()),
+      lowSpeedAlert: this.lowSpeedAlert,
       collisionAlertRemainingMs: this.collisionAlertRemainingMs,
       collisionAlertSequence: this.collisionAlertSequence,
       coins: this.coins,
@@ -852,10 +879,10 @@ export class GameEngine {
       feedback: this.questionFeedback,
       paused: this.paused,
       powerUps: [
-        ...(this.powerUps.turboMs > 0 ? [{ id: "turbo", icon: "⚡", label: "Turbo", remainingMs: this.powerUps.turboMs, durationMs: POWER_UPS.turbo.durationMs }] : []),
-        ...(this.powerUps.starMs > 0 ? [{ id: "star", icon: "★", label: "Estrela", remainingMs: this.powerUps.starMs, durationMs: POWER_UPS.star.durationMs }] : []),
-        ...(this.powerUps.bubble ? [{ id: "bubble", icon: "●", label: "Bolha" }] : []),
-        ...(this.hazardClearRemainingMs > 0 ? [{ id: "shrink", icon: "✦", label: "Raio encolhedor", remainingMs: this.hazardClearRemainingMs, durationMs: POWER_UPS.shrink.durationMs }] : []),
+        ...(this.powerUps.turboMs > 0 ? [{ id: "turbo", label: "Turbo", remainingMs: this.powerUps.turboMs, durationMs: POWER_UPS.turbo.durationMs }] : []),
+        ...(this.powerUps.starMs > 0 ? [{ id: "star", label: "Estrela", remainingMs: this.powerUps.starMs, durationMs: POWER_UPS.star.durationMs }] : []),
+        ...(this.powerUps.bubble ? [{ id: "bubble", label: "Bolha" }] : []),
+        ...(this.hazardClearRemainingMs > 0 ? [{ id: "shrink", label: "Raio encolhedor", remainingMs: this.hazardClearRemainingMs, durationMs: POWER_UPS.shrink.durationMs }] : []),
       ],
       mysteryBoxVisible: Boolean(this.mysteryBox?.alive),
     };
@@ -877,6 +904,10 @@ export class GameEngine {
     }
     if (!this.reducedMotion) {
       renderSpeedStreaks(ctx, this.speedStreaks, session.planet.theme.accent, this.getEffectiveSpeed() * this.turboSpeedFactor);
+    }
+    if (this.victoryLaunchMs !== null) {
+      this.renderVictoryLaunch();
+      return;
     }
     const flashAlpha = this.columnFlashRemainingMs > 0
       ? 0.3 + Math.max(0, Math.sin(this.elapsedMs * 0.025)) * 0.15
@@ -919,13 +950,6 @@ export class GameEngine {
         const size = Math.max(this.rocket.width, this.rocket.height) * 1.7;
         ctx.drawImage(this.explosionImage, this.rocket.x + (this.rocket.width - size) / 2, this.rocket.y + (this.rocket.height - size) / 2, size, size);
       }
-    } else if (this.victoryLaunchMs !== null) {
-      const progress = this.victoryLaunchMs / VICTORY_LAUNCH_DURATION_MS;
-      const distance = this.rocket.y + this.rocket.height * 1.3;
-      ctx.save();
-      ctx.translate(0, -distance * progress ** 2);
-      this.rocket.render(ctx, this.elapsedMs + this.victoryLaunchMs, this.reducedMotion);
-      ctx.restore();
     } else {
       this.rocket.render(ctx, this.elapsedMs, this.reducedMotion);
     }
@@ -942,7 +966,7 @@ export class GameEngine {
       ctx.save(); ctx.fillStyle = `rgba(205, 240, 255, ${this.shrinkFlashRemainingMs / 360})`;
       ctx.fillRect(0, 0, view.width, view.height); ctx.restore();
     }
-    if (this.showHitboxes && this.victoryLaunchMs === null) {
+    if (this.showHitboxes) {
       for (const obstacle of this.obstacles) {
         if (obstacle.alive) this.renderCollisionBox(obstacle.collisionBox, "#f97316");
       }
@@ -955,6 +979,60 @@ export class GameEngine {
       }
       this.renderCollisionBox(this.rocket, "#fb7185");
     }
+  }
+
+  renderVictoryLaunch() {
+    if (this.reducedMotion || this.victoryLaunchMs >= VICTORY_LAUNCH_DURATION_MS) return;
+    const { ctx, rocket, victoryLaunchMs: elapsed } = this;
+    const { chargeMs, ascentMs, tailMs } = VICTORY_LAUNCH;
+    const charge = Math.min(1, elapsed / chargeMs);
+    const tail = clamp((elapsed - VICTORY_ASCENT_END_MS) / tailMs, 0, 1);
+    const distance = rocket.y + rocket.height * 1.45;
+    const ascentAt = (time) => Math.max(0, (time - chargeMs) / ascentMs);
+    const ascent = Math.min(1, ascentAt(elapsed));
+    const centerX = rocket.x + rocket.width / 2;
+    const nozzleY = rocket.y + rocket.height * 0.75;
+
+    ctx.save();
+    for (let index = 0; index < 24; index += 1) {
+      const ageMs = index * 23;
+      const emittedAt = elapsed - ageMs;
+      if (emittedAt < 0 || emittedAt > VICTORY_ASCENT_END_MS) continue;
+      const previousAscent = ascentAt(emittedAt);
+      const spread = 5 + index * (1 + previousAscent);
+      const x = centerX + Math.sin(index * 2.399 + elapsed * 0.005) * spread;
+      const y = nozzleY - distance * previousAscent ** 2 + ageMs * 0.15;
+      const size = 1 + (index % 3) * 0.6;
+      ctx.globalAlpha = (0.15 + charge * 0.55) * (1 - index / 24) * (1 - tail);
+      ctx.fillStyle = index % 3 === 0 ? "#fff3c2" : "#ff9a48";
+      ctx.fillRect(x, y, size, size * (1.5 + previousAscent * 2.5));
+    }
+    ctx.restore();
+
+    const flicker = Math.sin(elapsed * 0.073);
+    const length = rocket.height * (0.32 + charge * 0.55 + ascent * 0.86 + flicker * 0.055);
+    const width = rocket.width * (0.15 + charge * 0.12);
+
+    ctx.save();
+    ctx.translate(0, -distance * ascentAt(elapsed) ** 2);
+    ctx.save();
+    const flame = ctx.createLinearGradient(centerX, nozzleY, centerX, nozzleY + length);
+    flame.addColorStop(0, "#fff0b2");
+    flame.addColorStop(0.42, "#ff972e");
+    flame.addColorStop(1, "#ff4a1d00");
+    ctx.fillStyle = flame;
+    ctx.shadowColor = "#ff792c";
+    ctx.shadowBlur = 12 + charge * 24;
+    ctx.globalAlpha = (0.35 + charge * 0.6) * (1 - tail);
+    ctx.beginPath();
+    ctx.moveTo(centerX - width, nozzleY);
+    ctx.quadraticCurveTo(centerX - width * 1.1, nozzleY + length * 0.42, centerX, nozzleY + length);
+    ctx.quadraticCurveTo(centerX + width * 1.1, nozzleY + length * 0.42, centerX + width, nozzleY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    if (tail === 0) this.rocket.render(ctx, this.elapsedMs + elapsed * 1.4, false);
+    ctx.restore();
   }
 
   renderCollisionBox(box, color) {

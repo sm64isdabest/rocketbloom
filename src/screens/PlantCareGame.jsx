@@ -1,4 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { GameIcon } from "../components/GameIcon.jsx";
 import "../styles/plant-care.css";
 
 const assetBase = import.meta.env.BASE_URL;
@@ -137,7 +138,7 @@ function WaterCare({ onFinish, ...scene }) {
               if (event.detail === 0) waterButton.current?.focus();
             }}
           >
-            {water[index] === waterGoal ? "✓" : index + 1}
+            {water[index] === waterGoal ? <GameIcon name="check" className="plant-care__root-check" /> : index + 1}
           </button>
         ))}
       </CareScene>
@@ -232,10 +233,10 @@ function BeeCare({ onFinish, ...scene }) {
               }}
             >
               <span className="plant-care__flower-head" aria-hidden="true">
-                <img src={`${labAssets}plant-05.png`} alt="" draggable="false" />
+                <img src={`${labAssets}plant-05.webp`} alt="" draggable="false" />
               </span>
               {occupied && <img className="plant-care__flower-bee" src={`${careAssets}bee.webp`} alt="" draggable="false" />}
-              {occupied && <span className="plant-care__target-check" aria-hidden="true">✓</span>}
+              {occupied && <GameIcon name="check" className="plant-care__target-check" />}
             </button>
           );
         })}
@@ -263,7 +264,7 @@ function BeeCare({ onFinish, ...scene }) {
                 }}
               >
                 <img src={`${careAssets}bee.webp`} alt="" draggable="false" />
-                {placed && <span aria-hidden="true">✓</span>}
+                {placed && <GameIcon name="check" className="plant-care__bee-check" />}
               </button>
             );
           })}
@@ -345,7 +346,7 @@ function CleanCare({ onFinish, ...scene }) {
               }}
             >
               <img src={`${careAssets}dirt.webp`} alt="" draggable="false" />
-              {clean && <span className="plant-care__target-check" aria-hidden="true">✓</span>}
+              {clean && <GameIcon name="check" className="plant-care__target-check" />}
             </button>
           );
         })}

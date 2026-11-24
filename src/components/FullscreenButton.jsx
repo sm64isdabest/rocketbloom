@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { clampFloatingPosition, readFloatingPosition } from "./floatingControlModel.js";
+import { GameIcon } from "./GameIcon.jsx";
 
 const POSITION_KEY = "rocketbloom.fullscreen-button-position";
 const BUTTON_SIZE = 52;
@@ -113,11 +114,7 @@ export function FullscreenButton({ hidden = false, docked = false }) {
         toggleFullscreen();
       }}
     >
-      {isFullscreen ? (
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4v4H4M16 4v4h4M8 20v-4H4m12 4v-4h4" /></svg>
-      ) : (
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5m6 0h5v5M4 15v5h5m6 0h5v-5" /></svg>
-      )}
+      <GameIcon name={isFullscreen ? "fullscreen-exit" : "fullscreen-enter"} />
     </button>
   );
 }

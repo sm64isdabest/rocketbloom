@@ -87,6 +87,16 @@ test("teclado continua controlando o foguete no modo mouse e toque", () => {
   });
 });
 
+test("a barra de espaço fica disponível para os botões do HUD durante a partida", () => {
+  withInputEnvironment(({ listeners, target }) => {
+    const input = createInputController(target);
+    let prevented = false;
+    listeners.get("keydown")({ key: " ", preventDefault() { prevented = true; } });
+    assert.equal(prevented, false);
+    input.destroy();
+  });
+});
+
 test("o modo de controle pode mudar sem recriar o input nem reutilizar um ponteiro antigo", () => {
   withInputEnvironment(({ canvasListeners, target, canvas }) => {
     const input = createInputController(target, "pointer");
