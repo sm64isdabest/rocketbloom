@@ -1140,7 +1140,8 @@ test("turbo acelera o scroll e desacelera suavemente quando termina", () => {
     normal.tick(0.05);
     engine.tick(0.05);
     assert.ok(engine.stars[0].y - turboStarY > normal.stars[0].y - normalStarY, "turbo accelerates the starfield");
-    assert.ok(turboStreakY - engine.speedStreaks[0].y > normalStreakY - normal.speedStreaks[0].y, "turbo accelerates the upward motion streaks");
+    assert.ok(normal.speedStreaks[0].y > normalStreakY, "os rastros descem pela tela");
+    assert.ok(engine.speedStreaks[0].y - turboStreakY > normal.speedStreaks[0].y - normalStreakY, "o turbo acelera a descida dos rastros");
     assert.ok(engine.progressMs > normal.progressMs, "turbo accelerates stage scroll");
     engine.powerUps.turboMs = 1;
     engine.tick(0.05);

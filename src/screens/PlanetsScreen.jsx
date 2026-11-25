@@ -174,7 +174,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
               <img src={getMenuAssetUrl("laboratory.webp", APP_BASE)} alt="" aria-hidden="true" />
               {laboratoryAttention ? (
                 <>
-                  <img className="phase-selection-laboratory__notice" src={`${APP_BASE}assets/ui/warning-alert.webp`} alt="" />
+                  <img className="phase-selection-laboratory__notice" src={`${APP_BASE}assets/ui/laboratory-notice.webp`} alt="" />
                   <span id="laboratory-attention" className="visually-hidden">Há novidades ou cuidados no laboratório.</span>
                 </>
               ) : null}

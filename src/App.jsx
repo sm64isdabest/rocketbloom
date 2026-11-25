@@ -472,6 +472,8 @@ export default function App() {
         <StorageScreen
           key={progress.gold.total}
           gold={progress.gold}
+          showDecorations={progress.settings.showVaultDecorations}
+          onToggleDecorations={() => patchSettings({ showVaultDecorations: !progress.settings.showVaultDecorations })}
           reducedMotion={reducedMotion}
           inputBlocked={debugOpen || settingsOpen}
           onBack={closeStorage}

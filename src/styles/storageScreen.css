@@ -110,6 +110,22 @@
   max-height: max(84px, calc(100dvh - max(72px, calc(env(safe-area-inset-top) + 65px)) - max(12px, env(safe-area-inset-bottom)) - 132px));
 }
 .gold-storage__vault { position: relative; isolation: isolate; width: min(92%, 500px); min-height: 80px; padding-top: 43px; }
+.gold-storage__decoration-toggle {
+  position: absolute;
+  inset: 0 0 auto;
+  width: max-content;
+  min-height: 36px;
+  margin-inline: auto;
+  padding: 5px 12px;
+  border: 1px solid #d8ac67;
+  border-radius: 10px;
+  background: #121e38ed;
+  color: #fff1c7;
+  font-size: .79rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.gold-storage__decoration-toggle:hover { background: #293c62; }
 .gold-storage__balance {
   margin: 0 0 6px;
   color: #ffe099;

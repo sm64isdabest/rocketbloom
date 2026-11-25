@@ -34,6 +34,7 @@ export function createDefaultProgress() {
       muteAll: false,
       reducedMotion: false,
       showHitboxes: false,
+      showVaultDecorations: true,
       controlMode: "pointer",
     },
   };
@@ -138,6 +139,7 @@ export function loadProgress(providedStorage) {
           muteAll: parsed.settings?.muteAll === true,
           reducedMotion: parsed.settings?.reducedMotion === true,
           showHitboxes: parsed.settings?.showHitboxes === true,
+          showVaultDecorations: parsed.settings?.showVaultDecorations !== false,
           controlMode: parsed.settings?.controlMode === "keyboard" ? "keyboard" : "pointer",
         },
       },

@@ -45,10 +45,10 @@ export function createSpeedStreaks(count, width, height, rng = Math.random) {
 export function updateSpeedStreaks(streaks, dt, width, height, speed, rng = Math.random) {
   const flowSpeed = 180 + Math.max(0, speed - SPEED.streakThreshold) * 3.8;
   for (const streak of streaks) {
-    streak.y -= flowSpeed * dt;
+    streak.y += flowSpeed * dt;
     streak.x += streak.drift * dt;
-    if (streak.y < -streak.length * 4) {
-      streak.y = height + rng() * 100;
+    if (streak.y > height + streak.length * 3) {
+      streak.y = -rng() * 100;
       streak.x = rng() * width;
     }
     if (streak.x < -4) streak.x = width + 4;
@@ -72,7 +72,7 @@ export function renderSpeedStreaks(ctx, streaks, accent, speed) {
     ctx.lineWidth = streak.thickness * (0.6 + intensity);
     ctx.beginPath();
     ctx.moveTo(streak.x, streak.y);
-    ctx.lineTo(tailX, streak.y + length);
+    ctx.lineTo(tailX, streak.y - length);
     ctx.stroke();
     if (bright && intensity > 0.65) {
       ctx.globalAlpha *= 0.24;

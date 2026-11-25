@@ -17,6 +17,17 @@ function memoryStorage(seed = {}) {
   };
 }
 
+test("a preferência de decorações do Cofre sobrevive ao recarregar e o perfil antigo começa com elas visíveis", () => {
+  const profile = createDefaultProgress();
+  const legacy = { ...profile, settings: {} };
+  const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
+  assert.equal(loadProgress(storage).progress.settings.showVaultDecorations, true);
+
+  profile.settings.showVaultDecorations = false;
+  assert.ok(saveProgress(profile, storage).ok);
+  assert.equal(loadProgress(storage).progress.settings.showVaultDecorations, false);
+});
+
 test("perfil antigo descarta diamantes e preserva ouro e progresso", () => {
   const old = { ...createDefaultProgress(), diamonds: 45, coins: 18, gold: { total: 312 }, completedStageIds: ["earth-1"] };
   const store = memoryStorage({ [STORAGE_KEY]: JSON.stringify(old) });

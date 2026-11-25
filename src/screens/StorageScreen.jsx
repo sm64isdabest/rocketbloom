@@ -32,7 +32,7 @@ function GoldMeter({ total, trackRef, pulse }) {
   );
 }
 
-export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, onSettings, onAcknowledge }) {
+export function StorageScreen({ gold, showDecorations, onToggleDecorations, reducedMotion, inputBlocked, onBack, onSettings, onAcknowledge }) {
   const [from] = useState(gold.seenTotal);
   const [seenAtEntry] = useState(gold.seenGoalIds);
   const [frame, setFrame] = useState({ total: from, arrived: 0 });
@@ -133,7 +133,7 @@ export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, onSet
     }}>
       <img className="laboratory-scene__background gold-storage__background"
         src={`${APP_BASE}assets/laboratory/laboratory-background-clean.webp`} alt="" />
-      <Decorations total={total} />
+      {showDecorations ? <Decorations total={total} /> : null}
       {animating ? <canvas ref={canvasRef} className="gold-storage__flights" aria-hidden="true" /> : null}
 
       <header className="laboratory-scene__topbar gold-storage__header">
@@ -160,7 +160,11 @@ export function StorageScreen({ gold, reducedMotion, inputBlocked, onBack, onSet
               </div>
               <button className="gold-storage__skip" ref={skipRef} type="button">Pular animação</button>
             </>
-          ) : null}
+          ) : (
+            <button className="gold-storage__decoration-toggle" type="button" onClick={onToggleDecorations}>
+              {showDecorations ? "Ocultar decorações" : "Mostrar decorações"}
+            </button>
+          )}
           <div className="gold-storage__balance">{format.format(total)} ouro</div>
           <GoldMeter total={total} trackRef={trackRef} pulse={animating ? frame.arrived : 0} />
           <div className="sr-only" role="status">

@@ -1137,17 +1137,17 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .phase-selection-navigation .phase-selection-laboratory__notice {
   position: absolute;
   z-index: 1;
-  top: -12%;
-  right: -9%;
-  width: clamp(19px, 3cqw, 34px);
+  top: -20%;
+  right: -18%;
+  width: clamp(25px, 4.2cqw, 44px);
   height: auto;
-  filter: drop-shadow(0 0 5px #ff956ccc);
+  filter: drop-shadow(0 0 7px #ffe25de6);
   pointer-events: none;
   animation: laboratory-notice 1.05s ease-in-out infinite alternate;
 }
 @keyframes laboratory-notice {
-  from { opacity: .55; transform: scale(.85); }
-  to { opacity: 1; transform: scale(1.22); }
+  from { transform: scale(.96); }
+  to { transform: scale(1.14); }
 }
 .phase-selection-back:focus-visible,
 .phase-selection-settings:focus-visible,
@@ -1279,67 +1279,20 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   display: grid;
   overflow-y: auto;
   padding-block: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-bottom));
-  background: radial-gradient(ellipse at 50% 18%, color-mix(in srgb, var(--victory-accent, var(--green)) 23%, transparent), transparent 62%);
-}
-.victory-screen__panel {
-  width: min(100%, 620px);
-  margin: auto;
-  padding: clamp(16px, 4vw, 42px);
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  background: var(--panel);
-  box-shadow: var(--shadow);
-  text-align: center;
-  animation: result-panel-arrive .55s cubic-bezier(.2,.75,.25,1) both;
-}
-@keyframes result-panel-arrive { from { opacity: 0; transform: translateY(22px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.victory-screen__planet {
-  display: block;
-  width: clamp(64px, 13vw, 108px);
-  aspect-ratio: 1;
-  object-fit: contain;
-  margin: 0 auto 12px;
-}
-.victory-screen__stage { color: var(--victory-accent, var(--green)); }
-.victory-screen h1 { margin-bottom: 0; font-size: clamp(1.8rem, 6vw, 3.4rem); }
-.victory-screen h1:focus { outline: none; }
-.victory-screen__stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 24px 0;
-}
-.victory-screen__stats > div {
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 12px 8px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(5, 14, 21, .55);
-  animation: screen-item-arrive .38s ease-out both;
-  animation-delay: calc(95ms + var(--stat-index, 0) * 45ms);
-}
-.motion-reduced .victory-screen__stats > div { animation-delay: 0ms; }
-.victory-screen__stats dt { color: var(--muted); font-size: .78rem; }
-.victory-screen__stats dd { margin: 0; color: var(--ink); font-size: 1.4rem; font-weight: 800; font-variant-numeric: tabular-nums; }
-.victory-screen__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; }
-@media (max-width: 520px) {
-  .victory-screen__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-block: 16px; }
-}
-.victory-screen--campaign {
   padding-inline: clamp(14px, 6vw, 105px);
   background: #040d31 radial-gradient(ellipse at 59% 52%, #0543a34d, transparent 65%) center / cover;
   background-image: radial-gradient(ellipse at 59% 52%, #0543a34d, transparent 65%), var(--victory-background);
 }
-.victory-screen--campaign .victory-screen__panel {
+.victory-screen__panel {
   width: min(100%, 1300px);
   padding: 0 0 0 31%;
-  border: 0;
-  background: none;
-  box-shadow: none;
+  margin: auto;
+  text-align: center;
+  animation: result-panel-arrive .55s cubic-bezier(.2,.75,.25,1) both;
+}
+@keyframes result-panel-arrive {
+  from { opacity: 0; transform: translateY(22px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .victory-screen__astronaut {
   position: absolute;
@@ -1352,19 +1305,19 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   filter: drop-shadow(0 0 18px #00a6ff80);
   pointer-events: none;
 }
-.victory-screen--campaign .victory-screen__stage {
+.victory-screen__stage {
   position: relative;
   z-index: 1;
   margin-bottom: 8px;
   color: #bfeaff;
   text-shadow: 0 2px 6px #021436;
 }
-.victory-screen--campaign .victory-screen__heading {
+.victory-screen__heading {
   position: relative;
   isolation: isolate;
   margin: 0 auto clamp(15px, 3vmin, 32px);
 }
-.victory-screen--campaign .victory-screen__heading::before {
+.victory-screen__heading::before {
   position: absolute;
   z-index: -1;
   inset: 18% 1% 5%;
@@ -1375,7 +1328,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   transform: rotate(6deg);
   content: "";
 }
-.victory-screen--campaign h1 {
+.victory-screen h1 {
   margin: 0;
   color: #dcf8ff;
   font: italic 900 clamp(2.3rem, min(8vw, 12dvh), 6.7rem)/.9 "Arial Black", "Trebuchet MS", sans-serif;
@@ -1384,8 +1337,9 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   -webkit-text-stroke: clamp(4px, .75vw, 10px) #071b6c;
   text-shadow: 0 5px #2049bd, 0 10px #061640, 0 0 24px #00c5ff;
 }
-.victory-screen--campaign h1 span { display: block; }
-.victory-screen--campaign h1 span:last-child {
+.victory-screen h1:focus { outline: none; }
+.victory-screen h1 span { display: block; }
+.victory-screen h1 span:last-child {
   color: #ffe26b;
   text-shadow: 0 5px #ed790c, 0 10px #160c33, 0 0 23px #00b9ff;
 }
@@ -1417,7 +1371,8 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   object-fit: contain;
   transform: rotate(54deg);
 }
-.victory-screen--campaign .victory-screen__stats {
+.victory-screen__stats {
+  display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: clamp(5px, 1.2vmin, 12px);
   margin: 0;
@@ -1427,51 +1382,45 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   background: linear-gradient(150deg, #0b2b65f5, #071a41f5);
   box-shadow: 0 0 28px #007fd388, inset 0 0 26px #146cee57;
 }
-.victory-screen--campaign .victory-screen__stats > div {
+.victory-screen__stats > div {
   position: relative;
   grid-column: span 2;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: center;
   align-items: flex-start;
   gap: 4px;
   min-height: clamp(56px, 11vmin, 110px);
   padding: 8px 7px 8px clamp(40px, 7.3vmin, 78px);
-  border-color: #19569c;
+  border: 1px solid #19569c;
   border-radius: clamp(10px, 2vw, 23px);
   background: #041a42db;
   text-align: left;
+  animation: screen-item-arrive .38s ease-out both;
+  animation-delay: calc(95ms + var(--stat-index, 0) * 45ms);
 }
-.victory-screen--campaign .victory-screen__stats > div:nth-child(n+4) { grid-column: span 3; }
-.victory-screen--campaign .victory-screen__stats dt { color: #b5dff6; font-size: clamp(.68rem, 1.85vmin, 1.12rem); line-height: 1.1; }
-.victory-screen--campaign .victory-screen__stats dd { color: #fff; font-size: clamp(1.2rem, 4.4vmin, 2.65rem); line-height: 1; }
+.motion-reduced .victory-screen__stats > div { animation-delay: 0ms; }
+.victory-screen__stats > div:nth-child(n+4) { grid-column: span 3; }
+.victory-screen__stats dt { color: #b5dff6; font-size: clamp(.68rem, 1.85vmin, 1.12rem); line-height: 1.1; }
+.victory-screen__stats dd { max-width: 100%; margin: 0; font-weight: 800; font-variant-numeric: tabular-nums; color: #fff; font-size: clamp(1.2rem, 4.4vmin, 2.65rem); line-height: 1; overflow-wrap: anywhere; }
 .victory-screen__stat-icon {
   position: absolute;
   top: 50%;
   left: clamp(5px, 1.4vmin, 16px);
-  display: grid;
+  display: block;
   width: clamp(26px, 5.4vmin, 60px);
   height: clamp(26px, 5.4vmin, 60px);
-  place-items: center;
-  color: #5ce7ff;
-  font: 900 clamp(20px, 4.8vmin, 56px)/1 "Segoe UI", sans-serif;
   object-fit: contain;
-  text-shadow: 0 2px #063894, 0 0 9px #14b8ff;
   transform: translateY(-50%);
 }
-.victory-screen__stat-icon--correct, .victory-screen__stat-icon--incorrect {
-  border: 2px solid #a5ff6d;
-  border-radius: 50%;
-  background: linear-gradient(#5ded36, #169a20);
-  color: #052c12;
-  font-size: clamp(17px, 4vmin, 42px);
-  text-shadow: 0 1px #adff6c;
+.victory-screen__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: clamp(11px, 2.2vmin, 27px);
 }
-.victory-screen__stat-icon--incorrect {
-  border-color: #ff9f8b;
-  background: linear-gradient(#ff6f5f, #c81c35);
-  color: #43031a;
-  text-shadow: 0 1px #ffacaa;
-}
-.victory-screen--campaign .victory-screen__actions { margin-top: clamp(11px, 2.2vmin, 27px); }
-.victory-screen--campaign .victory-screen__actions .btn {
+.victory-screen__actions .btn {
   min-height: clamp(44px, 9vmin, 88px);
   padding-inline: clamp(15px, 3.5vw, 50px);
   border: 2px solid #a6ff72;
@@ -1481,9 +1430,57 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   font-size: clamp(.87rem, 2.9vmin, 1.85rem);
   text-shadow: 0 1px #bdff95;
 }
-.victory-screen--campaign .victory-screen__actions .btn span { font-size: 1.45em; line-height: .8; }
+.victory-screen__return-icon {
+  width: clamp(19px, 3.2vmin, 34px);
+  height: clamp(19px, 3.2vmin, 34px);
+  object-fit: contain;
+}
+.victory-screen--endless {
+  background-image: radial-gradient(ellipse at 55% 49%, #2b27586b, #07091bcc 75%), var(--victory-background);
+}
+.victory-screen--endless .victory-screen__astronaut {
+  height: 85%;
+  filter: drop-shadow(0 0 18px #5981d163);
+}
+.victory-screen--endless .victory-screen__heading::before {
+  border-color: #9699dd;
+  box-shadow: 0 0 22px #696dba, inset 0 0 16px #5955a66b;
+}
+.victory-screen--endless h1 span:last-child {
+  color: #d5cbef;
+  text-shadow: 0 5px #6a5f98, 0 10px #111636, 0 0 20px #6975c9;
+}
+.victory-screen--endless .victory-screen__greeting {
+  border-color: #838ab9;
+  background: linear-gradient(#313d68, #161c38 76%);
+  box-shadow: 0 4px 12px #000b, inset 0 3px 9px #929acd4d;
+}
+.victory-screen--endless .victory-screen__stats {
+  border-color: #747caf;
+  background: linear-gradient(150deg, #263359f5, #121a34f5);
+  box-shadow: 0 0 24px #5c65ac55, inset 0 0 22px #717cc742;
+}
+.victory-screen--endless .victory-screen__stats > div {
+  border-color: #535d86;
+  background: #121b35;
+}
+.victory-screen--endless .victory-screen__actions .btn {
+  min-height: clamp(44px, 7vmin, 74px);
+  padding-inline: clamp(13px, 2.4vw, 38px);
+  border-color: #b9c8ec;
+  background: linear-gradient(#8aa1d4, #566da8);
+  box-shadow: 0 4px #253962, 0 7px #0b1329;
+  color: #071329;
+  font-size: clamp(.87rem, 2.2vmin, 1.4rem);
+  text-shadow: none;
+}
+.victory-screen--endless .victory-screen__actions .btn--ghost {
+  border-color: #6675a1;
+  background: #171f3b;
+  color: #ecf3ff;
+}
 @media (max-width: 650px) and (orientation: portrait) {
-  .victory-screen--campaign .victory-screen__panel { padding: 0; }
+  .victory-screen__panel { padding: 0; }
   .victory-screen__astronaut {
     position: relative;
     inset: auto;
@@ -1492,17 +1489,18 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
     margin-bottom: 8px;
     transform: none;
   }
-  .victory-screen--campaign h1 { font-size: clamp(2.2rem, 11vw, 4rem); }
+  .victory-screen--endless .victory-screen__astronaut { height: clamp(90px, 22dvh, 220px); }
+  .victory-screen h1 { font-size: clamp(2.2rem, 11vw, 4rem); }
 }
 @media (max-width: 450px) {
-  .victory-screen--campaign .victory-screen__stats > div { align-items: center; padding-inline: 4px; text-align: center; }
-  .victory-screen--campaign .victory-screen__stats dd { display: grid; justify-items: center; gap: 3px; }
+  .victory-screen__stats > div { align-items: center; padding-inline: 4px; text-align: center; }
+  .victory-screen__stats dd { display: grid; justify-items: center; gap: 3px; }
   .victory-screen__stat-icon { position: static; transform: none; }
 }
 @media (max-height: 475px) and (orientation: landscape) {
-  .victory-screen--campaign { padding-block: 12px 18px; }
-  .victory-screen--campaign .victory-screen__heading { margin-bottom: 9px; }
-  .victory-screen--campaign .victory-screen__stats { padding: 17px 8px 8px; }
+  .victory-screen { padding-block: 12px 18px; }
+  .victory-screen__heading { margin-bottom: 9px; }
+  .victory-screen__stats { padding: 17px 8px 8px; }
 }
 .phase-selection-stage__progress {
   position: absolute;

@@ -63,14 +63,15 @@ export const PROJECT_IMAGES = [
   ...["turbo", "bubble", "magnet", "doubler", "freeze"].map((power) => `/assets/powerups/${power}.png`),
   "/assets/ui/coin.webp",
   "/assets/ui/life-heart.webp",
-  "/assets/ui/victory/astronaut.webp",
-  "/assets/ui/victory/space.webp",
+  ...["astronaut", "astronaut-tired", "space", "score", "time", "correct", "incorrect", "return", "record"]
+    .map((name) => `/assets/ui/victory/${name}.webp`),
   ...["chest", "check", "effects", "fullscreen-enter", "fullscreen-exit", "keyboard", "mouse", "music", "pause", "sound-off", "sound-on"].map(
     (icon) => `/assets/ui/controls/${icon}.webp`,
   ),
   ...PLANETS.map(({ endlessIcon }) => `/assets/ui/${endlessIcon}`),
   ...PLANETS.map(({ id }) => `/assets/ui/planets/${id}-route.webp`),
   "/assets/ui/warning-alert.webp",
+  "/assets/ui/laboratory-notice.webp",
   "/assets/ui/uneb-logo.png",
   "/assets/ui/selection-rocket.webp",
   "/assets/ui/level-frames/arrow-left.webp",
