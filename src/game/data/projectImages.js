@@ -34,7 +34,6 @@ export const PROJECT_IMAGES = [
   "/assets/backgrounds/marte_background.webp",
   "/assets/backgrounds/marte_background_seamless.webp",
   "/assets/backgrounds/marte_new_seamless.webp",
-  "/assets/backgrounds/marte-red-seamless.png",
   "/assets/backgrounds/netuno_background.webp",
   "/assets/backgrounds/netuno_background_seamless.webp",
   "/assets/backgrounds/saturno_background.webp",

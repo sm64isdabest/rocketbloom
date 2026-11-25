@@ -2,7 +2,7 @@ const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 // Keep the original height as the scale reference for tiles trimmed at the seam.
 const BACKGROUND_FILES = {
   earth: { file: "terra_amazonia_seamless.webp", sourceHeight: 941 },
-  mars: { file: "marte-red-seamless.png", sourceHeight: 238 },
+  mars: { file: "marte_background_seamless.webp", sourceHeight: 909 },
   saturn: { file: "saturno_background_seamless.webp", sourceHeight: 941 },
   neptune: { file: "netuno_background_seamless.webp", sourceHeight: 941 },
 };
