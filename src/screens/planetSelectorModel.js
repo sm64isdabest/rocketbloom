@@ -9,10 +9,10 @@ export function getStageClickAction(selectedStageId, clickedStageId) {
 }
 
 export function getOrbitStage(stages, selectedStageId) {
-  return stages.find((stage) => stage.id === selectedStageId)
-    ?? stages.find((stage) => stage.available && !stage.completed)
-    ?? stages.find((stage) => !stage.completed)
-    ?? stages.at(-1);
+  const available = stages.filter((stage) => stage.available);
+  return available.find((stage) => stage.id === selectedStageId)
+    ?? available.find((stage) => !stage.completed)
+    ?? available.at(-1);
 }
 
 export function getInitialExpandedPlanetId(progress, planets = PLANETS) {
@@ -21,13 +21,12 @@ export function getInitialExpandedPlanetId(progress, planets = PLANETS) {
   return nextPlanet?.id ?? unlocked.at(-1)?.id ?? planets[0]?.id ?? null;
 }
 
-export function canNavigateToPlanet(fromPlanetId, toPlanetId, progress, planets = PLANETS) {
-  const fromIndex = planets.findIndex((planet) => planet.id === fromPlanetId);
-  const toIndex = planets.findIndex((planet) => planet.id === toPlanetId);
-  if (fromIndex < 0 || toIndex < 0 || Math.abs(fromIndex - toIndex) !== 1) return false;
-  if (!progress.unlockedPlanetIds.includes(fromPlanetId) || !progress.unlockedPlanetIds.includes(toPlanetId)) return false;
-  if (toIndex < fromIndex) return true;
-  return isPlanetComplete(planets[fromIndex], progress.completedStageIds);
+export function getAdjacentPlanets(planetId, planets = PLANETS) {
+  const index = planets.findIndex((planet) => planet.id === planetId);
+  return {
+    previousPlanet: planets[index - 1] ?? null,
+    nextPlanet: index < 0 ? null : planets[index + 1] ?? null,
+  };
 }
 
 export function canPlayEndless(planet, progress) {

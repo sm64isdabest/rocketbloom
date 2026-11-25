@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { PLANETS } from "../game/data/planets.js";
 import { createDefaultProgress } from "../utils/storage.js";
-import { canNavigateToPlanet, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
+import { getAdjacentPlanets, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
 
 test("selector shows three campaign phases and a locked endless mode on a new save", () => {
   const progress = createDefaultProgress();
@@ -51,26 +51,22 @@ test("selector can return to the planet containing the phase just completed", ()
   assert.equal(getPlanetIdForStage("unknown-stage"), null);
 });
 
-test("planet navigation only permits adjacent unlocked planets and gates forward travel on completion", () => {
-  const progress = createDefaultProgress();
-  progress.unlockedPlanetIds = ["earth", "mars"];
-
-  assert.equal(canNavigateToPlanet("earth", "mars", progress), false);
-  assert.equal(canNavigateToPlanet("earth", "saturn", progress), false);
-  assert.equal(canNavigateToPlanet("mars", "earth", progress), true);
-
-  progress.completedStageIds = PLANETS[0].stages.map(({ id }) => id);
-  assert.equal(canNavigateToPlanet("earth", "mars", progress), true);
-  assert.equal(canNavigateToPlanet("mars", "saturn", progress), false);
+test("as setas mostram os vizinhos de qualquer planeta, sem dar a volta nas extremidades", () => {
+  const [earth, mars, saturn, neptune] = PLANETS;
+  assert.deepEqual(getAdjacentPlanets("earth"), { previousPlanet: null, nextPlanet: mars });
+  assert.deepEqual(getAdjacentPlanets("mars"), { previousPlanet: earth, nextPlanet: saturn });
+  assert.deepEqual(getAdjacentPlanets("saturn"), { previousPlanet: mars, nextPlanet: neptune });
+  assert.deepEqual(getAdjacentPlanets("neptune"), { previousPlanet: saturn, nextPlanet: null });
 });
 
-test("planet navigation rejects locked sources and non-adjacent destinations", () => {
+test("visitar planetas bloqueados não libera fases nem o modo infinito", () => {
   const progress = createDefaultProgress();
-  progress.unlockedPlanetIds = ["earth", "mars", "saturn"];
-  progress.completedStageIds = PLANETS[0].stages.map(({ id }) => id);
-
-  assert.equal(canNavigateToPlanet("earth", "saturn", progress), false);
-  assert.equal(canNavigateToPlanet("neptune", "saturn", progress), false);
+  for (const planet of PLANETS.slice(1)) {
+    const model = getPlanetSelectorModel(planet, progress);
+    assert.ok(model.stages.every(({ available, status }) => !available && status === "locked"));
+    assert.equal(model.endless.unlocked, false);
+    assert.equal(getOrbitStage(model.stages, planet.stages[0].id), undefined);
+  }
 });
 
 test("a phase needs a first click to select and a second click to enter", () => {

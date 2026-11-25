@@ -5,7 +5,7 @@ import { PLANETS } from "../game/data/planets.js";
 import { EARTH_TUTORIAL_STAGE_ID } from "../game/data/missionIntro.js";
 import { playGameSound } from "../game/audio/audioManager.js";
 import { getPendingLaboratoryStage, hasLaboratoryAttention } from "../utils/laboratoryProgress.js";
-import { canNavigateToPlanet, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
+import { getAdjacentPlanets, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
 import { getMenuAssetUrl } from "./menuModel.js";
 import { getPauseAssetUrl, RETURN_ICON_FILE } from "./pauseModel.js";
 import { setOrbitTargetElement } from "./rocketOrbit.js";
@@ -58,9 +58,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   const planet = PLANETS.find(({ id }) => id === selectedPlanetId) ?? PLANETS[0];
   const model = getPlanetSelectorModel(planet, progress);
   const laboratoryAttention = hasLaboratoryAttention(progress);
-  const planetIndex = PLANETS.findIndex(({ id }) => id === planet.id);
-  const previousPlanet = PLANETS[planetIndex - 1];
-  const nextPlanet = PLANETS[planetIndex + 1];
+  const { previousPlanet, nextPlanet } = getAdjacentPlanets(planet.id);
   const numberFormat = new Intl.NumberFormat("pt-BR");
   const endlessRecord = `Recorde: ${numberFormat.format(model.endless.highScore)} pts`;
   const endlessLabel = model.endless.unlocked
@@ -75,15 +73,15 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
     playGameSound("discovery");
   }, [model.unlocked, onMarkPlanetSeen, planet]);
 
-  const canGoBack = previousPlanet && canNavigateToPlanet(planet.id, previousPlanet.id, progress);
-  const canGoForward = nextPlanet && canNavigateToPlanet(planet.id, nextPlanet.id, progress);
   const activeStage = model.stages.find((stage) => stage.available && !stage.completed);
   const orbitStage = getOrbitStage(model.stages, selectedStageId);
   const showFirstStageHint = selectionGuide === "first-flight" && planet.id === "earth" && !progress.onboarding?.earthTutorialSeen;
   const showLaboratoryGuide = selectionGuide === "laboratory" && planet.id === "earth" && getPendingLaboratoryStage(planet, progress) !== null;
   const baseClass = `phase-selection-canvas phase-selection-canvas--${planet.id}${revealingPlanetId === planet.id ? " is-revealing" : ""}`;
 
-  const launchStage = (stageId, targetElement) => {
+  const launchStage = (stage, targetElement) => {
+    if (!stage.available) return;
+    const { id: stageId } = stage;
     setEndlessSelected(false);
     setOrbitTargetElement(activeStageElementRef, targetElement);
     if (getStageClickAction(selectedStageId, stageId) === "select") {
@@ -153,7 +151,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
             <img className="phase-selection-identity__planet" src={`${APP_BASE}assets/ui/planets/${planet.id}-icon.webp`} alt="" aria-hidden="true" />
             <div className="phase-selection-identity__copy">
               <span className="phase-selection-identity__name">{planet.name}</span>
-              <span className="phase-selection-identity__subtitle">{PLANET_SUBTITLES[planet.id]}</span>
+              <span className="phase-selection-identity__subtitle">{model.unlocked ? PLANET_SUBTITLES[planet.id] : "Planeta bloqueado"}</span>
             </div>
           </div>
 
@@ -212,7 +210,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
                   aria-describedby={guided ? "phase-selection-guide-hint" : undefined}
                   aria-pressed={selectedStageId === stage.id}
                   aria-label={`${planet.name}, fase ${stageIndex + 1}, ${stageStatusLabel(stage)}, ${selectedStageId === stage.id ? "selecionada, clique novamente para entrar" : "clique para selecionar"}`}
-                  onClick={(event) => launchStage(stage.id, event.currentTarget)}
+                  onClick={(event) => launchStage(stage, event.currentTarget)}
                 >
                   <img
                     className="phase-selection-stage__frame"
@@ -252,22 +250,22 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
         <button
           type="button"
           className="phase-selection-arrow phase-selection-arrow--left"
-          disabled={!canGoBack}
+          disabled={!previousPlanet}
           onClick={() => previousPlanet && selectPlanet(previousPlanet.id)}
-          aria-label={canGoBack ? `Planeta anterior: ${previousPlanet.name}` : "Não há planeta anterior desbloqueado"}
+          aria-label={previousPlanet ? `Planeta anterior: ${previousPlanet.name}` : "Não há planeta anterior"}
         >
           <img src={`${APP_BASE}assets/ui/level-frames/arrow-left.webp`} alt="" aria-hidden="true" draggable="false" />
         </button>
         <button
           type="button"
           className="phase-selection-arrow phase-selection-arrow--right"
-          disabled={!canGoForward}
-          onClick={() => nextPlanet && canGoForward && selectPlanet(nextPlanet.id)}
-          aria-label={canGoForward ? `Próximo planeta: ${nextPlanet.name}` : "Conclua todas as fases para desbloquear o próximo planeta"}
+          disabled={!nextPlanet}
+          onClick={() => nextPlanet && selectPlanet(nextPlanet.id)}
+          aria-label={nextPlanet ? `Próximo planeta: ${nextPlanet.name}` : "Não há próximo planeta"}
         >
           <img src={`${APP_BASE}assets/ui/level-frames/arrow-right.webp`} alt="" aria-hidden="true" draggable="false" />
         </button>
-        <p className="visually-hidden" aria-live="polite">{model.progressLabel}</p>
+        <p className="visually-hidden" aria-live="polite">{planet.name}. {model.unlocked ? model.progressLabel : "Planeta bloqueado."}</p>
         {showFirstStageHint ? (
           <PhaseSelectionGuide kind="stage" targetRef={firstStageRef} message={selectedStageId === EARTH_TUTORIAL_STAGE_ID
             ? "Selecione de novo para decolar!" : "Selecione o Nível 1 da Terra!"} />
