@@ -191,14 +191,14 @@ export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showD
       {animating ? <canvas ref={canvasRef} className="gold-storage__flights" aria-hidden="true" /> : null}
 
       <header className="laboratory-scene__topbar gold-storage__header">
-        <button type="button" className="laboratory-scene__icon-button gold-storage__button gold-storage__back" onClick={onBack}
+        <button type="button" className="laboratory-scene__icon-button gold-storage__back" onClick={onBack}
           aria-label="Voltar à seleção de fases" title="Voltar à seleção de fases">
-          <img className="gold-storage__button-art" src={getPauseAssetUrl(RETURN_ICON_FILE, APP_BASE)} alt="" draggable={false} />
+          <img src={getPauseAssetUrl(RETURN_ICON_FILE, APP_BASE)} alt="" draggable={false} />
         </button>
         <h1 id="gold-title" className="laboratory-scene__title" ref={titleRef} tabIndex={-1}>Cofre de Moedas</h1>
-        <button type="button" className="laboratory-scene__icon-button laboratory-scene__icon-button--settings gold-storage__button"
+        <button type="button" className="laboratory-scene__icon-button laboratory-scene__icon-button--settings"
           onClick={onSettings} aria-label="Abrir configurações">
-          <img className="gold-storage__button-art" src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" draggable={false} />
+          <img src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" draggable={false} />
         </button>
       </header>
 
@@ -227,7 +227,7 @@ export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showD
                 onClick={() => cosmeticsRef.current?.showModal()}><VaultIcon name="cosmetics" /></button>
             </div>
           )}
-          <div className="gold-storage__balance">{format.format(total)} ouro</div>
+          <div className="gold-storage__balance">{format.format(gold.total)} ouro</div>
           <GoldMeter total={total} trackRef={trackRef} pulse={animating ? frame.arrived : 0} />
           <div className="sr-only" role="status">
             {revealed.length > 0 ? `${revealed.at(-1).treasure.name} liberado` : ""}

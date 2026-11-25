@@ -40,8 +40,8 @@ export default function App() {
   const { progress, warning, fatal, patchSettings, persist, resetProgress } = usePersistentProgress();
   const [screen, setScreen] = useState(SCREEN.BOOT);
   const [menuPage, setMenuPage] = useState(SCREEN.MENU);
+  const [showFirstFlightGuide, setShowFirstFlightGuide] = useState(false);
   const selectorStorageButton = useRef(null);
-  const selectorGoldBalance = useRef(null);
   const [navigationContext, dispatchNavigationContext] = useReducer(navigationContextReducer, initialNavigationContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsTrigger = useRef(null);
@@ -232,6 +232,7 @@ export default function App() {
   const completeMissionIntro = () => {
     persist((current) => ({ ...current, onboarding: { ...current.onboarding, missionSeen: true } }));
     dispatchNavigationContext({ type: "select-stage", planetId: "earth", selectedStageId: null });
+    setShowFirstFlightGuide(true);
     setMenuPage(SCREEN.PLANETS);
   };
 
@@ -241,6 +242,7 @@ export default function App() {
       onboarding: { ...current.onboarding, earthTutorialSeen: true },
       settings: { ...current.settings, controlMode },
     }));
+    setShowFirstFlightGuide(false);
     setScreen(reducedMotion ? SCREEN.PLAYING : SCREEN.FLIGHT_INTRO);
   };
 
@@ -379,7 +381,7 @@ export default function App() {
   const resetCampaign = () => {
     const result = resetProgress();
     if (!result.ok) return result;
-    selectorGoldBalance.current = null;
+    setShowFirstFlightGuide(false);
     debugEngineRef.current?.stop();
     hudRef.current = null;
     settingsTrigger.current = null;
@@ -530,11 +532,13 @@ export default function App() {
           completedStageId={completionStageId}
           preferredPlanetId={navigationContext.selector.planetId}
           preferredStageId={navigationContext.selector.selectedStageId}
+          showFirstFlightGuide={showFirstFlightGuide}
           storageButtonRef={selectorStorageButton}
-          previousGoldBalance={selectorGoldBalance}
-          goldCountPaused={debugOpen || settingsOpen}
           onStorage={enterStorageFromSelector}
-          onBack={() => setMenuPage(SCREEN.MENU)}
+          onBack={() => {
+            setShowFirstFlightGuide(false);
+            setMenuPage(SCREEN.MENU);
+          }}
           onPlay={startStage}
           onPlayEndless={(planetId) => startStage(planetId, null, "endless")}
           reducedMotion={reducedMotion}

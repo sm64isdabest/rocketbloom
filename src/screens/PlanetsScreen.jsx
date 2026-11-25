@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { GameIcon } from "../components/GameIcon.jsx";
 import { MuteButton } from "../components/MuteButton.jsx";
 import { PLANETS } from "../game/data/planets.js";
-import { EARTH_TUTORIAL_STAGE_ID } from "../game/data/missionIntro.js";
+import { EARTH_TUTORIAL_STAGE_ID, FIRST_FLIGHT_POINTER } from "../game/data/missionIntro.js";
 import { playGameSound } from "../game/audio/audioManager.js";
 import { hasLaboratoryAttention } from "../utils/laboratoryProgress.js";
 import { canNavigateToPlanet, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
@@ -38,7 +38,7 @@ const stageStatusLabel = (stage) => {
 };
 
 export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, preferredStageId, onBack, onPlay, onPlayEndless,
-  onMarkPlanetSeen, onSettings, muted, onToggleMute, onCommandRoom, onSelectionChange, reducedMotion, storageButtonRef, previousGoldBalance, goldCountPaused, onStorage }) {
+  onMarkPlanetSeen, onSettings, muted, onToggleMute, onCommandRoom, onSelectionChange, reducedMotion, showFirstFlightGuide, storageButtonRef, onStorage }) {
   const validPreferredPlanetId = PLANETS.some(({ id }) => id === preferredPlanetId) ? preferredPlanetId : null;
   const initialPlanetId = validPreferredPlanetId ?? getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const initialStageId = PLANETS.find(({ id }) => id === initialPlanetId)?.stages.some(({ id }) => id === preferredStageId)
@@ -76,8 +76,9 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   const canGoForward = nextPlanet && canNavigateToPlanet(planet.id, nextPlanet.id, progress);
   const activeStage = model.stages.find((stage) => stage.available && !stage.completed);
   const orbitStage = getOrbitStage(model.stages, selectedStageId);
+  const showFirstStageHint = showFirstFlightGuide && planet.id === "earth" && !progress.onboarding?.earthTutorialSeen;
+  const [guideX, guideY] = STAGE_POSITIONS.earth[0];
   const baseClass = `phase-selection-canvas phase-selection-canvas--${planet.id}${revealingPlanetId === planet.id ? " is-revealing" : ""}`;
-  const showFirstStageHint = planet.id === "earth" && progress.onboarding?.missionSeen && !progress.onboarding.earthTutorialSeen;
 
   const launchStage = (stageId, targetElement) => {
     setEndlessSelected(false);
@@ -112,7 +113,8 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   return (
     <main className="phase-selection-screen" aria-label={`Seleção de fases: ${planet.name}`}>
       <div
-        className={baseClass}
+        className={`${baseClass}${showFirstStageHint ? " is-guiding-first-flight" : ""}`}
+        style={showFirstStageHint ? { "--first-stage-x": `${guideX / PANEL_WIDTH * 100}%`, "--first-stage-y": `${guideY / PANEL_HEIGHT * 100}%` } : undefined}
         onAnimationEnd={(event) => {
           if (event.animationName === "planet-discovery-color") setRevealingPlanetId(null);
         }}
@@ -154,12 +156,11 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           </div>
 
           <div className="phase-selection-resources" aria-label="Recursos do jogador">
-            <div className="phase-selection-wallet" aria-label={`${numberFormat.format(progress.coins ?? 0)} moedas`}>
+            <div className="phase-selection-wallet" aria-label={`${numberFormat.format(progress.gold.total)} moedas de ouro`}>
               <img src={`${APP_BASE}assets/ui/coin.webp`} alt="" aria-hidden="true" />
-              <span>{numberFormat.format(progress.coins ?? 0)}</span>
+              <span>{numberFormat.format(progress.gold.total)}</span>
             </div>
-            <StorageEntryButton gold={progress.gold} previousBalance={previousGoldBalance} reducedMotion={reducedMotion}
-              paused={goldCountPaused} buttonRef={storageButtonRef} onClick={() => onStorage(planet.id, selectedStageId)} />
+            <StorageEntryButton gold={progress.gold} buttonRef={storageButtonRef} onClick={() => onStorage(planet.id, selectedStageId)} />
           </div>
 
           <nav className="phase-selection-navigation" aria-label="Navegação do seletor">
@@ -184,11 +185,16 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
         </header>
 
         {showFirstStageHint ? (
-          <p className="phase-selection-first-hint" id="first-flight-hint" role="status">
-            {selectedStageId === EARTH_TUTORIAL_STAGE_ID
-              ? "Ative o Nível 1 de novo para decolar."
-              : "Selecione o Nível 1 da Terra para começar a missão."}
-          </p>
+          <>
+            <p className="phase-selection-first-hint" id="first-flight-hint" role="status">
+              {selectedStageId === EARTH_TUTORIAL_STAGE_ID
+                ? "Selecione de novo para decolar!"
+                : "Selecione o Nível 1 da Terra!"}
+            </p>
+            <div className="phase-selection-guide" aria-hidden="true">
+              <img src={`${APP_BASE}${FIRST_FLIGHT_POINTER.slice(1)}`} alt="" draggable="false" />
+            </div>
+          </>
         ) : null}
         <ol className="phase-selection-stages" aria-label={`Fases de ${planet.name}`}>
           {model.stages.map((stage, stageIndex) => {
@@ -198,7 +204,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
             return (
               <li
                 key={stage.id}
-                className={`phase-selection-stage${stage.status ? ` is-${stage.status}` : ""}${current ? " is-current" : ""}${guided ? " is-guided" : ""}${selectedStageId === stage.id ? " is-selected" : ""}${completedStageId === stage.id ? " is-completing" : ""}`}
+                className={`phase-selection-stage${stage.status ? ` is-${stage.status}` : ""}${current ? " is-current" : ""}${selectedStageId === stage.id ? " is-selected" : ""}${completedStageId === stage.id ? " is-completing" : ""}`}
                 style={{
                   "--stage-x": `${(x / PANEL_WIDTH) * 100}%`,
                   "--stage-y": `${(y / PANEL_HEIGHT) * 100}%`,

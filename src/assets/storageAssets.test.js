@@ -4,9 +4,9 @@ import { readFileSync } from "node:fs";
 import { GOLD_GOALS } from "../game/config/goldConfig.js";
 import { getTreasureArt, preloadStorageAssets, STORAGE_ICON, VAULT_BASE_ART, VAULT_BUTTON_ART } from "./storageAssets.js";
 
-test("cada meta e estado do ícone tem uma arte WebP própria com transparência", () => {
+test("cada meta e o ícone do Cofre têm arte WebP própria com transparência", () => {
   const arts = [
-    ...Object.values(STORAGE_ICON),
+    STORAGE_ICON,
     VAULT_BASE_ART,
     ...Object.values(VAULT_BUTTON_ART),
     getTreasureArt(0),
@@ -40,7 +40,7 @@ test("pré-carrega cada imagem uma vez inclusive quando uma imagem falha", async
   class FakeImage {
     set src(url) {
       attempted.push(url);
-      if (url === STORAGE_ICON.normal) this.onerror();
+      if (url === STORAGE_ICON) this.onerror();
       else this.onload();
     }
   }
@@ -48,6 +48,6 @@ test("pré-carrega cada imagem uma vez inclusive quando uma imagem falha", async
   assert.equal(preloadStorageAssets(FakeImage), pending);
   const result = await pending;
   assert.equal(result.failed, 1);
-  assert.equal(result.loaded, GOLD_GOALS.length * 2 + 3 + Object.keys(VAULT_BUTTON_ART).length);
+  assert.equal(result.loaded, GOLD_GOALS.length * 2 + 2 + Object.keys(VAULT_BUTTON_ART).length);
   assert.equal(attempted.length, new Set(attempted).size);
 });

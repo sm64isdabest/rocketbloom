@@ -6,6 +6,8 @@ import test from "node:test";
 const screenSource = readFileSync(fileURLToPath(new URL("./PlanetsScreen.jsx", import.meta.url)), "utf8");
 const stylesheet = readFileSync(fileURLToPath(new URL("../styles/index.css", import.meta.url)), "utf8");
 const toolbar = screenSource.match(/<header className="phase-selection-header"[\s\S]*?<\/header>/)?.[0] ?? "";
+const vaultSource = readFileSync(new URL("./StorageScreen.jsx", import.meta.url), "utf8");
+const vaultEntrySource = readFileSync(new URL("./StorageEntryButton.jsx", import.meta.url), "utf8");
 
 test("barra do seletor mostra os subtítulos definidos para os quatro planetas", () => {
   for (const subtitle of [
@@ -18,13 +20,19 @@ test("barra do seletor mostra os subtítulos definidos para os quatro planetas",
 
 test("barra reúne os dados dinâmicos e conserva os handlers e ícones originais", () => {
   assert.ok(toolbar);
-  assert.match(toolbar, /numberFormat\.format\(progress\.coins \?\? 0\)/);
+  assert.match(toolbar, /numberFormat\.format\(progress\.gold\.total\)/);
   assert.match(toolbar, /onClick=\{onBack\}[^>]*aria-label="Voltar ao menu"[^>]*>\s*<img[^>]*getPauseAssetUrl\(RETURN_ICON_FILE, APP_BASE\)/);
   assert.match(toolbar, /onClick=\{onSettings\}/);
   assert.match(toolbar, /getMenuAssetUrl\("settings\.webp", APP_BASE\)/);
   assert.match(toolbar, /onClick=\{\(\) => onCommandRoom\(planet\.id, selectedStageId\)\}/);
   assert.match(toolbar, /getMenuAssetUrl\("laboratory\.webp", APP_BASE\)/);
   assert.equal((screenSource.match(/className="phase-selection-laboratory"/g) ?? []).length, 1);
+});
+
+test("o seletor e o Cofre exibem o saldo de ouro, com o atalho só por imagem", () => {
+  assert.match(vaultSource, /className="gold-storage__balance">\{format\.format\(gold\.total\)\}/);
+  assert.match(vaultEntrySource, /aria-label=\{`Abrir Cofre de Moedas/);
+  assert.doesNotMatch(vaultEntrySource, /<strong>|<span>Cofre<\/span>|\.format\(/);
 });
 
 test("barra tem cores por planeta e reorganiza recursos e navegação em telas estreitas", () => {

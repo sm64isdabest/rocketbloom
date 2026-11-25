@@ -1,10 +1,7 @@
 import { EMPTY_TREASURE, GOLD_GOALS } from "../game/config/goldConfig.js";
 import { preloadImages } from "../utils/preloadImages.js";
 
-export const STORAGE_ICON = {
-  normal: new URL("./storage/icon-normal.webp", import.meta.url).href,
-  highlight: new URL("./storage/icon-highlight.webp", import.meta.url).href,
-};
+export const STORAGE_ICON = new URL("./storage/vault-entry.webp", import.meta.url).href;
 
 const TREASURE_ART = [
   new URL("./storage/vault/pile-0.webp", import.meta.url).href,
@@ -31,8 +28,7 @@ export function getTreasureArt(level) {
 let preloading;
 export function preloadStorageAssets(ImageConstructor = globalThis.Image) {
   preloading ??= preloadImages([
-    STORAGE_ICON.normal,
-    STORAGE_ICON.highlight,
+    STORAGE_ICON,
     VAULT_BASE_ART,
     ...Object.values(VAULT_BUTTON_ART),
     getTreasureArt(EMPTY_TREASURE.level),

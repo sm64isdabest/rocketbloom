@@ -1,5 +1,5 @@
 import { OBSTACLE_SPRITES } from "./obstacles.js";
-import { MISSION_INTRO } from "./missionIntro.js";
+import { FIRST_FLIGHT_POINTER, MISSION_INTRO } from "./missionIntro.js";
 import { getRocketCosmeticUrl, HONEY_TRAIL_FRAMES, ROCKET_COSMETICS } from "../config/goldConfig.js";
 import { CAMPAIGN_CONFIG, PLANETS } from "./planets.js";
 import { PLANTS } from "./plants.js";
@@ -20,6 +20,7 @@ export const PROJECT_IMAGES = [
     (file) => `/assets/laboratory/care/${file}.webp`,
   ),
   ...MISSION_INTRO.map(({ image }) => image),
+  FIRST_FLIGHT_POINTER,
   "/assets/explosion.webp",
   "/assets/folha-verde-cartunesca-brilhante.webp",
   "/assets/lasers/idle/frame_01.webp",

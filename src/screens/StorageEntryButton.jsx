@@ -1,46 +1,15 @@
-import { useEffect, useState } from "react";
-import { StorageIcon } from "../components/StorageArt.jsx";
+import { STORAGE_ICON } from "../assets/storageAssets.js";
+import { StorageArt } from "../components/StorageArt.jsx";
 import { hasUnseenGoldGoals } from "../utils/goldStorage.js";
 
-const format = new Intl.NumberFormat("pt-BR");
-
-export function StorageEntryButton({ gold, previousBalance, reducedMotion, paused, buttonRef, onClick }) {
-  const [shown, setShown] = useState(() => previousBalance.current ?? gold.total);
-  const total = gold.total;
+export function StorageEntryButton({ gold, buttonRef, onClick }) {
   const isNew = hasUnseenGoldGoals(gold);
-
-  useEffect(() => {
-    if (paused) return undefined;
-    const from = previousBalance.current ?? total;
-    if (reducedMotion || total <= from) {
-      previousBalance.current = total;
-      setShown(total);
-      return undefined;
-    }
-
-    let start;
-    let frameId;
-    const step = (timestamp) => {
-      start ??= timestamp;
-      const progress = Math.min(1, (timestamp - start) / 520);
-      const value = Math.round(from + (total - from) * (1 - (1 - progress) ** 3));
-      previousBalance.current = value;
-      setShown(value);
-      if (progress < 1) frameId = window.requestAnimationFrame(step);
-    };
-    frameId = window.requestAnimationFrame(step);
-    return () => window.cancelAnimationFrame(frameId);
-  }, [paused, previousBalance, reducedMotion, total]);
 
   return (
     <button type="button" ref={buttonRef} className={`phase-selection-storage${isNew ? " has-new" : ""}`}
-      onClick={onClick} title="Cofre de Moedas"
-      aria-label={`Abrir Cofre de Moedas, ${format.format(total)} de ouro${isNew ? ", nova meta alcançada" : ""}`}>
-      <StorageIcon />
-      <span className="phase-selection-storage__copy">
-        <span>Cofre</span>
-        <strong>{format.format(reducedMotion ? total : shown)}</strong>
-      </span>
+      onClick={onClick}
+      aria-label={`Abrir Cofre de Moedas${isNew ? ", nova meta alcançada" : ""}`}>
+      <StorageArt src={STORAGE_ICON} className="phase-selection-storage__icon" />
       {isNew ? <span className="phase-selection-storage__new" aria-hidden="true" /> : null}
     </button>
   );
