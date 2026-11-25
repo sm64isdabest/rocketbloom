@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { getMenuAssetUrl, getMenuStartupImages } from "./menuModel.js";
 
-test("a abertura solicita só as imagens do menu inicial", () => {
+test("as imagens do menu inicial compõem a lista de prioridade da abertura", () => {
   assert.deepEqual(getMenuStartupImages("/rocketbloom/"), ["logo.webp", "background.webp", "play.webp", "settings.webp"]
     .map((filename) => `/rocketbloom/assets/menu/${filename}`));
 });

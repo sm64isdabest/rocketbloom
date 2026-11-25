@@ -1,4 +1,5 @@
 import { OBSTACLE_SPRITES } from "./obstacles.js";
+import { LASER_SHEETS } from "../entities/AnswerLaser.js";
 import { ASTRONAUT_POINTER, MISSION_INTRO } from "./missionIntro.js";
 import { getRocketCosmeticUrl, HONEY_TRAIL_FRAMES, ROCKET_COSMETICS } from "../config/goldConfig.js";
 import { CAMPAIGN_CONFIG, PLANETS } from "./planets.js";
@@ -31,6 +32,7 @@ export const PROJECT_IMAGES = [
   "/assets/lasers/idle/frame_06.webp",
   "/assets/lasers/idle/frame_07.webp",
   "/assets/lasers/idle/frame_08.webp",
+  ...Object.values(LASER_SHEETS),
   ...["terra", "marte", "saturno", "netuno"].flatMap((assetName) =>
     Array.from({ length: CAMPAIGN_CONFIG.stagesPerPlanet }, (_, index) => `/assets/levels/${assetName}/${assetName}_${index + 1}.webp`),
   ),

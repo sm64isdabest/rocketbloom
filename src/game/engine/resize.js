@@ -3,7 +3,8 @@ import { VIEW } from "../config/gameConfig.js";
 export function fitCanvasToContainer(canvas) {
   const parent = canvas.parentElement;
   const rect = parent?.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  const touchScreen = window.matchMedia?.("(pointer: coarse)")?.matches;
+  const dpr = Math.min(window.devicePixelRatio || 1, touchScreen ? 1.5 : 2.5);
   const cssWidth = Math.max(1, Math.floor(rect?.width ?? canvas.clientWidth));
   const cssHeight = Math.max(1, Math.floor(rect?.height ?? canvas.clientHeight));
   const scale = Math.min(cssWidth / VIEW.designWidth, cssHeight / VIEW.designHeight);

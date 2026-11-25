@@ -50,9 +50,9 @@ test("laser atingido desaparece gradualmente durante o fade-out", () => {
   assert.equal(laser.alive, false);
 });
 
-test("laser renderiza o quadro atual com a cor da faixa", () => {
+test("laser renderiza o quadro sem filtros ou sombras em tempo real", () => {
   const calls = [];
-  const ctx = new Proxy({ filter: "none" }, {
+  const ctx = new Proxy({ filter: "none", shadowBlur: 0 }, {
     get(target, method) { return method in target ? target[method] : (...args) => calls.push({ method, args }); },
     set(target, property, value) { target[property] = value; return true; },
   });
@@ -61,8 +61,27 @@ test("laser renderiza o quadro atual com a cor da faixa", () => {
 
   laser.render(ctx);
 
-  assert.equal(ctx.filter, "hue-rotate(300deg) saturate(1.35)");
+  assert.equal(ctx.filter, "none");
+  assert.equal(ctx.shadowBlur, 0);
   assert.ok(calls.some(({ method, args }) => method === "drawImage" && args[0] === frame));
+});
+
+test("laser segura a posição entre saltos e desenha um rastro breve ao avançar", () => {
+  const traces = [];
+  const ctx = { globalAlpha: 1, save() {}, restore() {}, drawImage() {}, fillRect: (...args) => traces.push(args) };
+  const frame = { complete: true, naturalWidth: 100, naturalHeight: 40 };
+  const laser = new AnswerLaser({ x: 0, y: 20, width: 80, speed: 100, frames: [frame] });
+  laser.update(0.05);
+  assert.equal(laser.y, 20);
+  laser.update(0.05);
+  assert.equal(laser.y, 30);
+  laser.render(ctx);
+  assert.ok(traces.length > 0);
+  traces.length = 0;
+  laser.update(0.08);
+  laser.render(ctx);
+  assert.equal(laser.y, 30);
+  assert.equal(traces.length, 0);
 });
 
 test("laser mantém a proporção original do sprite ao renderizar", () => {

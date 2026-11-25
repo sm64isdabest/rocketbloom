@@ -51,3 +51,17 @@ test("aplica DPR à resolução do canvas sem alterar o espaço lógico", () => 
     globalThis.window = originalWindow;
   }
 });
+
+test("limita o DPR em telas de toque e preserva a geometria da partida", () => {
+  const originalWindow = globalThis.window;
+  try {
+    globalThis.window = { devicePixelRatio: 3, matchMedia: () => ({ matches: true }) };
+    const { canvas } = createCanvas(360, 640);
+    const view = fitCanvasToContainer(canvas);
+    assert.deepEqual([canvas.width, canvas.height], [540, 960]);
+    assert.equal(view.width, 360 / view.scale);
+    assert.equal(view.height, 640 / view.scale);
+  } finally {
+    globalThis.window = originalWindow;
+  }
+});

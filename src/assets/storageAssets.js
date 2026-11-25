@@ -25,15 +25,17 @@ export function getTreasureArt(level) {
   return typeof art === "string" ? art : TREASURE_ART[EMPTY_TREASURE.level];
 }
 
+export const STORAGE_IMAGES = [
+  STORAGE_ICON,
+  VAULT_BASE_ART,
+  ...Object.values(VAULT_BUTTON_ART),
+  getTreasureArt(EMPTY_TREASURE.level),
+  ...GOLD_GOALS.map(({ treasure }) => getTreasureArt(treasure.level)),
+  ...GOLD_GOALS.map(({ overlay }) => overlay),
+];
+
 let preloading;
 export function preloadStorageAssets(ImageConstructor = globalThis.Image) {
-  preloading ??= preloadImages([
-    STORAGE_ICON,
-    VAULT_BASE_ART,
-    ...Object.values(VAULT_BUTTON_ART),
-    getTreasureArt(EMPTY_TREASURE.level),
-    ...GOLD_GOALS.map(({ treasure }) => getTreasureArt(treasure.level)),
-    ...GOLD_GOALS.map(({ overlay }) => overlay),
-  ], { ImageConstructor });
+  preloading ??= preloadImages(STORAGE_IMAGES, { ImageConstructor });
   return preloading;
 }

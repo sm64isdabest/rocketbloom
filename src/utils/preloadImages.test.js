@@ -48,6 +48,19 @@ test("só considera as imagens prontas quando todas carregaram", () => {
   assert.equal(hasLoadedAllImages({ total: 2, loaded: 1, failed: 0, completed: 1 }), false);
 });
 
+test("limita downloads simultâneos e para de agendar ao pular", async () => {
+  const requests = [];
+  const controller = new AbortController();
+  const ImageConstructor = class { set src(url) { requests.push({ url, finish: this.onload }); } };
+  const loaded = preloadImages(["a", "b", "c", "d"], { ImageConstructor, concurrency: 2, signal: controller.signal });
+  assert.deepEqual(requests.map(({ url }) => url), ["a", "b"]);
+  requests[0].finish();
+  controller.abort();
+  requests[1].finish();
+  assert.deepEqual(requests.map(({ url }) => url), ["a", "b", "c"]);
+  assert.deepEqual(await loaded, { total: 4, loaded: 1, failed: 0, completed: 1 });
+});
+
 test("manifesto contém todas as imagens de public/assets", async () => {
   const assetsDirectory = fileURLToPath(new URL("../../public/assets/", import.meta.url));
   const files = await findImages(assetsDirectory);

@@ -283,6 +283,7 @@ test("tocar um laser escolhe a alternativa da faixa sem causar dano", () => {
     const speedBeforeTouch = engine.speed;
 
     engine.tick(0.05);
+    engine.tick(0.05);
 
     assert.equal(engine.currentRound.selectedAnswer, answer);
     assert.equal(engine.currentRound.result.lane, laser.lane);
@@ -321,7 +322,7 @@ test("toque na borda visível do laser seleciona a resposta mesmo quando o feixe
     const answer = engine.answers.find((candidate) => candidate.correct);
     const laser = engine.answerLasers.find((candidate) => candidate.lane === answer.lane);
     laser.y = 170;
-    laser.frames = [{ complete: true, naturalWidth: 252, naturalHeight: 73 }];
+    laser.sheet = { complete: true, naturalWidth: 252, naturalHeight: 73 * 8 };
     const click = {
       pointerId: 1,
       pointerType: "mouse",

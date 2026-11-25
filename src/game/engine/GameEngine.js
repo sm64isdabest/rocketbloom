@@ -940,7 +940,7 @@ export class GameEngine {
     } else if (this.currentRound?.status === "awaiting-resolution") {
       for (const answer of this.answers) if (answer.alive) answer.render(ctx);
     }
-    for (const laser of this.answerLasers) laser.render(ctx);
+    for (const laser of this.answerLasers) laser.render(ctx, this.reducedMotion);
     for (const particle of this.particles) {
       ctx.save(); ctx.globalAlpha = clamp(particle.life / particle.maxLife, 0, 1); ctx.fillStyle = particle.color;
       ctx.beginPath();

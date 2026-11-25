@@ -1,28 +1,27 @@
 const FRAME_DURATION_MS = 100;
 const FADE_OUT_DURATION_MS = 280;
+const STEP_TRACE_MS = 45;
+const LASER_FRAME_COUNT = 8;
 
-const LASER_FILTERS = {
-  "#00FFFF": "hue-rotate(180deg) saturate(1.35)",
-  "#FF00FE": "hue-rotate(300deg) saturate(1.35)",
-  "#FFFF00": "hue-rotate(60deg) saturate(1.35)",
-  "#FFFFFF": "grayscale(1) brightness(2.6)",
+export const LASER_SHEETS = {
+  "#00FFFF": "/assets/lasers/cyan.webp",
+  "#FF00FE": "/assets/lasers/magenta.webp",
+  "#FFFF00": "/assets/lasers/yellow.webp",
+  "#FFFFFF": "/assets/lasers/white.webp",
 };
 
-function loadLaserFrames(basePath = import.meta.env?.BASE_URL ?? "/") {
-  if (typeof Image === "undefined") return [];
+const sheets = new Map();
+
+function getLaserSheet(color, basePath = import.meta.env?.BASE_URL ?? "/") {
+  const path = LASER_SHEETS[color];
+  if (!path || typeof Image === "undefined") return null;
   const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;
-  return Array.from({ length: 8 }, (_, index) => {
+  if (!sheets.has(color)) {
     const image = new Image();
-    image.src = `${normalizedBase}assets/lasers/idle/frame_${String(index + 1).padStart(2, "0")}.webp`;
-    return image;
-  });
-}
-
-let sharedLaserFrames;
-
-function getLaserFrames() {
-  sharedLaserFrames ??= loadLaserFrames();
-  return sharedLaserFrames;
+    image.src = `${normalizedBase}${path.slice(1)}`;
+    sheets.set(color, image);
+  }
+  return sheets.get(color);
 }
 
 export class AnswerLaser {
@@ -34,7 +33,8 @@ export class AnswerLaser {
     this.height = height;
     this.color = color;
     this.speed = speed;
-    this.frames = frames ?? getLaserFrames();
+    this.frames = frames;
+    this.sheet = frames ? null : getLaserSheet(color);
     this.frameIndex = 0;
     this.frameElapsedMs = 0;
     this.alive = true;
@@ -55,29 +55,47 @@ export class AnswerLaser {
       if (this.opacity === 0) this.alive = false;
       return;
     }
-    this.y += this.speed * dt;
-    if (!this.frames.length) return;
+    const previousStep = Math.floor(this.frameElapsedMs / FRAME_DURATION_MS);
     this.frameElapsedMs += Math.max(0, dt) * 1000;
-    this.frameIndex = Math.floor(this.frameElapsedMs / FRAME_DURATION_MS) % this.frames.length;
+    const step = Math.floor(this.frameElapsedMs / FRAME_DURATION_MS);
+    this.y += (step - previousStep) * this.speed * FRAME_DURATION_MS / 1000;
+    this.frameIndex = step % (this.frames?.length || LASER_FRAME_COUNT);
   }
 
   get drawBounds() {
-    const frame = this.frames[this.frameIndex];
-    if (!frame?.complete || !(frame.naturalWidth > 0) || !(frame.naturalHeight > 0)) return null;
-    const height = this.width * frame.naturalHeight / frame.naturalWidth;
+    const frame = this.sheet ?? this.frames?.[this.frameIndex];
+    const ready = frame?.complete && frame.naturalWidth > 0 && frame.naturalHeight > 0;
+    const height = ready ? this.width * frame.naturalHeight / (frame.naturalWidth * (this.sheet ? LASER_FRAME_COUNT : 1)) : this.height;
     return { x: this.x, y: this.y + (this.height - height) / 2, width: this.width, height };
   }
 
-  render(ctx) {
+  render(ctx, reducedMotion = false) {
     if (!this.alive) return;
     const bounds = this.drawBounds;
-    if (!bounds) return;
+    const frame = this.sheet ?? this.frames?.[this.frameIndex];
+    const { x, y, width, height } = bounds;
     ctx.save();
-    ctx.globalAlpha *= this.opacity;
-    ctx.filter = LASER_FILTERS[this.color] ?? "none";
-    ctx.shadowColor = this.color;
-    ctx.shadowBlur = 9;
-    ctx.drawImage(this.frames[this.frameIndex], bounds.x, bounds.y, bounds.width, bounds.height);
+    const alpha = ctx.globalAlpha * this.opacity;
+    ctx.globalAlpha = alpha;
+    const timeSinceStep = this.frameElapsedMs % FRAME_DURATION_MS;
+    if (!reducedMotion && this.fadeOutElapsedMs === null && this.frameElapsedMs >= FRAME_DURATION_MS && timeSinceStep < STEP_TRACE_MS) {
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = alpha * 0.5 * (1 - timeSinceStep / STEP_TRACE_MS);
+      const stepDistance = this.speed * FRAME_DURATION_MS / 1000;
+      const centerY = y + height / 2;
+      ctx.fillRect(x + width * .08, centerY - stepDistance, width * .84, 2);
+      ctx.fillRect(x + width * .19, centerY - stepDistance / 2, width * .62, 2);
+      ctx.globalAlpha = alpha;
+    }
+    if (frame?.complete && frame.naturalWidth > 0 && frame.naturalHeight > 0) {
+      if (this.sheet) {
+        const frameHeight = frame.naturalHeight / LASER_FRAME_COUNT;
+        ctx.drawImage(frame, 0, this.frameIndex * frameHeight, frame.naturalWidth, frameHeight, x, y, width, height);
+      } else ctx.drawImage(frame, x, y, width, height);
+    } else {
+      ctx.fillStyle = this.color;
+      ctx.fillRect(x, y + height / 2 - 2, width, 4);
+    }
     ctx.restore();
   }
 }

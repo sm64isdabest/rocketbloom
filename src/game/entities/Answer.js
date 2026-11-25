@@ -18,13 +18,7 @@ export class Answer {
 
   render(ctx) {
     ctx.save();
-    ctx.shadowColor = "rgba(0,0,0,.72)";
-    ctx.shadowBlur = 5;
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = `700 ${Math.min(36, this.width * 0.58)}px Trebuchet MS, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(String(this.value), this.x + this.width / 2, this.y + this.height / 2);
+    this.renderLabel(ctx, this.x + this.width / 2, this.y + this.height / 2, 700);
     ctx.restore();
   }
 
@@ -38,13 +32,20 @@ export class Answer {
     ctx.translate(centerX, y);
     ctx.scale(scale, scale);
     ctx.globalAlpha = Math.max(0, 1 - eased);
+    this.renderLabel(ctx, 0, 0, 800);
+    ctx.restore();
+  }
+
+  renderLabel(ctx, x, y, weight) {
     ctx.fillStyle = "#FFFFFF";
-    ctx.shadowColor = "rgba(0,0,0,.7)";
-    ctx.shadowBlur = 6 / scale;
-    ctx.font = `800 ${Math.min(36, this.width * 0.58)}px Trebuchet MS, sans-serif`;
+    ctx.strokeStyle = "#071331";
+    ctx.lineWidth = 3;
+    ctx.lineJoin = "round";
+    ctx.font = `${weight} ${Math.min(36, this.width * 0.58)}px Trebuchet MS, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(String(this.value), 0, 0);
-    ctx.restore();
+    const label = String(this.value);
+    ctx.strokeText(label, x, y);
+    ctx.fillText(label, x, y);
   }
 }
