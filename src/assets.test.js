@@ -51,10 +51,11 @@ test("os modelos de crescimento e o terreno de Marte usam PNG transparente", () 
   const levelSprites = imageFiles.filter((path) => path.includes("/levels/"));
   const plantSprites = imageFiles.filter((path) => /\/laboratory\/plant-\d+\.png$/i.test(path));
   const transparentPngs = imageFiles.filter((path) => path.endsWith("marte-red-seamless.png") || plantSprites.includes(path)
-    || powerUpIcons.some((filename) => path.endsWith(`/powerups/${filename}`)));
+    || powerUpIcons.some((filename) => path.endsWith(`/powerups/${filename}`))
+    || path.endsWith("/ui/uneb-logo.png"));
   assert.equal(levelSprites.length, 12, "cada fase deve ter sua arte");
   assert.equal(plantSprites.length, 12, "cada planeta deve ter três sprites de crescimento");
-  assert.equal(transparentPngs.length, 18, "os 12 estágios, o terreno e os cinco poderes devem ser PNG");
+  assert.equal(transparentPngs.length, 19, "os estágios, o terreno, os cinco poderes e a logo devem ser PNG");
 
   for (const path of imageFiles) {
     const image = readFileSync(path);

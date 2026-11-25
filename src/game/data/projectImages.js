@@ -68,6 +68,7 @@ export const PROJECT_IMAGES = [
   ...PLANETS.map(({ endlessIcon }) => `/assets/ui/${endlessIcon}`),
   ...PLANETS.map(({ id }) => `/assets/ui/planets/${id}-route.webp`),
   "/assets/ui/warning-alert.webp",
+  "/assets/ui/uneb-logo.png",
   "/assets/ui/selection-rocket.webp",
   "/assets/ui/level-frames/arrow-left.webp",
   "/assets/ui/level-frames/arrow-right.webp",

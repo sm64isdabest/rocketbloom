@@ -50,6 +50,7 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
     { id: "gameplay", label: "Jogabilidade" },
     { id: "accessibility", label: "Acessibilidade" },
     { id: "information", label: "Informações" },
+    { id: "about", label: "Sobre nós" },
   ];
 
   const handleTabKeyDown = (event, index) => {
@@ -74,7 +75,7 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
           <img src={getMenuAssetUrl("close.webp", APP_BASE)} alt="" />
         </button>
 
-        <div className="settings-popup__content">
+        <div className={`settings-popup__content settings-popup__content--${activeTab}`}>
           <div className="settings-popup__tabs" role="tablist" aria-label="Seções das configurações">
             {tabs.map((tab, index) => (
               <button
@@ -95,7 +96,7 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
             ))}
           </div>
 
-          <div id={`${ids}-panel`} className="settings-popup__tab-panel" role="tabpanel" aria-labelledby={`${ids}-tab-${activeTab}`} tabIndex={0}>
+          <div id={`${ids}-panel`} className={`settings-popup__tab-panel settings-popup__tab-panel--${activeTab}`} role="tabpanel" aria-labelledby={`${ids}-tab-${activeTab}`} tabIndex={0}>
           {activeTab === "audio" ? <fieldset className="settings-popup__audio" aria-label="Áudio">
             <section className="settings-popup__audio-card" aria-labelledby={`${ids}-music-title`}>
               <span className="settings-popup__audio-icon"><GameIcon name="music" /></span>
@@ -233,7 +234,33 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
             <h2 id={`${ids}-information`}>Ajude a flora a florescer</h2>
             <p className="settings-popup__description">Pilote o foguete pelas fases e alcance as respostas corretas para ganhar velocidade e resgatar as espécies de cada planeta.</p>
             <p className="settings-popup__description">Acompanhe as plantas resgatadas no Laboratório e avance pela campanha para explorar novos planetas.</p>
+            <p className="settings-popup__description">Explore Terra, Marte, Saturno e Netuno: conduza o foguete entre obstáculos, resolva desafios e use poderes especiais. Colete moedas, avance pelos níveis e acompanhe no laboratório o crescimento das plantas resgatadas. Cada planeta traz novas descobertas.</p>
             <button type="button" className="btn settings-reset-button" onClick={openResetDialog}>Resetar progresso</button>
+          </section> : null}
+
+          {activeTab === "about" ? <section className="settings-popup__about" aria-labelledby={`${ids}-about`}>
+            <header className="settings-popup__about-intro">
+              <p className="settings-popup__section-label">EQUIPE E PROJETO</p>
+              <h2 id={`${ids}-about`}>Sobre nós</h2>
+              <p>Desenvolver o RocketBloom foi uma jornada de criatividade, colaboração e muito aprendizado. Enfrentamos desafios, compartilhamos ideias e transformamos nossos conhecimentos em uma experiência interativa que une educação e diversão.</p>
+            </header>
+            <div className="settings-popup__team" aria-label="Desenvolvedores">
+              {["Luiz Neto", "Isaac Pessoa", "Ricardo Santos", "Thiago Pinheiro"].map((name) => (
+                <article className="settings-popup__team-card" key={name}>
+                  <span aria-hidden="true">✦</span><h3>{name}</h3><p>Desenvolvedor</p>
+                </article>
+              ))}
+            </div>
+            <div className="settings-popup__about-footer">
+              <section className="settings-popup__advisor" aria-labelledby={`${ids}-advisor`}>
+                <p className="settings-popup__section-label">PROFESSOR ORIENTADOR</p>
+                <h3 id={`${ids}-advisor`}>Professor Peterson Lobato</h3>
+              </section>
+              <section className="settings-popup__institution" aria-label="UNEB — Universidade do Estado da Bahia">
+                <img src={`${APP_BASE}assets/ui/uneb-logo.png`} alt="UNEB — Universidade do Estado da Bahia" />
+                <p>UNEB <span>Universidade do Estado da Bahia</span></p>
+              </section>
+            </div>
           </section> : null}
           </div>
         </div>
