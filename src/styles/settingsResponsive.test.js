@@ -23,3 +23,7 @@ test("Informações e Sobre nós dispensam rolagem em telas de computador", () =
   assert.match(stylesheet, /\.settings-popup__content--information, \.settings-popup__content--about \{ overflow: hidden; \}/);
   assert.match(stylesheet, /@media \(max-width: 540px\) \{[\s\S]*?\.settings-popup__content--information, \.settings-popup__content--about \{ overflow-y: auto; \}/);
 });
+
+test("logo da UNEB integra o cartão escuro sem fundo branco", () => {
+  assert.match(stylesheet, /\.settings-popup__institution \{[^}]*background: rgba\(4, 19, 57, \.34\)/);
+});

@@ -472,7 +472,7 @@ h2 { margin-bottom: .35em; font-size: clamp(1.5rem, 3vw, 2.15rem); }
 .settings-popup__about-footer { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 18px; padding-top: 13px; border-top: 1px solid rgba(106, 177, 255, .2); }
 .settings-popup__advisor { padding: 4px 0; }
 .settings-popup__advisor h3 { margin: 0; color: #e7f0ff; font-size: .95rem; }
-.settings-popup__institution { display: flex; align-items: center; gap: 12px; max-width: 290px; padding: 9px 13px; border: 1px solid rgba(187, 211, 255, .5); border-radius: 12px; color: #173568; background: #f7f9ff; }
+.settings-popup__institution { display: flex; align-items: center; gap: 12px; max-width: 290px; padding: 9px 13px; border: 1px solid rgba(106, 177, 255, .32); border-radius: 12px; color: #e7f0ff; background: rgba(4, 19, 57, .34); }
 .settings-popup__institution img { display: block; width: 43px; height: 58px; object-fit: contain; }
 .settings-popup__institution p { margin: 0; font-size: .9rem; font-weight: 800; }
 .settings-popup__institution p span { display: block; margin-top: 2px; font-size: .59rem; font-weight: 600; }
