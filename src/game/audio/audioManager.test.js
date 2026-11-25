@@ -495,7 +495,8 @@ test("menu music uses its own gentle loop and pauses outside menu screens", () =
     startMenuAudio();
 
     assert.equal(tracks.length, 1);
-    assert.match(tracks[0].src, /menu-space-loop\.wav$/);
+    assert.match(tracks[0].src, /menu-space-loop\.mp3$/);
+    assert.equal(tracks[0].preload, "metadata");
     assert.equal(tracks[0].loop, true);
     assert.equal(tracks[0].volume, 0.4);
     assert.equal(tracks[0].paused, false);

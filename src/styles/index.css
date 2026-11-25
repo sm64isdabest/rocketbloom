@@ -1651,6 +1651,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
 .boot__loading-foot > span { display: inline-flex; align-items: center; gap: 7px; }
 .boot__signal { width: 5px; height: 5px; animation: boot-signal-pulse 1.4s ease-in-out infinite; }
 .boot__loading-foot strong { color: #ffe183; font: 700 .75rem "DM Mono", monospace; }
+.boot__skip { flex: none; margin-top: 20px; border-color: #499cc7; }
 @keyframes boot-signal-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; box-shadow: 0 0 14px #7adcff; } }
 @media (max-width: 520px) {
   .screen--boot { padding-right: 20px; padding-left: 20px; }

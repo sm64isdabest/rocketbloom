@@ -18,7 +18,7 @@ export function getLeafImage() {
   return leafImage;
 }
 
-function getBackgroundImage(planetId) {
+export function getBackgroundImage(planetId) {
   const background = BACKGROUND_FILES[planetId];
   if (!background || typeof Image === "undefined") return null;
   if (!backgroundImages.has(planetId)) {

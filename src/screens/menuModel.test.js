@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
-import { getMenuAssetUrl } from "./menuModel.js";
+import { getMenuAssetUrl, getMenuStartupImages } from "./menuModel.js";
+
+test("a abertura solicita só as imagens do menu inicial", () => {
+  assert.deepEqual(getMenuStartupImages("/rocketbloom/"), ["logo.webp", "background.webp", "play.webp", "settings.webp"]
+    .map((filename) => `/rocketbloom/assets/menu/${filename}`));
+});
 
 test("menu assets respect the configured app base path", () => {
   assert.equal(getMenuAssetUrl("gear.webp", "/rocketbloom/"), "/rocketbloom/assets/menu/gear.webp");

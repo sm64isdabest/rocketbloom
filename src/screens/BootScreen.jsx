@@ -1,4 +1,4 @@
-export function BootScreen({ progress = { total: 0, completed: 0, loaded: 0, failed: 0 }, baseUrl = "/" }) {
+export function BootScreen({ progress = { total: 0, completed: 0, loaded: 0, failed: 0 }, baseUrl = "/", onSkip }) {
   const percentage = progress.total ? Math.round((progress.completed / progress.total) * 100) : 100;
 
   return (
@@ -19,7 +19,7 @@ export function BootScreen({ progress = { total: 0, completed: 0, loaded: 0, fai
           <div
             className="boot__progress-track"
             role="progressbar"
-            aria-label="Carregamento das imagens do jogo"
+            aria-label="Carregamento das imagens do menu"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={percentage}
@@ -34,6 +34,7 @@ export function BootScreen({ progress = { total: 0, completed: 0, loaded: 0, fai
             <strong>{percentage}%</strong>
           </div>
         </div>
+        <button type="button" className="btn btn--ghost boot__skip" onClick={onSkip}>Pular carregamento</button>
       </section>
     </main>
   );

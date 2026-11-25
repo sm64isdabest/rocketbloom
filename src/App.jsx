@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { preloadStorageAssets } from "./assets/storageAssets.js";
 import { SCREEN } from "./utils/screenStates.js";
 import { validateCatalog } from "./game/data/catalog.js";
-import { PROJECT_IMAGES } from "./game/data/projectImages.js";
 import { getPlanetById, getStageById } from "./game/data/planets.js";
 import { usePersistentProgress } from "./hooks/usePersistentProgress.js";
 import { applyRunOutcome } from "./utils/runProgress.js";
@@ -11,6 +9,7 @@ import { acknowledgeGold, creditGold, creditNextGoldGoal } from "./utils/goldSto
 import { BootScreen } from "./screens/BootScreen.jsx";
 import { ErrorScreen } from "./screens/ErrorScreen.jsx";
 import { MenuScreen } from "./screens/MenuScreen.jsx";
+import { getMenuStartupImages } from "./screens/menuModel.js";
 import { MissionIntroScreen } from "./screens/MissionIntroScreen.jsx";
 import { EarthFlightTutorial } from "./screens/EarthFlightTutorial.jsx";
 import { EARTH_TUTORIAL_STAGE_ID } from "./game/data/missionIntro.js";
@@ -23,7 +22,7 @@ import { PauseOverlay } from "./screens/PauseOverlay.jsx";
 import { VictoryScreen } from "./screens/VictoryScreen.jsx";
 import { DefeatScreen } from "./screens/DefeatScreen.jsx";
 import { configureAudio, finishGameAudio, pauseMenuAudio, playGameSound, playInterfaceSound, startMenuAudio } from "./game/audio/audioManager.js";
-import { hasLoadedAllImages, preloadImages } from "./utils/preloadImages.js";
+import { preloadImages } from "./utils/preloadImages.js";
 import { canPlayEndless } from "./screens/planetSelectorModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
 import { addDebugCoins, completeDebugStage, isDebugShortcut, unlockAllPlanets, uncompleteDebugStage } from "./utils/debugTools.js";
@@ -33,7 +32,8 @@ import { getOutcomeReturn } from "./utils/outcomeFlow.js";
 import { initialNavigationContext, navigationContextReducer } from "./utils/navigationContext.js";
 
 const APP_BASE = import.meta.env.BASE_URL;
-const PROJECT_IMAGE_URLS = PROJECT_IMAGES.map((image) => `${APP_BASE}${image.slice(1)}`);
+const MENU_STARTUP_IMAGES = getMenuStartupImages(APP_BASE);
+const MENU_LOAD_LIMIT_MS = 3500;
 const FLIGHT_INTRO_MS = 1500;
 
 export default function App() {
@@ -46,8 +46,8 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsTrigger = useRef(null);
   const [bootError, setBootError] = useState(null);
-  const [assetProgress, setAssetProgress] = useState({ total: PROJECT_IMAGE_URLS.length, loaded: 0, failed: 0, completed: 0 });
-  const [assetsReady, setAssetsReady] = useState(false);
+  const [assetProgress, setAssetProgress] = useState({ total: MENU_STARTUP_IMAGES.length, loaded: 0, failed: 0, completed: 0 });
+  const [skipBoot, setSkipBoot] = useState(false);
   const [run, setRun] = useState(null);
   const [runKey, setRunKey] = useState(0);
   const [outcomeSnapshot, setOutcomeSnapshot] = useState(null);
@@ -65,25 +65,19 @@ export default function App() {
   const pressedKeys = useRef(new Set());
 
   useEffect(() => {
+    if (screen !== SCREEN.BOOT) return undefined;
     let active = true;
-    Promise.all([
-      preloadImages(PROJECT_IMAGE_URLS, {
-        onProgress: (nextProgress) => {
-          if (active) setAssetProgress(nextProgress);
-        },
-      }),
-      preloadStorageAssets().catch(() => null),
-    ]).then(([result]) => {
-      if (!active) return;
-      if (!hasLoadedAllImages(result)) {
-        setBootError(`${result.failed} imagem(ns) não puderam ser carregadas. Verifique sua conexão e tente novamente.`);
-        setScreen(SCREEN.ERROR);
-        return;
-      }
-      setAssetsReady(true);
-    });
-    return () => { active = false; };
-  }, []);
+    const timeout = window.setTimeout(() => setSkipBoot(true), MENU_LOAD_LIMIT_MS);
+    preloadImages(MENU_STARTUP_IMAGES, {
+      onProgress: (nextProgress) => {
+        if (active) setAssetProgress(nextProgress);
+      },
+    }).catch(() => { if (active) setSkipBoot(true); });
+    return () => {
+      active = false;
+      window.clearTimeout(timeout);
+    };
+  }, [screen]);
 
   useEffect(() => {
     const isEditableTarget = (target) => target instanceof HTMLElement
@@ -136,16 +130,15 @@ export default function App() {
   }, [debugOpen, progress, screen, settingsOpen]);
 
   useEffect(() => {
-    if (!progress || !assetsReady || screen !== SCREEN.BOOT) return undefined;
+    if (!progress || screen !== SCREEN.BOOT || (!skipBoot && assetProgress.completed < assetProgress.total)) return;
     const catalogErrors = validateCatalog();
     if (catalogErrors.length) {
       setBootError(catalogErrors.join(" "));
       setScreen(SCREEN.ERROR);
-      return undefined;
+      return;
     }
-    const timer = window.setTimeout(() => setScreen(SCREEN.MENU), 250);
-    return () => window.clearTimeout(timer);
-  }, [assetsReady, progress, screen]);
+    setScreen(SCREEN.MENU);
+  }, [assetProgress.completed, assetProgress.total, progress, screen, skipBoot]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -486,7 +479,8 @@ export default function App() {
   if (fatal || screen === SCREEN.ERROR) {
     return <><FullscreenButton /><ErrorScreen message={fatal || bootError || "Erro ao iniciar o RocketBloom."} onRetry={() => window.location.reload()} />{debugMenu}</>;
   }
-  if (!progress || screen === SCREEN.BOOT) return <><FullscreenButton /><BootScreen progress={assetProgress} baseUrl={APP_BASE} />{debugMenu}</>;
+  if (!progress || screen === SCREEN.BOOT) return <><FullscreenButton /><BootScreen progress={assetProgress} baseUrl={APP_BASE}
+    onSkip={() => setSkipBoot(true)} />{debugMenu}</>;
 
   const planet = run ? getPlanetById(run.planetId) : null;
   const endlessResult = screen === SCREEN.DEFEAT && outcomeSnapshot?.mode === "endless";

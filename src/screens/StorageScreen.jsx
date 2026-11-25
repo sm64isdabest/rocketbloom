@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { VAULT_BUTTON_ART } from "../assets/storageAssets.js";
+import { preloadStorageAssets, VAULT_BUTTON_ART } from "../assets/storageAssets.js";
 import { StorageArt } from "../components/StorageArt.jsx";
 import { getHudAssetUrl } from "../components/hudModel.js";
 import { playGameSound } from "../game/audio/audioManager.js";
@@ -107,6 +107,7 @@ export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showD
     onAcknowledge(gold.total);
   }, [gold.total, onAcknowledge]);
 
+  useEffect(() => { preloadStorageAssets().catch(() => null); }, []);
   useEffect(() => { if (!inputBlocked) titleRef.current?.focus(); }, [inputBlocked]);
   useEffect(() => {
     if (finished && !inputBlocked && hasUnseenGoldGoals(gold)) onAcknowledge(gold.total);

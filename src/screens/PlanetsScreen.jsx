@@ -4,6 +4,7 @@ import { MuteButton } from "../components/MuteButton.jsx";
 import { PLANETS } from "../game/data/planets.js";
 import { EARTH_TUTORIAL_STAGE_ID } from "../game/data/missionIntro.js";
 import { playGameSound } from "../game/audio/audioManager.js";
+import { getBackgroundImage } from "../game/systems/scenery.js";
 import { getPendingLaboratoryStage, hasLaboratoryAttention } from "../utils/laboratoryProgress.js";
 import { getAdjacentPlanets, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
 import { getMenuAssetUrl } from "./menuModel.js";
@@ -85,6 +86,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
     setEndlessSelected(false);
     setOrbitTargetElement(activeStageElementRef, targetElement);
     if (getStageClickAction(selectedStageId, stageId) === "select") {
+      getBackgroundImage(planet.id);
       setSelectedStageId(stageId);
       onSelectionChange?.(planet.id, stageId);
       setSelectionPulse((pulse) => pulse + 1);
@@ -105,6 +107,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
       onPlayEndless(planet.id);
       return;
     }
+    getBackgroundImage(planet.id);
     setSelectedStageId(null);
     setEndlessSelected(true);
     onSelectionChange?.(planet.id, null);
