@@ -1,10 +1,13 @@
 import { ROCKET } from "../config/gameConfig.js";
+import { getRocketCosmeticUrl, HONEY_TRAIL_FRAMES } from "../config/goldConfig.js";
 
 const ROCKET_SOURCE = { x: 292, y: 51, width: 494, height: 965 };
 const ROCKET_BODY_SOURCE = { ...ROCKET_SOURCE, height: 740 };
 const ROCKET_IMAGE_OFFSET_X = -26;
 const FLAME_FRAME_COUNT = 8;
 const FLAME_FRAME_DURATION_MS = 80;
+const HONEY_FRAME_DURATION_MS = 120;
+const ORBITING_BEES = 4;
 
 export function getRocketImageUrl(basePath = import.meta.env?.BASE_URL ?? "/") {
   const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;
@@ -17,10 +20,10 @@ export function getFlameImageUrl(frameIndex, basePath = import.meta.env?.BASE_UR
   return `${normalizedBase}assets/flames/${filename}`;
 }
 
-function createRocketImage() {
+function createImage(src) {
   if (typeof Image === "undefined") return null;
   const image = new Image();
-  image.src = getRocketImageUrl();
+  image.src = src;
   return image;
 }
 
@@ -33,8 +36,25 @@ function createFlameImages() {
   });
 }
 
+function renderBeeOrbit(ctx, image, time, width, height, foreground) {
+  if (!image?.complete || !(image.naturalWidth > 0)) return;
+  for (let index = 0; index < ORBITING_BEES; index += 1) {
+    const angle = time / 375 + index * Math.PI * 2 / ORBITING_BEES;
+    const depth = Math.sin(angle);
+    if ((depth >= 0) !== foreground) continue;
+    const size = width * (.30 + depth * .045);
+    const spriteHeight = size * image.naturalHeight / image.naturalWidth;
+    const hover = Math.sin(time / 85 + index * 1.7) * 3;
+    ctx.save();
+    ctx.translate(Math.cos(angle) * width * .77, -height * .10 + depth * height * .25 + hover);
+    ctx.scale(depth > 0 ? -1 : 1, 1);
+    ctx.drawImage(image, -size / 2, -spriteHeight / 2, size, spriteHeight);
+    ctx.restore();
+  }
+}
+
 export class Rocket {
-  constructor({ image, flameImages } = {}) {
+  constructor({ image, flameImages, cosmetics = [] } = {}) {
     this.width = ROCKET.width;
     this.height = ROCKET.height;
     this.x = 0;
@@ -43,8 +63,12 @@ export class Rocket {
     this.rotation = 0;
     this.damageFeedbackDurationMs = 0;
     this.damageFeedbackRemainingMs = 0;
-    this.image = image ?? createRocketImage();
+    this.image = image ?? createImage(getRocketImageUrl());
     this.flameImages = flameImages ?? createFlameImages();
+    this.cosmeticImages = Object.fromEntries(cosmetics.map((id) => [id, createImage(getRocketCosmeticUrl(id))]));
+    this.honeyTrailImages = cosmetics.includes("trail")
+      ? [this.cosmeticImages.trail, ...HONEY_TRAIL_FRAMES.slice(1).map((id) => createImage(getRocketCosmeticUrl(id)))]
+      : [];
   }
 
   triggerDamageFeedback(durationMs = 900) {
@@ -59,6 +83,10 @@ export class Rocket {
   clearDamageFeedback() {
     this.damageFeedbackDurationMs = 0;
     this.damageFeedbackRemainingMs = 0;
+  }
+
+  get usesHoneyTrail() {
+    return this.honeyTrailImages.length > 0;
   }
 
   place(viewWidth, viewHeight) {
@@ -102,23 +130,38 @@ export class Rocket {
     ctx.rotate(this.rotation);
 
     const flameFrame = reducedMotion ? 0 : Math.floor(elapsedMs / FLAME_FRAME_DURATION_MS) % FLAME_FRAME_COUNT;
-    const flameImage = this.flameImages[flameFrame];
+    const { antenna, skin, aura } = this.cosmeticImages;
+    const animationTime = reducedMotion ? 0 : elapsedMs;
+    const honeyFrame = Math.floor(animationTime / HONEY_FRAME_DURATION_MS) % HONEY_TRAIL_FRAMES.length;
+    const honey = this.honeyTrailImages[honeyFrame];
+    const flameImage = this.usesHoneyTrail ? honey : this.flameImages[flameFrame];
     if (flameImage?.complete && flameImage.naturalWidth > 0) {
       const bodyHeight = height * ROCKET_BODY_SOURCE.height / ROCKET_SOURCE.height;
-      const flameHeight = height * 0.48;
+      const flameHeight = height * (this.usesHoneyTrail ? 0.59 : 0.48);
       const flameWidth = flameHeight * flameImage.naturalWidth / flameImage.naturalHeight;
       const flameY = -height / 2 + bodyHeight - 3;
       ctx.drawImage(flameImage, -flameWidth / 2, flameY, flameWidth, flameHeight);
     }
 
+    renderBeeOrbit(ctx, aura, animationTime, width, height, false);
     if (this.image?.complete && this.image.naturalWidth > 0) {
       const drawWidth = Math.min(width, height * ROCKET_BODY_SOURCE.width / ROCKET_SOURCE.height);
       const drawHeight = height * ROCKET_BODY_SOURCE.height / ROCKET_SOURCE.height;
       const drawX = (width - drawWidth) / 2 + ROCKET_IMAGE_OFFSET_X;
-      const drawRocket = () => ctx.drawImage(
-        this.image, ROCKET_BODY_SOURCE.x, ROCKET_BODY_SOURCE.y, ROCKET_BODY_SOURCE.width, ROCKET_BODY_SOURCE.height,
-        drawX, -height / 2, drawWidth, drawHeight,
-      );
+      const drawRocket = () => {
+        if (skin?.complete && skin.naturalWidth > 0) {
+          ctx.drawImage(skin, drawX, -height / 2, drawWidth, drawHeight);
+        } else {
+          ctx.drawImage(this.image, ROCKET_BODY_SOURCE.x, ROCKET_BODY_SOURCE.y, ROCKET_BODY_SOURCE.width, ROCKET_BODY_SOURCE.height,
+            drawX, -height / 2, drawWidth, drawHeight);
+        }
+        if (antenna?.complete && antenna.naturalWidth > 0) {
+          const antennaWidth = drawWidth * .58;
+          const antennaHeight = antennaWidth * antenna.naturalHeight / antenna.naturalWidth;
+          ctx.drawImage(antenna, drawX + (drawWidth - antennaWidth) / 2,
+            -height / 2 - antennaHeight * .82, antennaWidth, antennaHeight);
+        }
+      };
       drawRocket();
       if (tintAlpha > 0) {
         ctx.save();
@@ -127,6 +170,7 @@ export class Rocket {
         drawRocket();
         ctx.restore();
       }
+      renderBeeOrbit(ctx, aura, animationTime, width, height, true);
       ctx.restore();
       return;
     }
@@ -145,6 +189,7 @@ export class Rocket {
     ctx.fillStyle = "#3dcc7a";
     ctx.fillRect(-width / 6, -height / 8, width / 3, height / 3.2);
 
+    renderBeeOrbit(ctx, aura, animationTime, width, height, true);
     ctx.restore();
   }
 }

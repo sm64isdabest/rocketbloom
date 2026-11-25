@@ -28,6 +28,7 @@ test("gera quatro operações com resposta correta e três distratores únicos",
     if (category === "division") {
       const [dividend, divisor] = question.prompt.match(/\d+/g).map(Number);
       assert.equal(dividend % divisor, 0);
+      assert.ok(dividend <= 99, question.prompt);
     }
   }
 });

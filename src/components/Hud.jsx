@@ -1,33 +1,46 @@
 import { GameIcon } from "./GameIcon.jsx";
 import { MuteButton } from "./MuteButton.jsx";
+import { ENDLESS } from "../game/config/gameConfig.js";
 import { getActiveQuestion, getHudAssetUrl, getPowerUpAssetUrl, getStageProgressPercent } from "./hudModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const numberFormat = new Intl.NumberFormat("pt-BR");
 
-export function Hud({ snapshot, endlessIcon, muted, onToggleMute, onPause }) {
+export function Hud({ snapshot, endless, endlessIcon, muted, onToggleMute, onPause }) {
   const activeQuestion = getActiveQuestion(snapshot);
   const stageProgress = getStageProgressPercent(snapshot);
+  const lives = snapshot?.lives ?? ENDLESS.lives;
 
   return (
-    <div className={`hud${stageProgress === null ? "" : " hud--timed"}`} aria-label="Indicadores da fase">
+    <div className={`hud${endless ? " hud--endless" : ""}${stageProgress === null ? "" : " hud--timed"}`} aria-label="Indicadores da fase">
       <div className="hud__topbar">
         <div className="hud__cluster">
+          {endless ? (
+            <div className="hud__stat hud__endless-score">
+              <img src={getHudAssetUrl(endlessIcon, APP_BASE)} alt="" />
+              <span><small>Pontuação</small><b>{numberFormat.format(snapshot?.endlessScore ?? 0)}</b></span>
+            </div>
+          ) : null}
           <span key={snapshot?.coins ?? 0} className={`hud__stat hud__stat--coins${snapshot?.coins ? " hud__stat--coin-pulse" : ""}`}
             role="img" aria-label={`${snapshot?.coins ?? 0} moedas coletadas`}>
             <img className="hud__resource-icon hud__resource-icon--coin" src={getHudAssetUrl("coin.webp", APP_BASE)} alt="" aria-hidden="true" />
             <b>{String(snapshot?.coins ?? 0).padStart(2, "0")}</b>
           </span>
-          {endlessIcon ? (
-            <div className="hud__endless-score">
-              <img src={getHudAssetUrl(endlessIcon, APP_BASE)} alt="" />
-              <span><small>Pontuação</small><strong>{numberFormat.format(snapshot?.endlessScore ?? 0)}</strong></span>
-            </div>
+          {!endless ? (
+            <span className="hud__stat hud__stat--speed" aria-label={`Velocidade ${snapshot?.speed ?? 0} quilômetros por hora`}>
+              <small>VELOCIDADE</small><b>{snapshot?.speed ?? 0}<i> km/h</i></b>
+            </span>
           ) : null}
-          <span className="hud__stat hud__stat--speed" aria-label={`Velocidade ${snapshot?.speed ?? 0} quilômetros por hora`}>
-            <small>VELOCIDADE</small><b>{snapshot?.speed ?? 0}<i> km/h</i></b>
-          </span>
         </div>
+        {endless ? (
+          <div className="hud__stat hud__lives" role="status" aria-label={`${lives} de ${ENDLESS.lives} vidas`}>
+            <span className="sr-only">{lives} de {ENDLESS.lives} vidas</span>
+            {Array.from({ length: ENDLESS.lives }, (_, index) => (
+              <img key={index} className={index >= lives ? "hud__heart--lost" : undefined}
+                src={getHudAssetUrl("life-heart.webp", APP_BASE)} alt="" />
+            ))}
+          </div>
+        ) : null}
         <div className="hud__actions">
           <MuteButton className="hud__control" muted={muted} onToggle={onToggleMute} />
           <button type="button" className="hud__control" onClick={onPause} aria-label="Pausar fase">
@@ -39,7 +52,9 @@ export function Hud({ snapshot, endlessIcon, muted, onToggleMute, onPause }) {
         <div className="hud__progress">
           <div className="hud__progress-track" role="progressbar" aria-label="Progresso da fase"
             aria-valuemin={0} aria-valuemax={100} aria-valuenow={stageProgress}>
-            <div className="hud__progress-fill" style={{ width: `${stageProgress}%` }} />
+            <div className="hud__progress-fill" style={{ width: `${stageProgress}%` }}>
+              {stageProgress > 0 && stageProgress < 100 ? <span className="hud__progress-spark" aria-hidden="true" /> : null}
+            </div>
           </div>
           <span aria-hidden="true">{stageProgress}%</span>
         </div>
@@ -53,7 +68,6 @@ export function Hud({ snapshot, endlessIcon, muted, onToggleMute, onPause }) {
       </div> : null}
       {activeQuestion ? <div key={activeQuestion.id ?? activeQuestion.prompt} className="hud__question" role="group" aria-label="Pergunta atual">
         <strong>{activeQuestion.prompt}</strong>
-        {snapshot?.feedback ? <span className="hud__feedback" role="status">{snapshot.feedback}</span> : null}
         {activeQuestion.choices?.length ? <span className="sr-only" aria-live="polite">Alternativas: {activeQuestion.choices.join(", ")}</span> : null}
         {snapshot?.answerState === "awaiting-resolution" ? <span className="sr-only" aria-live="polite">Coluna selecionada: {(snapshot.selectedLane ?? 0) + 1}</span> : null}
       </div> : null}

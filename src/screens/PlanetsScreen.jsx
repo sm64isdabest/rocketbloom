@@ -2,13 +2,15 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { GameIcon } from "../components/GameIcon.jsx";
 import { MuteButton } from "../components/MuteButton.jsx";
 import { PLANETS } from "../game/data/planets.js";
+import { EARTH_TUTORIAL_STAGE_ID } from "../game/data/missionIntro.js";
 import { playGameSound } from "../game/audio/audioManager.js";
-import { hasLaboratoryAttention } from "../utils/laboratoryProgress.js";
+import { getPendingLaboratoryStage, hasLaboratoryAttention } from "../utils/laboratoryProgress.js";
 import { canNavigateToPlanet, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
 import { getMenuAssetUrl } from "./menuModel.js";
 import { getPauseAssetUrl, RETURN_ICON_FILE } from "./pauseModel.js";
 import { setOrbitTargetElement } from "./rocketOrbit.js";
 import { StorageEntryButton } from "./StorageEntryButton.jsx";
+import { PhaseSelectionGuide } from "./PhaseSelectionGuide.jsx";
 
 const OrbitalRocket = lazy(() => import("./OrbitalRocket.jsx").then((module) => ({ default: module.OrbitalRocket })));
 
@@ -37,7 +39,7 @@ const stageStatusLabel = (stage) => {
 };
 
 export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, preferredStageId, onBack, onPlay, onPlayEndless,
-  onMarkPlanetSeen, onSettings, muted, onToggleMute, onCommandRoom, onSelectionChange, reducedMotion, storageButtonRef, previousGoldBalance, goldCountPaused, onStorage, decoration }) {
+  onMarkPlanetSeen, onSettings, muted, onToggleMute, onCommandRoom, onSelectionChange, reducedMotion, selectionGuide, storageButtonRef, onStorage }) {
   const validPreferredPlanetId = PLANETS.some(({ id }) => id === preferredPlanetId) ? preferredPlanetId : null;
   const initialPlanetId = validPreferredPlanetId ?? getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const initialStageId = PLANETS.find(({ id }) => id === initialPlanetId)?.stages.some(({ id }) => id === preferredStageId)
@@ -51,6 +53,8 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   const [selectionPulse, setSelectionPulse] = useState(0);
   const discoveryHandled = useRef(new Set(progress.seenPlanetIds ?? []));
   const activeStageElementRef = useRef(null);
+  const firstStageRef = useRef(null);
+  const laboratoryButtonRef = useRef(null);
   const planet = PLANETS.find(({ id }) => id === selectedPlanetId) ?? PLANETS[0];
   const model = getPlanetSelectorModel(planet, progress);
   const laboratoryAttention = hasLaboratoryAttention(progress);
@@ -61,7 +65,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   const endlessRecord = `Recorde: ${numberFormat.format(model.endless.highScore)} pts`;
   const endlessLabel = model.endless.unlocked
     ? `${endlessRecord}. ${endlessSelected ? "Ative novamente para jogar." : "Ative para selecionar."}`
-    : "Conclua as três fases para desbloquear.";
+    : `${endlessRecord}. Conclua as três fases para desbloquear.`;
 
   useEffect(() => {
     if (!planet || !model.unlocked || discoveryHandled.current.has(planet.id)) return;
@@ -75,6 +79,8 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   const canGoForward = nextPlanet && canNavigateToPlanet(planet.id, nextPlanet.id, progress);
   const activeStage = model.stages.find((stage) => stage.available && !stage.completed);
   const orbitStage = getOrbitStage(model.stages, selectedStageId);
+  const showFirstStageHint = selectionGuide === "first-flight" && planet.id === "earth" && !progress.onboarding?.earthTutorialSeen;
+  const showLaboratoryGuide = selectionGuide === "laboratory" && planet.id === "earth" && getPendingLaboratoryStage(planet, progress) !== null;
   const baseClass = `phase-selection-canvas phase-selection-canvas--${planet.id}${revealingPlanetId === planet.id ? " is-revealing" : ""}`;
 
   const launchStage = (stageId, targetElement) => {
@@ -125,7 +131,6 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           draggable="false"
           aria-hidden="true"
         />
-        {decoration}
         <img
           className="phase-selection-route"
           src={`${APP_BASE}assets/ui/planets/${planet.id}-route.webp`}
@@ -153,12 +158,11 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           </div>
 
           <div className="phase-selection-resources" aria-label="Recursos do jogador">
-            <div className="phase-selection-wallet" aria-label={`${numberFormat.format(progress.coins ?? 0)} moedas`}>
+            <div className="phase-selection-wallet" aria-label={`${numberFormat.format(progress.gold.total)} moedas de ouro`}>
               <img src={`${APP_BASE}assets/ui/coin.webp`} alt="" aria-hidden="true" />
-              <span>{numberFormat.format(progress.coins ?? 0)}</span>
+              <span>{numberFormat.format(progress.gold.total)}</span>
             </div>
-            <StorageEntryButton gold={progress.gold} previousBalance={previousGoldBalance} reducedMotion={reducedMotion}
-              paused={goldCountPaused} buttonRef={storageButtonRef} onClick={() => onStorage(planet.id, selectedStageId)} />
+            <StorageEntryButton gold={progress.gold} buttonRef={storageButtonRef} onClick={() => onStorage(planet.id, selectedStageId)} />
           </div>
 
           <nav className="phase-selection-navigation" aria-label="Navegação do seletor">
@@ -170,11 +174,12 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
               <img src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" aria-hidden="true" />
             </button>
             <button type="button" className="phase-selection-laboratory" onClick={() => onCommandRoom(planet.id, selectedStageId)}
-              aria-label="Abrir Laboratório" aria-describedby={laboratoryAttention ? "laboratory-attention" : undefined} title="Laboratório">
+              ref={laboratoryButtonRef} autoFocus={showLaboratoryGuide} aria-label="Abrir Laboratório"
+              aria-describedby={showLaboratoryGuide ? "phase-selection-guide-hint" : laboratoryAttention ? "laboratory-attention" : undefined} title="Laboratório">
               <img src={getMenuAssetUrl("laboratory.webp", APP_BASE)} alt="" aria-hidden="true" />
               {laboratoryAttention ? (
                 <>
-                  <img className="phase-selection-laboratory__notice" src={`${APP_BASE}assets/ui/warning-alert.webp`} alt="" />
+                  <img className="phase-selection-laboratory__notice" src={`${APP_BASE}assets/ui/laboratory-notice.webp`} alt="" />
                   <span id="laboratory-attention" className="visually-hidden">Há novidades ou cuidados no laboratório.</span>
                 </>
               ) : null}
@@ -186,9 +191,11 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           {model.stages.map((stage, stageIndex) => {
             const [x, y] = STAGE_POSITIONS[planet.id]?.[stageIndex] ?? [0, 0];
             const current = activeStage?.id === stage.id;
+            const guided = showFirstStageHint && stage.id === EARTH_TUTORIAL_STAGE_ID;
             return (
               <li
                 key={stage.id}
+                ref={guided ? firstStageRef : undefined}
                 className={`phase-selection-stage${stage.status ? ` is-${stage.status}` : ""}${current ? " is-current" : ""}${selectedStageId === stage.id ? " is-selected" : ""}${completedStageId === stage.id ? " is-completing" : ""}`}
                 style={{
                   "--stage-x": `${(x / PANEL_WIDTH) * 100}%`,
@@ -200,7 +207,9 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
                   type="button"
                   className="phase-selection-stage__button"
                   disabled={!stage.available}
+                  autoFocus={guided}
                   aria-current={current ? "step" : undefined}
+                  aria-describedby={guided ? "phase-selection-guide-hint" : undefined}
                   aria-pressed={selectedStageId === stage.id}
                   aria-label={`${planet.name}, fase ${stageIndex + 1}, ${stageStatusLabel(stage)}, ${selectedStageId === stage.id ? "selecionada, clique novamente para entrar" : "clique para selecionar"}`}
                   onClick={(event) => launchStage(stage.id, event.currentTarget)}
@@ -235,9 +244,9 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           >
             <img src={`${APP_BASE}assets/ui/${planet.endlessIcon}`} alt="" draggable="false" />
             <span>Modo infinito</span>
+            <span className="phase-selection-endless-score" aria-hidden="true">{endlessRecord}</span>
           </button>
           <span id="endless-description" className="visually-hidden">{endlessLabel}</span>
-          {model.endless.unlocked ? <span className="phase-selection-endless-score" aria-hidden="true">{endlessRecord}</span> : null}
         </div>
 
         <button
@@ -259,6 +268,13 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           <img src={`${APP_BASE}assets/ui/level-frames/arrow-right.webp`} alt="" aria-hidden="true" draggable="false" />
         </button>
         <p className="visually-hidden" aria-live="polite">{model.progressLabel}</p>
+        {showFirstStageHint ? (
+          <PhaseSelectionGuide kind="stage" targetRef={firstStageRef} message={selectedStageId === EARTH_TUTORIAL_STAGE_ID
+            ? "Selecione de novo para decolar!" : "Selecione o Nível 1 da Terra!"} />
+        ) : null}
+        {showLaboratoryGuide ? (
+          <PhaseSelectionGuide kind="laboratory" targetRef={laboratoryButtonRef} message="Abra o Laboratório para cuidar da planta!" />
+        ) : null}
       </div>
     </main>
   );

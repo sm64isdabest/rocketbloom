@@ -4,8 +4,14 @@ export function createPowerUpState() {
   return { turboMs: 0, bubble: false, magnetMs: 0, doublerMs: 0, freezeMs: 0, rouletteMs: 0, rouletteElapsedMs: 0 };
 }
 
-export function getRandomPowerUp(rng = Math.random) {
-  const powerUps = Object.keys(POWER_UPS);
+const CAMPAIGN_POWER_UPS = Object.keys(POWER_UPS);
+const ENDLESS_POWER_UPS = CAMPAIGN_POWER_UPS.filter((power) => power !== "turbo");
+
+export function getFlightPowerUps(endless) {
+  return endless ? ENDLESS_POWER_UPS : CAMPAIGN_POWER_UPS;
+}
+
+export function getRandomPowerUp(rng = Math.random, powerUps = CAMPAIGN_POWER_UPS) {
   const index = Math.min(powerUps.length - 1, Math.floor(Math.max(0, rng()) * powerUps.length));
   return powerUps[index];
 }

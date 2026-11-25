@@ -32,7 +32,7 @@ const games = {
 
 const rootPositions = ["28%", "50%", "72%"];
 const flowerPositions = [["24%", "46%"], ["50%", "23%"], ["76%", "46%"]];
-const patchPositions = [["35%", "69%"], ["65%", "69%"], ["50%", "83%"]];
+const patchPositions = [["40%", "69%"], ["60%", "69%"], ["50%", "83%"]];
 
 function addCare(amounts, index, increment, goal) {
   if (amounts[index] >= goal) return amounts;
@@ -233,7 +233,7 @@ function BeeCare({ onFinish, ...scene }) {
               }}
             >
               <span className="plant-care__flower-head" aria-hidden="true">
-                <img src={`${labAssets}plant-05.png`} alt="" draggable="false" />
+                <img src={`${careAssets}flower.webp`} alt="" draggable="false" />
               </span>
               {occupied && <img className="plant-care__flower-bee" src={`${careAssets}bee.webp`} alt="" draggable="false" />}
               {occupied && <GameIcon name="check" className="plant-care__target-check" />}

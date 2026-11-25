@@ -8,5 +8,6 @@ export function getOutcomeReturn(outcome, snapshot) {
   return {
     menuPage: SCREEN.PLANETS,
     completedStageId: snapshot?.stageId ?? null,
+    ...(outcome === "victory" && snapshot?.firstCompletion && snapshot.stageId === "earth-2" ? { guide: "laboratory" } : {}),
   };
 }

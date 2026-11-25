@@ -3,11 +3,6 @@ export function BootScreen({ progress = { total: 0, completed: 0, loaded: 0, fai
 
   return (
     <main className="screen screen--boot" aria-labelledby="boot-title">
-      <div className="boot__topline" aria-hidden="true">
-        <span><i /> SISTEMA DE BORDO</span>
-        <span>RB · 001</span>
-      </div>
-
       <section className="boot__content">
         <img className="boot__logo" src={`${baseUrl}assets/menu/logo.webp`} alt="RocketBloom" />
         <p className="eyebrow boot__eyebrow">MISSÃO SUSTENTÁVEL <span>·</span> BASE DE LANÇAMENTO</p>
@@ -30,8 +25,9 @@ export function BootScreen({ progress = { total: 0, completed: 0, loaded: 0, fai
             aria-valuenow={percentage}
             aria-valuetext={`${percentage}% · ${progress.completed} de ${progress.total} imagens`}
           >
-            <span className="boot__progress-fill" style={{ width: `${percentage}%` }} />
-            <span className="boot__progress-glow" style={{ left: `${percentage}%` }} />
+            <span className="boot__progress-fill" style={{ width: `${percentage}%` }}>
+              <img className="boot__progress-rocket" src={`${baseUrl}assets/rocket.webp`} alt="" draggable={false} />
+            </span>
           </div>
           <div className="boot__loading-foot">
             <span><i className="boot__signal" /> {progress.failed ? `${progress.failed} recurso(s) indisponível(is)` : "Sincronizando carta estelar"}</span>
@@ -39,11 +35,6 @@ export function BootScreen({ progress = { total: 0, completed: 0, loaded: 0, fai
           </div>
         </div>
       </section>
-
-      <footer className="boot__footer" aria-hidden="true">
-        <span>ROCKETBLOOM <i>©</i> 2026</span>
-        <span>PROTEGENDO O FUTURO, UMA SEMENTE DE CADA VEZ</span>
-      </footer>
     </main>
   );
 }

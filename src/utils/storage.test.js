@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { STORAGE_KEY } from "../game/config/gameConfig.js";
+import { getEquippedRocketCosmetics } from "../game/config/goldConfig.js";
 import { createDefaultProgress, loadProgress, saveProgress } from "./storage.js";
 import * as progressStorage from "./storage.js";
 import { acknowledgeGold, creditGold } from "./goldStorage.js";
@@ -16,6 +17,70 @@ function memoryStorage(seed = {}) {
     },
   };
 }
+
+test("reiniciar a campanha preserva a introdução vista e reativa o tutorial de voo", () => {
+  const profile = createDefaultProgress();
+  assert.deepEqual(profile.onboarding, { missionSeen: false, earthTutorialSeen: false });
+  profile.onboarding.missionSeen = true;
+  profile.onboarding.earthTutorialSeen = true;
+  profile.settings.controlMode = "keyboard";
+  const storage = memoryStorage();
+  assert.ok(saveProgress(profile, storage).ok);
+  const saved = loadProgress(storage).progress;
+  assert.deepEqual(saved.onboarding, { missionSeen: true, earthTutorialSeen: true });
+
+  const reset = progressStorage.resetSavedProgress(saved, storage);
+  assert.ok(reset.ok);
+  assert.deepEqual(loadProgress(storage).progress.onboarding, { missionSeen: true, earthTutorialSeen: false });
+  assert.equal(reset.progress.settings.controlMode, "keyboard");
+});
+
+test("uma segunda aba não repete uma atualização já feita no perfil", () => {
+  const openTab = createDefaultProgress();
+  const storage = memoryStorage();
+  const seeMission = (current) => current.onboarding.missionSeen ? current
+    : { ...current, onboarding: { ...current.onboarding, missionSeen: true } };
+  const first = progressStorage.updateSavedProgress(openTab, seeMission, { storage });
+  const second = progressStorage.updateSavedProgress(openTab, seeMission, { storage });
+  assert.equal(first.changed, true);
+  assert.equal(second.changed, false);
+  assert.equal(second.progress.onboarding.missionSeen, true);
+  assert.equal(progressStorage.resetSavedProgress(openTab, storage).progress.onboarding.missionSeen, true);
+});
+
+test("um perfil antigo que já voou não repete a introdução nem o tutorial", () => {
+  const legacy = { ...createDefaultProgress(), processedRunIds: ["voo-anterior"] };
+  delete legacy.onboarding;
+  const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
+  assert.deepEqual(loadProgress(storage).progress.onboarding, { missionSeen: true, earthTutorialSeen: true });
+});
+
+test("a preferência de decorações do Cofre sobrevive ao recarregar e o perfil antigo começa com elas visíveis", () => {
+  const profile = createDefaultProgress();
+  const legacy = { ...profile, settings: {} };
+  const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
+  assert.equal(loadProgress(storage).progress.settings.showVaultDecorations, true);
+
+  profile.settings.showVaultDecorations = false;
+  assert.ok(saveProgress(profile, storage).ok);
+  assert.equal(loadProgress(storage).progress.settings.showVaultDecorations, false);
+});
+
+test("cosméticos do foguete começam desligados em perfis antigos e são carregados como escolhas independentes", () => {
+  const legacy = { ...createDefaultProgress(), settings: {} };
+  const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
+  assert.deepEqual(loadProgress(storage).progress.settings.rocketCosmetics, {});
+  legacy.settings.rocketCosmetics = { antenna: true, skin: false, trail: "true", desconhecido: true };
+  assert.ok(saveProgress(legacy, storage).ok);
+  assert.deepEqual(loadProgress(storage).progress.settings.rocketCosmetics, { antenna: true });
+  const equipped = { antenna: true, skin: true, trail: true, aura: true };
+  assert.deepEqual(getEquippedRocketCosmetics(19, equipped), []);
+  assert.deepEqual(getEquippedRocketCosmetics(20, equipped), ["antenna"]);
+  assert.deepEqual(getEquippedRocketCosmetics(45, equipped), ["antenna", "skin"]);
+  assert.deepEqual(getEquippedRocketCosmetics(75, equipped), ["antenna", "skin", "trail"]);
+  assert.deepEqual(getEquippedRocketCosmetics(149, equipped), ["antenna", "skin", "trail"]);
+  assert.deepEqual(getEquippedRocketCosmetics(150, equipped), ["antenna", "skin", "trail", "aura"]);
+});
 
 test("perfil antigo descarta diamantes e preserva ouro e progresso", () => {
   const old = { ...createDefaultProgress(), diamonds: 45, coins: 18, gold: { total: 312 }, completedStageIds: ["earth-1"] };
@@ -39,15 +104,15 @@ test("ouro, depósitos ainda não vistos e metas vistas sobrevivem ao recarregar
 
 test("terminar uma animação preserva o saldo acrescentado por outra aba depois que ela começou", () => {
   const storage = memoryStorage();
-  const openTab = { ...createDefaultProgress(), gold: { total: 100, seenTotal: 0 } };
+  const openTab = { ...createDefaultProgress(), gold: { total: 20, seenTotal: 0 } };
   assert.ok(saveProgress(openTab, storage).ok);
   assert.ok(saveProgress({ ...openTab, coins: 12, gold: creditGold(openTab.gold, 1000) }, storage).ok);
   const result = progressStorage.updateSavedProgress(openTab, (current) => ({
-    ...current, gold: acknowledgeGold(current.gold, 100),
+    ...current, gold: acknowledgeGold(current.gold, 20),
   }), { storage });
   assert.ok(result.ok);
   const saved = loadProgress(storage).progress;
-  assert.deepEqual(saved.gold, { total: 1100, seenTotal: 100, seenGoalIds: ["aurora"] });
+  assert.deepEqual(saved.gold, { total: 1020, seenTotal: 20, seenGoalIds: ["aurora"] });
   assert.equal(saved.coins, 12);
 });
 

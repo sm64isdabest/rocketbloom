@@ -30,9 +30,10 @@ test("elementos de fase ficam maiores sem alterar o tamanho do foguete", async (
   assert.deepEqual([ROCKET.width, ROCKET.height], [52, 88]);
   assert.equal(MYSTERY_BOX.size, 55);
   assert.deepEqual(COLLECTIBLES.map(({ width, height }) => [width, height]), [[38, 38]]);
-  assert.deepEqual(OBSTACLES.map(({ width, height }) => [width, height]), [
-    [90, 85], [64, 86], [55, 73], [60, 60], [96, 46],
-  ]);
+  const sizes = Object.fromEntries(OBSTACLES.map(({ id, width, height }) => [id, [width, height]]));
+  for (const [id, expected] of Object.entries({
+    plane: [90, 85], helicopter: [64, 86], balloon: [55, 73], asteroid: [60, 60], comet: [96, 46],
+  })) assert.deepEqual(sizes[id], expected, id);
 });
 
 test("dificuldade por planeta é configurável", () => {

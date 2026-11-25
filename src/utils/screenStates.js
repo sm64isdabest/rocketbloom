@@ -5,6 +5,8 @@ export const SCREEN = {
   SETTINGS: "settings",
   COMMAND: "command",
   STORAGE: "storage",
+  MISSION_INTRO: "mission-intro",
+  FLIGHT_TUTORIAL: "flight-tutorial",
   FLIGHT_INTRO: "flight-intro",
   PLAYING: "playing",
   PAUSED: "paused",

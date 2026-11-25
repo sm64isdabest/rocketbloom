@@ -3,6 +3,7 @@ import { getCampaignUnlocks, PLANETS } from "../game/data/planets.js";
 import { PLANTS } from "../game/data/plants.js";
 import { LABORATORY_GAME_IDS } from "./laboratoryProgress.js";
 import { createGoldStorage } from "./goldStorage.js";
+import { ROCKET_COSMETICS } from "../game/config/goldConfig.js";
 
 const campaignStageIds = new Set(PLANETS.flatMap(({ stages }) => stages.map(({ id }) => id)));
 const laboratoryStageIds = new Set(PLANETS.flatMap(({ stages }) => stages.slice(1).map(({ id }) => id)));
@@ -24,6 +25,7 @@ export function createDefaultProgress() {
     laboratoryActivities: {},
     sustainabilityPoints: 0,
     processedRunIds: [],
+    onboarding: { missionSeen: false, earthTutorialSeen: false },
     settings: {
       music: true,
       soundEffects: true,
@@ -34,6 +36,8 @@ export function createDefaultProgress() {
       muteAll: false,
       reducedMotion: false,
       showHitboxes: false,
+      showVaultDecorations: true,
+      rocketCosmetics: {},
       controlMode: "pointer",
     },
   };
@@ -97,6 +101,10 @@ export function loadProgress(providedStorage) {
     const endlessHighScores = Object.fromEntries(Object.entries(sanitizeProgressMap(parsed.endlessHighScores, Number.MAX_SAFE_INTEGER))
       .filter(([id]) => PLANETS.some((planet) => planet.id === id))
       .map(([id, score]) => [id, Math.floor(score)]));
+    const processedRunIds = Array.isArray(parsed.processedRunIds)
+      ? parsed.processedRunIds.filter((id) => typeof id === "string").slice(-1000) : [];
+    const hasFlown = completedStageIds.length > 0 || processedRunIds.length > 0
+      || Object.values(stageProgress).some((value) => value > 0) || Object.values(endlessHighScores).some((value) => value > 0);
     const currentLaboratory = Array.isArray(parsed.laboratoryNotices);
     const storedActivities = parsed.laboratoryActivities;
     const laboratoryActivities = storedActivities && typeof storedActivities === "object" && !Array.isArray(storedActivities)
@@ -109,8 +117,11 @@ export function loadProgress(providedStorage) {
         ...createDefaultProgress(),
         ...parsed,
         gold: createGoldStorage(parsed.gold),
-        processedRunIds: Array.isArray(parsed.processedRunIds)
-          ? parsed.processedRunIds.filter((id) => typeof id === "string").slice(-1000) : [],
+        processedRunIds,
+        onboarding: {
+          missionSeen: typeof parsed.onboarding?.missionSeen === "boolean" ? parsed.onboarding.missionSeen : hasFlown,
+          earthTutorialSeen: typeof parsed.onboarding?.earthTutorialSeen === "boolean" ? parsed.onboarding.earthTutorialSeen : hasFlown,
+        },
         completedStageIds,
         unlockedPlanetIds: getCampaignUnlocks(parsed.unlockedPlanetIds, completedStageIds),
         seenPlanetIds: Array.isArray(parsed.seenPlanetIds)
@@ -138,6 +149,10 @@ export function loadProgress(providedStorage) {
           muteAll: parsed.settings?.muteAll === true,
           reducedMotion: parsed.settings?.reducedMotion === true,
           showHitboxes: parsed.settings?.showHitboxes === true,
+          showVaultDecorations: parsed.settings?.showVaultDecorations !== false,
+          rocketCosmetics: Object.fromEntries(
+            ROCKET_COSMETICS.filter(({ id }) => parsed.settings?.rocketCosmetics?.[id] === true).map(({ id }) => [id, true]),
+          ),
           controlMode: parsed.settings?.controlMode === "keyboard" ? "keyboard" : "pointer",
         },
       },
@@ -219,14 +234,16 @@ export function updateSavedProgress(current, update, { storage, preferMemory = f
   const base = saved?.source === "storage" ? saved.progress : current;
   if ((base.resetId ?? null) !== (current.resetId ?? null)) return staleProgress();
   const progress = update(base);
-  if (progress === base) return { ok: true, error: null, progress };
-  return { ...saveProgress(progress, storage), progress };
+  if (progress === base) return { ok: true, error: null, progress, changed: false };
+  return { ...saveProgress(progress, storage), progress, changed: true };
 }
 
 export function resetSavedProgress(current, storage) {
+  const saved = loadProgress(storage);
   const progress = createDefaultProgress();
   progress.resetId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
   progress.settings = { ...progress.settings, ...current.settings };
+  progress.onboarding.missionSeen = current.onboarding?.missionSeen === true || saved.progress.onboarding.missionSeen;
   const result = writeProgress(progress, current.resetId ?? null, storage);
   return result.ok ? { ...result, progress } : result;
 }

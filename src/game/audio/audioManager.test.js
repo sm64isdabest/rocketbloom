@@ -9,6 +9,41 @@ test("audio volume scales linearly and clamps the percentage", () => {
   assert.equal(scaleAudioVolume(0.8, 150), 0.8);
 });
 
+test("os cinco poderes tocam efeitos distintos e respeitam o silêncio geral", async () => {
+  const notes = [];
+  const priorWindow = globalThis.window;
+  globalThis.window = {
+    addEventListener() {},
+    AudioContext: class {
+      currentTime = 1;
+      state = "running";
+      destination = {};
+      createGain() {
+        return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} };
+      }
+      createOscillator() {
+        return { frequency: { setValueAtTime: (value) => notes.push(value) }, connect() {}, start() {}, stop() {} };
+      }
+    },
+  };
+  try {
+    const audio = await import("./audioManager.js?power-up-sounds");
+    const sounds = ["turbo", "bubble", "magnet", "doubler", "freeze"].map((power) => {
+      audio.playGameSound(power);
+      const melody = notes.splice(0);
+      assert.ok(melody.length >= 2, power);
+      return melody.join(",");
+    });
+    assert.equal(new Set(sounds).size, 5);
+    audio.configureAudio({ muteAll: true });
+    audio.playGameSound("turbo");
+    assert.deepEqual(notes, []);
+  } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+  }
+});
+
 test("discovery plays a five-note fanfare through the configured effects volume", () => {
   const frequencies = [];
   class FakeAudioContext {
@@ -109,10 +144,17 @@ test("victory launch builds a filtered roar and silences it with the effects set
     }
   }
 
+  const tracks = [];
+  const priorAudio = globalThis.Audio;
+  globalThis.Audio = class {
+    constructor() { tracks.push(this); }
+    play() { this.paused = false; return Promise.resolve(); }
+    pause() { this.paused = true; }
+  };
   const priorWindow = globalThis.window;
   globalThis.window = { AudioContext: FakeAudioContext, addEventListener() {} };
   try {
-    const { configureAudio, playVictoryLaunchSound } = await import("./audioManager.js?victory-launch");
+    const { configureAudio, playVictoryLaunchSound, startGameAudio } = await import("./audioManager.js?victory-launch");
     const play = () => playVictoryLaunchSound?.({ chargeMs: 900, ascentMs: 1900, tailMs: 350 });
     configureAudio({ soundEffects: false, soundEffectsVolume: 100 });
     play();
@@ -123,7 +165,9 @@ test("victory launch builds a filtered roar and silences it with the effects set
     assert.equal(sources.length, 0);
 
     configureAudio({ muteAll: false });
+    startGameAudio();
     play();
+    assert.equal(tracks[0].paused, false, "a decolagem mantém a trilha da partida");
     assert.equal(sources.length, 1, "the launch synthesizes an exhaust roar");
     const [source] = sources;
     assert.ok(source.buffer.getChannelData(0).some((sample) => sample !== 0));
@@ -134,6 +178,8 @@ test("victory launch builds a filtered roar and silences it with the effects set
     configureAudio({ muteAll: true });
     assert.equal(source.stops.at(-1), 1, "global mute cancels a roar already underway");
   } finally {
+    if (priorAudio === undefined) delete globalThis.Audio;
+    else globalThis.Audio = priorAudio;
     if (priorWindow === undefined) delete globalThis.window;
     else globalThis.window = priorWindow;
   }

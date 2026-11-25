@@ -36,6 +36,11 @@ const SOUND_NOTES = {
   angryTouch: { notes: [196, 164.81, 138.59], duration: 0.12, wave: "sawtooth", volume: 0.1 },
   victory: { notes: [523.25, 659.25, 783.99, 1046.5], duration: 0.2, wave: "triangle", volume: 0.12 },
   discovery: { notes: [523.25, 659.25, 783.99, 1046.5, 1318.51], duration: 0.16, wave: "sine", volume: 0.12 },
+  turbo: { notes: [146.83, 220, 329.63, 493.88, 739.99], duration: 0.14, spacing: 0.042, wave: "sawtooth", volume: 0.08 },
+  bubble: { notes: [261.63, 392, 523.25, 659.25], duration: 0.19, spacing: 0.065, wave: "sine", volume: 0.13 },
+  magnet: { notes: [349.23, 293.66, 349.23, 293.66, 220], duration: 0.095, spacing: 0.055, wave: "triangle", volume: 0.12 },
+  doubler: { notes: [1046.5, 1567.98, 1046.5, 2093], duration: 0.105, spacing: 0.06, wave: "triangle", volume: 0.09 },
+  freeze: { notes: [2349.32, 1760, 1318.51, 880], duration: 0.22, spacing: 0.042, wave: "sine", volume: 0.07 },
   defeat: { notes: [130.81, 65.41, 32.7], duration: 0.3, wave: "sawtooth", volume: 0.14, spacing: 0.045 },
 };
 const INTERFACE_SOUNDS = {
@@ -95,7 +100,7 @@ function stopVictoryLaunchSound() {
 }
 
 export function playVictoryLaunchSound({ chargeMs, ascentMs, tailMs }) {
-  pauseGameAudio();
+  stopVictoryLaunchSound();
   if (preferences.muteAll || !preferences.soundEffects || preferences.soundEffectsVolume <= AUDIO.minVolume) return;
   const context = getContext();
   if (!context) return;

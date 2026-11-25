@@ -92,3 +92,31 @@ test("as fases mantêm a escala e a repetição em telas desktop e celular", () 
     globalThis.Image = previousImage;
   }
 });
+
+test("as laterais usam os mesmos quadros e posições verticais do fundo da partida", () => {
+  const previousImage = globalThis.Image;
+  globalThis.Image = class {
+    complete = true;
+    naturalWidth = 1600;
+    naturalHeight = 909;
+  };
+  try {
+    const view = { width: 1600, height: 900 };
+    const options = { offsetX: 40, offsetY: -250 };
+    const foreground = [];
+    const background = [];
+    const transforms = [];
+    renderPlanetBackground({ drawImage: (...args) => foreground.push(args) }, view, { id: "mars" }, options);
+    renderPlanetBackground({
+      drawImage: (...args) => background.push(args),
+      save() {},
+      restore() {},
+      translate() {},
+      scale: (...args) => transforms.push(args),
+    }, view, { id: "mars" }, { ...options, sideOutset: 400 });
+    assert.deepEqual(background.slice(0, foreground.length), foreground);
+    assert.deepEqual(transforms, [[-1, 1], [-1, 1]], "as sobras das duas laterais continuam com o terreno espelhado");
+  } finally {
+    globalThis.Image = previousImage;
+  }
+});

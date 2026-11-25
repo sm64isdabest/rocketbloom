@@ -257,7 +257,7 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
                 <h3 id={`${ids}-advisor`}>Peterson Lobato</h3>
               </section>
               <section className="settings-popup__institution" aria-label="UNEB — Universidade do Estado da Bahia">
-                <img src={`${APP_BASE}assets/ui/uneb-logo.png`} alt="UNEB — Universidade do Estado da Bahia" />
+                <img src={`${APP_BASE}assets/ui/uneb-logo.webp`} alt="UNEB — Universidade do Estado da Bahia" />
                 <p>UNEB <span>Universidade do Estado da Bahia</span></p>
               </section>
             </div>

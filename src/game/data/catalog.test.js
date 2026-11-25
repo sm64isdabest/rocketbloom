@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { validateCatalog } from "./catalog.js";
 import { PLANETS } from "./planets.js";
+import { QUESTION_BANK } from "./questions.js";
+import * as obstacles from "./obstacles.js";
+const { getObstaclesForPlanet } = obstacles;
 
 test("catálogo de dados está consistente", () => {
   assert.deepEqual(validateCatalog(), []);
@@ -12,6 +15,35 @@ test("catálogo de dados está consistente", () => {
     assert.deepEqual(planet.stages.map((stage) => stage.id), Array.from({ length: 3 }, (_, index) => `${planet.id}-${index + 1}`));
     assert.deepEqual(planet.stages.map((stage) => stage.name), ["Nível 1", "Nível 2", "Nível 3"]);
     assert.equal(planet.endlessStage.durationMs, Infinity);
+  }
+});
+
+test("divisões da campanha e do infinito são exatas e têm no máximo dois dígitos por número", () => {
+  const divisions = Object.values(QUESTION_BANK).flat().filter(({ category }) => category === "division");
+  assert.ok(divisions.length > 0);
+  for (const { prompt, correctAnswer, choices } of divisions) {
+    const operands = prompt.match(/(\d{1,2}) ÷ (\d{1,2})\?$/u);
+    assert.ok(operands && !/\d{3}/u.test(prompt), prompt);
+    assert.equal(Number(operands[1]) / Number(operands[2]), correctAnswer);
+    assert.ok(choices.every((choice) => Math.abs(choice) < 100));
+  }
+});
+
+test("cada planeta espacial tem o obstáculo próprio e os cinco visitantes", () => {
+  const locals = { mars: "asteroid", saturn: "ring-asteroid", neptune: "comet" };
+  const visitors = ["alien-purple", "alien-cyclops", "ufo-disc", "ufo-winged", "alien-drone"];
+  for (const [planet, local] of Object.entries(locals)) {
+    assert.deepEqual(getObstaclesForPlanet(planet).map(({ id }) => id).sort(), [local, ...visitors].sort());
+  }
+  assert.deepEqual(getObstaclesForPlanet("earth").map(({ id }) => id), ["plane", "helicopter", "balloon"]);
+});
+
+test("o obstáculo local ocupa 80% dos sorteios e os visitantes dividem o restante", () => {
+  for (const id of ["mars", "saturn", "neptune"]) {
+    const catalog = getObstaclesForPlanet(id);
+    const selections = Array.from({ length: 100 }, (_, index) => obstacles.pickObstacle(catalog, () => index / 100));
+    assert.equal(selections.filter((item) => item.visitor).length, 20);
+    assert.equal(new Set(selections.filter((item) => item.visitor)).size, 5);
   }
 });
 

@@ -8,10 +8,12 @@ import { usePersistentProgress } from "./hooks/usePersistentProgress.js";
 import { applyRunOutcome } from "./utils/runProgress.js";
 import { completeLaboratoryCare, getLaboratoryVisitPlanet, prepareLaboratoryVisit } from "./utils/laboratoryProgress.js";
 import { acknowledgeGold, creditGold, creditNextGoldGoal } from "./utils/goldStorage.js";
-import { Decorations } from "./screens/Decorations.jsx";
 import { BootScreen } from "./screens/BootScreen.jsx";
 import { ErrorScreen } from "./screens/ErrorScreen.jsx";
 import { MenuScreen } from "./screens/MenuScreen.jsx";
+import { MissionIntroScreen } from "./screens/MissionIntroScreen.jsx";
+import { EarthFlightTutorial } from "./screens/EarthFlightTutorial.jsx";
+import { EARTH_TUTORIAL_STAGE_ID } from "./game/data/missionIntro.js";
 import { PlanetsScreen } from "./screens/PlanetsScreen.jsx";
 import { SettingsScreen } from "./screens/SettingsScreen.jsx";
 import { CommandRoomScreen } from "./screens/CommandRoomScreen.jsx";
@@ -20,12 +22,13 @@ import { PlayScreen } from "./screens/PlayScreen.jsx";
 import { PauseOverlay } from "./screens/PauseOverlay.jsx";
 import { VictoryScreen } from "./screens/VictoryScreen.jsx";
 import { DefeatScreen } from "./screens/DefeatScreen.jsx";
-import { configureAudio, pauseMenuAudio, playGameSound, playInterfaceSound, startMenuAudio } from "./game/audio/audioManager.js";
+import { configureAudio, finishGameAudio, pauseMenuAudio, playGameSound, playInterfaceSound, startMenuAudio } from "./game/audio/audioManager.js";
 import { hasLoadedAllImages, preloadImages } from "./utils/preloadImages.js";
 import { canPlayEndless } from "./screens/planetSelectorModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
 import { addDebugCoins, completeDebugStage, isDebugShortcut, unlockAllPlanets, uncompleteDebugStage } from "./utils/debugTools.js";
 import { FullscreenButton } from "./components/FullscreenButton.jsx";
+import { getEquippedRocketCosmetics, ROCKET_COSMETICS } from "./game/config/goldConfig.js";
 import { getOutcomeReturn } from "./utils/outcomeFlow.js";
 import { initialNavigationContext, navigationContextReducer } from "./utils/navigationContext.js";
 
@@ -37,8 +40,8 @@ export default function App() {
   const { progress, warning, fatal, patchSettings, persist, resetProgress } = usePersistentProgress();
   const [screen, setScreen] = useState(SCREEN.BOOT);
   const [menuPage, setMenuPage] = useState(SCREEN.MENU);
+  const [selectionGuide, setSelectionGuide] = useState(null);
   const selectorStorageButton = useRef(null);
-  const selectorGoldBalance = useRef(null);
   const [navigationContext, dispatchNavigationContext] = useReducer(navigationContextReducer, initialNavigationContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsTrigger = useRef(null);
@@ -181,13 +184,25 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    if (!progress || [SCREEN.BOOT, SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH, SCREEN.ERROR].includes(screen)) {
+    if (!progress || [SCREEN.BOOT, SCREEN.FLIGHT_TUTORIAL, SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH, SCREEN.VICTORY, SCREEN.ERROR].includes(screen)) {
       pauseMenuAudio();
       return undefined;
     }
     startMenuAudio();
     return pauseMenuAudio;
   }, [screen, Boolean(progress)]);
+
+  const victoryRunId = screen === SCREEN.VICTORY ? outcomeSnapshot?.runId : null;
+  useEffect(() => {
+    if (!victoryRunId) return undefined;
+    const playVictory = () => finishGameAudio("victory");
+    if (document.visibilityState !== "hidden") {
+      playVictory();
+      return undefined;
+    }
+    document.addEventListener("visibilitychange", playVictory, { once: true });
+    return () => document.removeEventListener("visibilitychange", playVictory);
+  }, [victoryRunId]);
 
   useEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -207,7 +222,46 @@ export default function App() {
     setRunKey((value) => value + 1);
     setOutcomeSnapshot(null);
     hudRef.current = null;
+    if (mode === "campaign" && stageId === EARTH_TUTORIAL_STAGE_ID && !progress.onboarding.earthTutorialSeen) {
+      setScreen(SCREEN.FLIGHT_TUTORIAL);
+      return;
+    }
+    setSelectionGuide(null);
     setScreen(reducedMotion ? SCREEN.PLAYING : SCREEN.FLIGHT_INTRO);
+  };
+
+  const openCampaign = () => {
+    if (progress.onboarding.missionSeen) {
+      setMenuPage(SCREEN.PLANETS);
+      return;
+    }
+    const result = persist((current) => current.onboarding.missionSeen ? current
+      : { ...current, onboarding: { ...current.onboarding, missionSeen: true } });
+    if (result?.stale) return;
+    setMenuPage(result?.changed ? SCREEN.MISSION_INTRO : SCREEN.PLANETS);
+  };
+
+  const completeMissionIntro = () => {
+    dispatchNavigationContext({ type: "select-stage", planetId: "earth", selectedStageId: null });
+    setSelectionGuide("first-flight");
+    setMenuPage(SCREEN.PLANETS);
+  };
+
+  const startTutorialFlight = (controlMode) => {
+    persist((current) => ({
+      ...current,
+      onboarding: { ...current.onboarding, earthTutorialSeen: true },
+      settings: { ...current.settings, controlMode },
+    }));
+    setSelectionGuide(null);
+    setScreen(reducedMotion ? SCREEN.PLAYING : SCREEN.FLIGHT_INTRO);
+  };
+
+  const exitTutorial = () => {
+    dispatchNavigationContext({ type: "exit-run" });
+    setRun(null);
+    setMenuPage(SCREEN.PLANETS);
+    setScreen(SCREEN.MENU);
   };
 
   const debugCompleteStage = (planetId, stageId) => {
@@ -254,8 +308,14 @@ export default function App() {
   };
 
   const recordOutcome = useCallback((outcome, snapshot) => {
-    if (!snapshot) return;
-    persist((current) => applyRunOutcome(current, snapshot, outcome).progress);
+    if (!snapshot) return false;
+    let stageCompleted = false;
+    const result = persist((current) => {
+      const { progress: next, rewards } = applyRunOutcome(current, snapshot, outcome);
+      stageCompleted = rewards.stageCompleted;
+      return next;
+    });
+    return !result?.stale && stageCompleted;
   }, [persist]);
 
   const exitLevel = () => {
@@ -274,6 +334,7 @@ export default function App() {
   };
 
   const enterLaboratory = (planetId, selectedStageId) => {
+    if (selectionGuide === "laboratory") setSelectionGuide(null);
     dispatchNavigationContext({ type: "open-laboratory", planetId, selectedStageId });
     const visitPlanet = getLaboratoryVisitPlanet(progress, planetId);
     setLaboratoryPlanetId(visitPlanet.id);
@@ -296,8 +357,8 @@ export default function App() {
   }, []);
 
   const onOutcome = useCallback((outcome, snapshot, { launching = false } = {}) => {
-    recordOutcome(outcome, snapshot);
-    setOutcomeSnapshot(snapshot ?? null);
+    const firstCompletion = recordOutcome(outcome, snapshot);
+    setOutcomeSnapshot(snapshot ? { ...snapshot, firstCompletion } : null);
     if (outcome === "victory") {
       setScreen(launching ? SCREEN.VICTORY_LAUNCH : SCREEN.VICTORY);
     } else {
@@ -316,6 +377,7 @@ export default function App() {
     setOutcomeSnapshot(null);
     setMenuPage(destination.menuPage);
     setCompletionStageId(destination.completedStageId);
+    setSelectionGuide(destination.guide ?? null);
     setScreen(SCREEN.MENU);
   };
 
@@ -338,7 +400,7 @@ export default function App() {
   const resetCampaign = () => {
     const result = resetProgress();
     if (!result.ok) return result;
-    selectorGoldBalance.current = null;
+    setSelectionGuide(null);
     debugEngineRef.current?.stop();
     hudRef.current = null;
     settingsTrigger.current = null;
@@ -430,13 +492,22 @@ export default function App() {
   const endlessResult = screen === SCREEN.DEFEAT && outcomeSnapshot?.mode === "endless";
   const stage = run?.mode === "endless" ? planet?.endlessStage : getStageById(planet, run?.stageId);
   const showFlight = run && (screen === SCREEN.PLAYING || screen === SCREEN.PAUSED
-    || screen === SCREEN.FLIGHT_INTRO || screen === SCREEN.VICTORY_LAUNCH
+    || screen === SCREEN.FLIGHT_TUTORIAL || screen === SCREEN.FLIGHT_INTRO || screen === SCREEN.VICTORY_LAUNCH
     || (screen === SCREEN.DEFEAT && !endlessResult));
-  const decoration = <Decorations total={progress.gold.total} />;
+  const equippedCosmetics = getEquippedRocketCosmetics(progress.gold.total, progress.settings.rocketCosmetics);
+
+  const toggleRocketCosmetic = (id) => persist((current) => {
+    const cosmetic = ROCKET_COSMETICS.find((item) => item.id === id);
+    if (!cosmetic || current.gold.total < cosmetic.amount) return current;
+    const rocketCosmetics = { ...current.settings.rocketCosmetics };
+    if (rocketCosmetics[id]) delete rocketCosmetics[id];
+    else rocketCosmetics[id] = true;
+    return { ...current, settings: { ...current.settings, rocketCosmetics } };
+  });
   return (
     <>
-    <FullscreenButton docked={screen === SCREEN.MENU && menuPage === SCREEN.STORAGE}
-      hidden={settingsOpen || [SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH].includes(screen)
+    <FullscreenButton
+      hidden={settingsOpen || [SCREEN.FLIGHT_TUTORIAL, SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH].includes(screen)
       || (screen === SCREEN.MENU && menuPage === SCREEN.COMMAND)} />
     <div
       className={`app-shell ${reducedMotion ? "motion-reduced" : ""}`}
@@ -452,14 +523,21 @@ export default function App() {
           warning={warning}
           muted={muted}
           onToggleMute={toggleMute}
-          onPlay={() => setMenuPage(SCREEN.PLANETS)}
+          onPlay={openCampaign}
           onSettings={openSettings}
         />
+      ) : null}
+      {screen === SCREEN.MENU && menuPage === SCREEN.MISSION_INTRO ? (
+        <MissionIntroScreen onComplete={completeMissionIntro} />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.STORAGE ? (
         <StorageScreen
           key={progress.gold.total}
           gold={progress.gold}
+          equippedCosmetics={equippedCosmetics}
+          onToggleCosmetic={toggleRocketCosmetic}
+          showDecorations={progress.settings.showVaultDecorations}
+          onToggleDecorations={() => patchSettings({ showVaultDecorations: !progress.settings.showVaultDecorations })}
           reducedMotion={reducedMotion}
           inputBlocked={debugOpen || settingsOpen}
           onBack={closeStorage}
@@ -470,15 +548,16 @@ export default function App() {
       {screen === SCREEN.MENU && menuPage === SCREEN.PLANETS ? (
         <PlanetsScreen
           progress={progress}
-          decoration={decoration}
           completedStageId={completionStageId}
           preferredPlanetId={navigationContext.selector.planetId}
           preferredStageId={navigationContext.selector.selectedStageId}
+          selectionGuide={selectionGuide}
           storageButtonRef={selectorStorageButton}
-          previousGoldBalance={selectorGoldBalance}
-          goldCountPaused={debugOpen || settingsOpen}
           onStorage={enterStorageFromSelector}
-          onBack={() => setMenuPage(SCREEN.MENU)}
+          onBack={() => {
+            setSelectionGuide(null);
+            setMenuPage(SCREEN.MENU);
+          }}
           onPlay={startStage}
           onPlayEndless={(planetId) => startStage(planetId, null, "endless")}
           reducedMotion={reducedMotion}
@@ -493,7 +572,6 @@ export default function App() {
       {screen === SCREEN.MENU && menuPage === SCREEN.COMMAND ? (
         <CommandRoomScreen
           progress={progress}
-          decoration={decoration}
           initialPlanetId={laboratoryPlanetId}
           onVisitPlanet={visitLaboratoryPlant}
           onCareComplete={finishLaboratoryCare}
@@ -508,6 +586,7 @@ export default function App() {
           planetId={run.planetId}
           stageId={run.stageId}
           mode={run.mode}
+          cosmetics={equippedCosmetics}
           controlMode={progress.settings.controlMode}
           reducedMotion={reducedMotion}
           muted={muted}
@@ -533,10 +612,12 @@ export default function App() {
           reducedMotion={reducedMotion}
         />
       ) : null}
+      {screen === SCREEN.FLIGHT_TUTORIAL ? (
+        <EarthFlightTutorial controlMode={progress.settings.controlMode} onStart={startTutorialFlight} onBack={exitTutorial} />
+      ) : null}
       {screen === SCREEN.VICTORY || endlessResult ? (
         <VictoryScreen
           planet={planet}
-          decoration={decoration}
           stage={stage}
           snapshot={outcomeSnapshot}
           bestScore={progress.endlessHighScores?.[planet?.id] ?? 0}

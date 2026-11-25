@@ -23,6 +23,9 @@ export const SPEED = {
   correctAnswerBonus: 34,
   wrongAnswerPenalty: 38,
   obstaclePenalty: 44,
+  criticalThreshold: 50,
+  criticalLossPerSecond: 20,
+  streakThreshold: 85,
   defeatAtOrBelow: 0,
   minProgressMultiplier: 0.35,
   maxProgressMultiplier: 2.2,
@@ -34,6 +37,8 @@ export const SCORE = {
 };
 
 export const ENDLESS = {
+  lives: 3,
+  speed: SPEED.start,
   difficultyRampMs: 120_000,
   pointsPerSecond: 10,
   correctAnswerPoints: 100,

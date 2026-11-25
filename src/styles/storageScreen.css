@@ -1,33 +1,19 @@
-.storage-icon {
-  position: relative;
-  display: grid;
-  width: 45px;
-  aspect-ratio: 96 / 88;
-  flex: none;
-}
-.storage-icon > :is(img, svg) { grid-area: 1 / 1; width: 100%; height: 100%; object-fit: contain; }
-.storage-icon__highlight { opacity: 0; transition: opacity .18s ease; }
-.phase-selection-storage:is(:hover, :active, :focus-visible, .has-new) .storage-icon__highlight { opacity: 1; }
-
 .phase-selection-header .phase-selection-resources {
-  grid-template-columns: minmax(0, 1fr) minmax(84px, auto);
+  grid-template-columns: minmax(0, max-content) auto;
+  justify-content: start;
+  gap: clamp(5px, 1cqw, 12px);
 }
 .phase-selection-storage {
   position: relative;
-  display: flex;
-  min-width: 0;
-  max-width: min(186px, 38vw);
-  min-height: 44px;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px 3px 4px;
+  display: grid;
+  width: clamp(38px, 5.4cqw, 58px);
+  aspect-ratio: 1;
+  place-items: center;
+  padding: 4px;
   border: 1px solid #cda562;
   border-radius: 12px;
   background: linear-gradient(155deg, #214462, #0c203b 57%, #34271e);
   box-shadow: inset 0 1px #fff0b53b, 0 3px 8px #020919ba;
-  color: #fff2ca;
-  text-align: left;
-  text-shadow: 0 1px 2px #0a152c;
   cursor: pointer;
   transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
 }
@@ -38,15 +24,7 @@
 .phase-selection-storage:hover { transform: scale(1.04); }
 .phase-selection-storage:active { transform: scale(.97); }
 .phase-selection-storage:focus-visible { outline: 3px solid #fff1c7; outline-offset: 3px; }
-.phase-selection-storage .storage-icon { width: clamp(29px, 4.4cqw, 52px); }
-.phase-selection-storage__copy { display: grid; min-width: 0; gap: 1px; font-size: clamp(.68rem, 1.35cqw, .94rem); }
-.phase-selection-storage__copy strong {
-  overflow: hidden;
-  color: #ffd774;
-  font-size: clamp(.78rem, 1.6cqw, 1.2rem);
-  font-variant-numeric: tabular-nums;
-  text-overflow: ellipsis;
-}
+.phase-selection-storage__icon { display: block; width: 100%; height: 100%; object-fit: contain; }
 .phase-selection-storage__new {
   position: absolute;
   top: -4px;
@@ -58,14 +36,6 @@
   background: #ffc74f;
   box-shadow: 0 0 8px #ffcd5c;
 }
-@media (max-width: 620px) {
-  .phase-selection-storage { gap: 2px; padding-inline: 3px 5px; }
-  .phase-selection-storage .storage-icon { width: 28px; }
-  .phase-selection-storage__copy { font-size: .66rem; }
-}
-
-
-
 .laboratory-scene.gold-storage {
   height: 100dvh;
   min-height: 0;
@@ -84,6 +54,7 @@
 .gold-storage__header h1 { max-width: clamp(96px, calc(100vw - 192px), 420px); margin: 0; color: #e5f6ff; font-size: clamp(.82rem, 3.2vw, 1.43rem); text-align: center; }
 .gold-storage__header .gold-storage__back { position: relative; justify-self: start; }
 .gold-storage__header .laboratory-scene__icon-button--settings { justify-self: end; margin-right: 60px; }
+.gold-storage__header .laboratory-scene__icon-button:hover { filter: brightness(1.18); }
 @media (max-width: 420px) {
   .gold-storage__header .laboratory-scene__icon-button--settings { width: 34px; height: 34px; margin-right: 56px; }
 }
@@ -94,6 +65,7 @@
 .gold-storage__back span { position: absolute; bottom: -8px; color: #e7f7ff; font-size: .68rem; text-shadow: 0 2px 3px #071333; }
 
 .gold-storage__layout {
+  --vault-action-size: clamp(52px, 7vw, 68px);
   position: relative;
   z-index: 2;
   display: grid;
@@ -107,9 +79,85 @@
   position: relative;
   isolation: isolate;
   aspect-ratio: 1.75;
-  max-height: max(84px, calc(100dvh - max(72px, calc(env(safe-area-inset-top) + 65px)) - max(12px, env(safe-area-inset-bottom)) - 132px));
+  max-height: max(84px, calc(100dvh - max(72px, calc(env(safe-area-inset-top) + 65px)) - max(12px, env(safe-area-inset-bottom)) - var(--vault-action-size) - 82px));
 }
 .gold-storage__vault { position: relative; isolation: isolate; width: min(92%, 500px); min-height: 80px; padding-top: 43px; }
+.gold-storage__vault:has(.gold-storage__customization-actions) { padding-top: calc(var(--vault-action-size) + 4px); }
+.gold-storage__customization-actions {
+  position: absolute;
+  inset: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.laboratory-scene.gold-storage .gold-storage__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, 1vw, 7px);
+  min-height: 36px;
+  padding: 4px clamp(4px, 1.5vw, 12px);
+  border: 1px solid #5cc8ff;
+  border-radius: 10px;
+  background: linear-gradient(#184f86, #09234a 58%, #071831);
+  box-shadow: inset 0 1px #a9eaff85, 0 2px 8px #030d24ad;
+  color: #ecfaff;
+  font-size: clamp(.67rem, 2.5vw, .79rem);
+  font-weight: 700;
+  cursor: pointer;
+}
+.laboratory-scene.gold-storage .gold-storage__button:hover { background: linear-gradient(#226eaa, #123256); }
+.gold-storage .gold-storage__button-art { width: clamp(14px, 3.6vw, 20px); height: auto; aspect-ratio: 1; object-fit: contain; }
+.laboratory-scene.gold-storage .gold-storage__button--icon {
+  width: var(--vault-action-size);
+  height: var(--vault-action-size);
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.laboratory-scene.gold-storage .gold-storage__button--icon:hover { background: transparent; filter: brightness(1.18); }
+.gold-storage .gold-storage__button--icon .gold-storage__button-art { width: 100%; }
+.gold-storage__cosmetics {
+  width: min(440px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: clamp(10px, 3vw, 20px);
+  border: 2px solid #52bcea;
+  border-radius: 18px;
+  background: linear-gradient(155deg, #163664, #0a1734);
+  color: #e9f7ff;
+  box-shadow: 0 0 24px #2699cb77;
+}
+.gold-storage__cosmetics::backdrop { background: #040b22b8; }
+.gold-storage__cosmetics-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.gold-storage__cosmetics-heading h2 { margin: 0; font-size: clamp(1.02rem, 4vw, 1.4rem); }
+.gold-storage__cosmetics-list { display: grid; gap: 7px; margin: 12px 0 0; padding: 0; list-style: none; }
+.gold-storage__cosmetic {
+  display: grid;
+  width: 100%;
+  min-height: 64px;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border: 1px solid #5588b6;
+  border-radius: 12px;
+  background: #0a1b3d;
+  text-align: left;
+  cursor: pointer;
+}
+.gold-storage__cosmetic img { width: 38px; height: 46px; object-fit: contain; }
+.gold-storage__cosmetic span { display: grid; gap: 3px; font-size: clamp(.78rem, 3vw, .92rem); }
+.gold-storage__cosmetic small { color: #ffe0a4; font-size: .7rem; }
+.gold-storage__cosmetic:hover:not(:disabled) { background: #183c63; }
+.gold-storage__cosmetic[aria-pressed="true"] { border-color: #9bdf9d; background: #153839; }
+.gold-storage__cosmetic:disabled { opacity: .68; cursor: not-allowed; }
 .gold-storage__balance {
   margin: 0 0 6px;
   color: #ffe099;
@@ -121,7 +169,24 @@
 }
 
 .gold-treasure__art { position: absolute; inset: 0; }
-.gold-treasure__image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.gold-treasure__platform {
+  position: absolute;
+  bottom: 3%;
+  left: 6%;
+  width: 88%;
+  height: 43%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+.gold-treasure__pile {
+  position: absolute;
+  bottom: 30%;
+  left: 50%;
+  height: 68%;
+  translate: -50% 0;
+  transform-origin: center bottom;
+}
+.gold-treasure__image { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
 .gold-treasure__image--current { filter: drop-shadow(0 6px 8px #050b215c); }
 .gold-treasure__aura {
   position: absolute;
@@ -167,14 +232,6 @@
   z-index: 2;
   top: 0;
   right: 0;
-  min-height: 35px;
-  padding: 4px 9px;
-  border: 1px solid #cbb67a9e;
-  border-radius: 8px;
-  background: #1a3153;
-  color: #fff0c5;
-  font-size: .73rem;
-  cursor: pointer;
 }
 .gold-storage__flights { position: absolute; z-index: 3; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
@@ -185,6 +242,39 @@
 .gold-meter__pulse { background: radial-gradient(ellipse, #fff7c1, transparent 72%); animation: gold-meter-pop .29s ease-out both; }
 
 .gold-meter__pulse { position: absolute; inset: 0; pointer-events: none; }
+.gold-meter__wrapper { position: relative; }
+.gold-meter__inspect {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+.gold-meter__tooltip {
+  position: absolute;
+  z-index: 4;
+  right: 0;
+  bottom: calc(100% + 8px);
+  left: 0;
+  display: none;
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
+  padding: 6px 10px;
+  border: 1px solid #5cc8ff;
+  border-radius: 8px;
+  background: #081e43;
+  box-shadow: 0 3px 12px #031127a8;
+  color: #f4fbff;
+  font-size: .78rem;
+  text-align: center;
+}
+.gold-meter__wrapper[data-open="true"] .gold-meter__tooltip,
+.gold-meter__wrapper[data-dismissed="false"] .gold-meter__inspect:focus-visible + .gold-meter__tooltip { display: block; }
+.gold-meter__tooltip::after { position: absolute; inset: 100% 0 auto; height: 8px; content: ""; }
 
 .gold-decorations {
   position: absolute;
@@ -198,7 +288,6 @@
   user-select: none;
 }
 
-.victory-screen__panel { position: relative; z-index: 1; }
 .gold-storage .gold-decorations { z-index: 1; }
 
 @keyframes gold-meter-pop { from { opacity: 1; transform: scaleX(.2); } to { opacity: 0; transform: scaleX(1); } }

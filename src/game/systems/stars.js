@@ -1,3 +1,5 @@
+import { SPEED } from "../config/gameConfig.js";
+
 export function createStarfield(count, width, height, alpha, rng = Math.random) {
   const stars = [];
   for (let i = 0; i < count; i += 1) {
@@ -41,12 +43,12 @@ export function createSpeedStreaks(count, width, height, rng = Math.random) {
 }
 
 export function updateSpeedStreaks(streaks, dt, width, height, speed, rng = Math.random) {
-  const flowSpeed = 230 + Math.max(0, speed) * 1.5;
+  const flowSpeed = 180 + Math.max(0, speed - SPEED.streakThreshold) * 3.8;
   for (const streak of streaks) {
     streak.y += flowSpeed * dt;
     streak.x += streak.drift * dt;
-    if (streak.y > height + streak.length) {
-      streak.y = -streak.length;
+    if (streak.y > height + streak.length * 3) {
+      streak.y = -rng() * 100;
       streak.x = rng() * width;
     }
     if (streak.x < -4) streak.x = width + 4;
@@ -55,17 +57,29 @@ export function updateSpeedStreaks(streaks, dt, width, height, speed, rng = Math
 }
 
 export function renderSpeedStreaks(ctx, streaks, accent, speed) {
-  const intensity = Math.min(1, Math.max(0, speed) / 260);
+  if (speed <= SPEED.streakThreshold) return;
+  const intensity = Math.min(1, (speed - SPEED.streakThreshold) / (SPEED.max - SPEED.streakThreshold)) ** 0.65;
+  const count = Math.ceil(streaks.length * (0.10 + intensity * 0.90));
   ctx.save();
   ctx.lineCap = "round";
-  for (const streak of streaks) {
-    ctx.globalAlpha = streak.alpha * (0.8 + intensity * 0.9);
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = streak.thickness;
+  for (let index = 0; index < count; index += 1) {
+    const streak = streaks[index];
+    const bright = index % 4 === 0;
+    const length = streak.length * (0.55 + intensity * 2.4);
+    const tailX = streak.x + streak.drift * intensity * 0.3;
+    ctx.globalAlpha = streak.alpha * intensity * (bright ? 1.7 : 1);
+    ctx.strokeStyle = bright ? "#e3faff" : accent;
+    ctx.lineWidth = streak.thickness * (0.6 + intensity);
     ctx.beginPath();
     ctx.moveTo(streak.x, streak.y);
-    ctx.lineTo(streak.x + streak.drift * 0.16, streak.y + streak.length * (0.9 + intensity * 1.3));
+    ctx.lineTo(tailX, streak.y - length);
     ctx.stroke();
+    if (bright && intensity > 0.65) {
+      ctx.globalAlpha *= 0.24;
+      ctx.strokeStyle = accent;
+      ctx.lineWidth *= 3.2;
+      ctx.stroke();
+    }
   }
   ctx.restore();
 }

@@ -1,84 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import { clampFloatingPosition, readFloatingPosition } from "./floatingControlModel.js";
+import { useEffect, useState } from "react";
 import { GameIcon } from "./GameIcon.jsx";
 
-const POSITION_KEY = "rocketbloom.fullscreen-button-position";
-const BUTTON_SIZE = 52;
-const EDGE_GAP = 16;
-
-function getSavedPosition() {
-  try {
-    return readFloatingPosition(window.localStorage.getItem(POSITION_KEY));
-  } catch {
-    return null;
-  }
-}
-
-function savePosition(position) {
-  try {
-    window.localStorage.setItem(POSITION_KEY, JSON.stringify(position));
-  } catch {
-    // The control remains usable when browser storage is unavailable.
-  }
-}
-
-export function FullscreenButton({ hidden = false, docked = false }) {
-  const [position, setPosition] = useState(() => getSavedPosition() ?? {
-    x: Math.max(EDGE_GAP, window.innerWidth - BUTTON_SIZE - EDGE_GAP),
-    y: EDGE_GAP,
-  });
+export function FullscreenButton({ hidden = false }) {
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
-  const dragStart = useRef(null);
-  const suppressClick = useRef(false);
-  const positionRef = useRef(position);
 
   useEffect(() => {
     const syncFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
-    const keepInsideViewport = () => {
-      setPosition((current) => {
-        const next = clampFloatingPosition(current, { width: window.innerWidth, height: window.innerHeight }, { width: BUTTON_SIZE, height: BUTTON_SIZE });
-        positionRef.current = next;
-        savePosition(next);
-        return next;
-      });
-    };
     document.addEventListener("fullscreenchange", syncFullscreen);
-    window.addEventListener("resize", keepInsideViewport);
-    keepInsideViewport();
-    return () => {
-      document.removeEventListener("fullscreenchange", syncFullscreen);
-      window.removeEventListener("resize", keepInsideViewport);
-    };
+    return () => document.removeEventListener("fullscreenchange", syncFullscreen);
   }, []);
-
-  const onPointerDown = (event) => {
-    if (event.button !== 0) return;
-    dragStart.current = { pointerX: event.clientX, pointerY: event.clientY, x: position.x, y: position.y, moved: false };
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const onPointerMove = (event) => {
-    if (!dragStart.current) return;
-    const drag = dragStart.current;
-    const deltaX = event.clientX - drag.pointerX;
-    const deltaY = event.clientY - drag.pointerY;
-    if (!drag.moved && Math.hypot(deltaX, deltaY) < 4) return;
-    drag.moved = true;
-    const next = clampFloatingPosition(
-      { x: drag.x + deltaX, y: drag.y + deltaY },
-      { width: window.innerWidth, height: window.innerHeight },
-      { width: BUTTON_SIZE, height: BUTTON_SIZE },
-    );
-    positionRef.current = next;
-    setPosition(next);
-  };
-
-  const onPointerUp = () => {
-    if (!dragStart.current) return;
-    suppressClick.current = dragStart.current.moved;
-    if (dragStart.current.moved) savePosition(positionRef.current);
-    dragStart.current = null;
-  };
 
   const toggleFullscreen = async () => {
     try {
@@ -91,29 +21,10 @@ export function FullscreenButton({ hidden = false, docked = false }) {
 
   if (hidden) return null;
 
+  const label = isFullscreen ? "Sair da tela cheia" : "Entrar em tela cheia";
   return (
-    <button
-      type="button"
-      className="fullscreen-float"
-      style={docked
-        ? { right: "max(12px, env(safe-area-inset-right))", top: "max(12px, env(safe-area-inset-top))", cursor: "pointer" }
-        : { left: `${position.x}px`, top: `${position.y}px` }}
-      aria-label={isFullscreen ? "Sair da tela cheia" : "Entrar em tela cheia"}
-      aria-pressed={isFullscreen}
-      title={isFullscreen ? "Sair da tela cheia" : "Entrar em tela cheia"}
-      onPointerDown={docked ? undefined : onPointerDown}
-      onPointerMove={docked ? undefined : onPointerMove}
-      onPointerUp={docked ? undefined : onPointerUp}
-      onPointerCancel={docked ? undefined : onPointerUp}
-      onClick={(event) => {
-        if (!docked && suppressClick.current) {
-          suppressClick.current = false;
-          event.preventDefault();
-          return;
-        }
-        toggleFullscreen();
-      }}
-    >
+    <button type="button" className="fullscreen-float" aria-label={label} aria-pressed={isFullscreen}
+      title={label} draggable={false} onClick={toggleFullscreen}>
       <GameIcon name={isFullscreen ? "fullscreen-exit" : "fullscreen-enter"} />
     </button>
   );
