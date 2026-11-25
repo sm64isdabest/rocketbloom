@@ -22,7 +22,7 @@ export function MissionIntroScreen({ onComplete }) {
           <p className="mission-intro__copy">{scene.dialogue}</p>
           <div className="mission-intro__actions">
             {!lastScene ? <button className="btn btn--ghost" type="button" onClick={onComplete}>Pular introdução</button> : null}
-            <button className="btn" type="button" onClick={lastScene ? onComplete : () => setIndex(index + 1)}>
+            <button className="btn" type="button" data-menu-start onClick={lastScene ? onComplete : () => setIndex(index + 1)}>
               {lastScene ? "Ir para a Terra" : "Continuar"}
             </button>
           </div>

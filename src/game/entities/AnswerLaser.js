@@ -69,7 +69,7 @@ export class AnswerLaser {
     return { x: this.x, y: this.y + (this.height - height) / 2, width: this.width, height };
   }
 
-  render(ctx, reducedMotion = false) {
+  render(ctx, reducedMotion = false, showLaneNumber = false) {
     if (!this.alive) return;
     const bounds = this.drawBounds;
     const frame = this.sheet ?? this.frames?.[this.frameIndex];
@@ -89,12 +89,30 @@ export class AnswerLaser {
     }
     if (frame?.complete && frame.naturalWidth > 0 && frame.naturalHeight > 0) {
       if (this.sheet) {
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = alpha * 0.52;
+        ctx.fillRect(x, y + height / 2 - 1, width, 2);
+        ctx.globalAlpha = alpha;
         const frameHeight = frame.naturalHeight / LASER_FRAME_COUNT;
         ctx.drawImage(frame, 0, this.frameIndex * frameHeight, frame.naturalWidth, frameHeight, x, y, width, height);
       } else ctx.drawImage(frame, x, y, width, height);
     } else {
       ctx.fillStyle = this.color;
       ctx.fillRect(x, y + height / 2 - 2, width, 4);
+    }
+    if (showLaneNumber && this.fadeOutElapsedMs === null) {
+      const center = x + width / 2;
+      const top = y + height + 1;
+      ctx.fillStyle = "#050a16";
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(center - 11, top, 22, 21);
+      ctx.strokeRect(center - 11, top, 22, 21);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "bold 16px Trebuchet MS, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(String(this.lane + 1), center, top + 10.5);
     }
     ctx.restore();
   }

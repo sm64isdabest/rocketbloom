@@ -4,15 +4,16 @@ import { SCREEN } from "./screenStates.js";
 import { getOutcomeReturn } from "./outcomeFlow.js";
 
 test("vitória retorna à seleção de fases e destaca a fase concluída", () => {
-  assert.deepEqual(getOutcomeReturn("victory", { stageId: "earth-3" }), {
+  assert.deepEqual(getOutcomeReturn("victory", { stageId: "earth-3", firstCompletion: true }), {
     menuPage: SCREEN.PLANETS,
     completedStageId: "earth-3",
+    guide: "storage",
   });
 });
 
-test("derrota retorna ao menu sem destacar uma fase", () => {
+test("derrota de campanha retorna ao seletor sem destacar uma fase", () => {
   assert.deepEqual(getOutcomeReturn("defeat", { stageId: "earth-3" }), {
-    menuPage: SCREEN.MENU,
+    menuPage: SCREEN.PLANETS,
     completedStageId: null,
   });
 });
@@ -29,4 +30,14 @@ test("o guia do Laboratório aparece só ao voltar da primeira vitória no Níve
   assert.equal(getOutcomeReturn("victory", { stageId: "earth-2", firstCompletion: false }).guide, undefined);
   assert.equal(getOutcomeReturn("victory", { stageId: "mars-2", firstCompletion: true }).guide, undefined);
   assert.equal(getOutcomeReturn("defeat", { stageId: "earth-2", firstCompletion: true }).guide, undefined);
+});
+
+test("a primeira vitória no Nível 3 da Terra destaca o Cofre", () => {
+  assert.equal(getOutcomeReturn("victory", { stageId: "earth-3", firstCompletion: true }).guide, "storage");
+  assert.equal(getOutcomeReturn("victory", { stageId: "earth-3", firstCompletion: false }).guide, undefined);
+  assert.equal(getOutcomeReturn("victory", { stageId: "mars-3", firstCompletion: true }).guide, undefined);
+});
+
+test("repetir uma fase já vencida não repete o indicador de desbloqueio", () => {
+  assert.equal(getOutcomeReturn("victory", { stageId: "earth-1", firstCompletion: false }).completedStageId, null);
 });

@@ -11,42 +11,46 @@ function formatFlightTime(elapsedMs) {
   return `${minutes}:${seconds}`;
 }
 
-export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, onRetry }) {
+export function VictoryScreen({ planet, stage, snapshot, bestScore, defeated = false, onContinue, onRetry }) {
   const titleRef = useRef(null);
 
   useEffect(() => { titleRef.current?.focus(); }, []);
 
   const endless = snapshot?.mode === "endless";
-  const title = endless ? "Fim do voo" : "Nível Concluído!";
+  const flightEnded = defeated || endless;
+  const title = flightEnded ? "Fim do voo" : "Nível Concluído!";
+  const flightTime = ["Tempo de voo", formatFlightTime(snapshot?.elapsedMs ?? 0), "victory/time.webp"];
   const stats = endless ? [
     ["Pontuação", numberFormat.format(snapshot.endlessScore), "victory/score.webp"],
     ["Recorde do planeta", numberFormat.format(bestScore), "victory/record.webp"],
-    ["Tempo de voo", formatFlightTime(snapshot.elapsedMs), "victory/time.webp"],
-  ] : snapshot ? [
-    ["Pontuação", numberFormat.format(snapshot.score), "victory/score.webp"],
-    ["Tempo de voo", formatFlightTime(snapshot.elapsedMs), "victory/time.webp"],
+    flightTime,
+  ] : defeated ? [flightTime] : snapshot ? [
+    flightTime,
     ["Respostas certas", numberFormat.format(snapshot.correctAnswers), "victory/correct.webp"],
     ["Respostas erradas", numberFormat.format(snapshot.incorrectAnswers), "victory/incorrect.webp"],
     ["Moedas coletadas", numberFormat.format(snapshot.coins), "coin.webp"],
   ] : [];
-  const astronaut = endless ? "astronaut-tired.webp" : "astronaut.webp";
+  const astronaut = flightEnded ? "astronaut-tired.webp" : "astronaut.webp";
 
   return (
-    <main className={`screen victory-screen${endless ? " victory-screen--endless" : ""}`} aria-labelledby="victory-title"
+    <main className={`screen victory-screen${flightEnded ? " victory-screen--defeat" : ""}`} aria-labelledby="victory-title"
       style={{ "--victory-background": `url("${getHudAssetUrl("victory/space.webp", APP_BASE)}")` }}>
       <section className="victory-screen__panel">
         <img className="victory-screen__astronaut" src={getHudAssetUrl(`victory/${astronaut}`, APP_BASE)} alt="" />
         {planet && stage ? <p className="eyebrow victory-screen__stage">{planet.name} · {stage.name}</p> : null}
         <div className="victory-screen__heading">
           <h1 id="victory-title" ref={titleRef} tabIndex={-1} aria-label={title}>
-            {endless ? <><span>Fim</span>{" "}<span>do voo</span></> : <><span>Nível</span>{" "}<span>Concluído!</span></>}
+            {flightEnded ? <><span>Fim</span>{" "}<span>do voo</span></> : <><span>Nível</span>{" "}<span>Concluído!</span></>}
           </h1>
         </div>
-        <p className="victory-screen__greeting">
-          {endless ? "O foguete ficou sem vidas." : <><img src={`${APP_BASE}assets/rocket.webp`} alt="" /> Boa jornada, viajante!</>}
-        </p>
+        {(!defeated || endless) && (
+          <p className="victory-screen__greeting">
+            {endless ? "O foguete ficou sem vidas." : <><img src={`${APP_BASE}assets/rocket.webp`} alt="" /> Boa jornada, viajante!</>}
+          </p>
+        )}
         {stats.length ? (
-          <dl className="victory-screen__stats">
+          <dl className={`victory-screen__stats${stats.length === 1 ? " victory-screen__stats--single" : ""}`}
+            style={{ "--result-columns": endless ? 3 : defeated ? 1 : 2 }}>
             {stats.map(([label, value, icon], index) => (
               <div key={label} style={{ "--stat-index": index }}>
                 <dt>{label}</dt>
@@ -60,7 +64,7 @@ export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, 
         ) : null}
         <div className="victory-screen__actions">
           {onRetry ? <button className="btn" type="button" onClick={onRetry}>Voar novamente</button> : null}
-          <button className={onRetry ? "btn btn--ghost" : "btn"} type="button" onClick={onContinue}>
+          <button className={onRetry ? "btn btn--ghost" : "btn"} type="button" data-menu-start onClick={onContinue}>
             <img className="victory-screen__return-icon" src={getHudAssetUrl("victory/return.webp", APP_BASE)} alt="" />
             Voltar à seleção de fases
           </button>

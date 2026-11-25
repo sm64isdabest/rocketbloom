@@ -25,7 +25,7 @@ export function MenuScreen({ warning, muted, onToggleMute, onPlay, onSettings })
         <img className="menu__logo" src={menuAsset("logo.webp")} alt="RocketBloom" />
 
         <nav className="menu__buttons" aria-label="Menu principal">
-          <button type="button" className="menu__play" onClick={onPlay}>
+          <button type="button" className="menu__play" data-menu-start onClick={onPlay}>
             <img src={menuAsset("play.webp")} alt="" />
             <span>Jogar</span>
           </button>

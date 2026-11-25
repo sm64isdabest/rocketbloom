@@ -38,6 +38,7 @@ export const SCORE = {
 
 export const ENDLESS = {
   lives: 3,
+  invulnerabilityMs: 1200,
   speed: SPEED.start,
   difficultyRampMs: 120_000,
   pointsPerSecond: 10,

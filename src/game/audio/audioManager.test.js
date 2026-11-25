@@ -510,3 +510,40 @@ test("menu music uses its own gentle loop and pauses outside menu screens", () =
     else globalThis.Audio = priorAudio;
   }
 });
+
+test("seleciona uma trilha por planeta e retoma na mesma posição após uma pausa", async () => {
+  const audio = await import("./audioManager.js?planet-music");
+  const previousAudio = globalThis.Audio;
+  const tracks = [];
+  globalThis.Audio = class {
+    constructor(src) { this.src = src; this.currentTime = 0; tracks.push(this); }
+    play() { this.paused = false; return Promise.resolve(); }
+    pause() { this.paused = true; }
+  };
+  try {
+    const filenames = {
+      earth: "gameplay-space-loop.mp3",
+      mars: "gameplay-mars-loop.mp3",
+      saturn: "gameplay-saturn-loop.mp3",
+      neptune: "gameplay-neptune-loop.mp3",
+    };
+    for (const [planet, filename] of Object.entries(filenames)) {
+      const previous = tracks.at(-1);
+      audio.startGameAudio(planet);
+      if (previous) assert.equal(previous.paused, true);
+      const track = tracks.at(-1);
+      assert.ok(track.src.endsWith(filename), track.src);
+      assert.equal(track.loop, true);
+      track.currentTime = 12;
+      audio.pauseGameAudio();
+      audio.startGameAudio(planet);
+      assert.equal(tracks.at(-1), track);
+      assert.equal(track.currentTime, 12);
+    }
+    assert.equal(tracks.length, 4);
+  } finally {
+    audio.pauseGameAudio();
+    if (previousAudio === undefined) delete globalThis.Audio;
+    else globalThis.Audio = previousAudio;
+  }
+});

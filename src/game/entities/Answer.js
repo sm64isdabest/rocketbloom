@@ -16,13 +16,13 @@ export class Answer {
     this.y += this.speed * dt;
   }
 
-  render(ctx) {
+  render(ctx, accessibility) {
     ctx.save();
-    this.renderLabel(ctx, this.x + this.width / 2, this.y + this.height / 2, 700);
+    this.renderLabel(ctx, this.x + this.width / 2, this.y + this.height / 2, 700, accessibility);
     ctx.restore();
   }
 
-  renderPerspective(ctx, progress, viewHeight) {
+  renderPerspective(ctx, progress, viewHeight, accessibility) {
     const t = Math.max(0, Math.min(1, progress));
     const eased = t * t * (3 - 2 * t);
     const centerX = this.x + this.width / 2;
@@ -32,20 +32,27 @@ export class Answer {
     ctx.translate(centerX, y);
     ctx.scale(scale, scale);
     ctx.globalAlpha = Math.max(0, 1 - eased);
-    this.renderLabel(ctx, 0, 0, 800);
+    this.renderLabel(ctx, 0, 0, 800, accessibility);
     ctx.restore();
   }
 
-  renderLabel(ctx, x, y, weight) {
+  renderLabel(ctx, x, y, weight, { largeText = false, highContrast = false } = {}) {
+    const fontSize = largeText ? Math.min(46, this.width * 0.72) : Math.min(36, this.width * 0.58);
+    if (highContrast) {
+      const padding = 6;
+      ctx.fillStyle = "#050a16";
+      ctx.fillRect(x - this.width / 2, y - fontSize / 2 - padding, this.width, fontSize + padding * 2);
+    }
     ctx.fillStyle = "#FFFFFF";
     ctx.strokeStyle = "#071331";
     ctx.lineWidth = 3;
     ctx.lineJoin = "round";
-    ctx.font = `${weight} ${Math.min(36, this.width * 0.58)}px Trebuchet MS, sans-serif`;
+    ctx.font = `${weight} ${fontSize}px Trebuchet MS, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     const label = String(this.value);
-    ctx.strokeText(label, x, y);
-    ctx.fillText(label, x, y);
+    const maxWidth = this.width - 8;
+    ctx.strokeText(label, x, y, maxWidth);
+    ctx.fillText(label, x, y, maxWidth);
   }
 }

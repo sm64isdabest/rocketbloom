@@ -85,7 +85,7 @@ export function CommandRoomScreen({ progress, onBack, onSettings, initialPlanetI
         <h1>{plant.name}</h1>
         <p>Planeta {planet.name}</p>
         {pendingStage ? (
-          <button className="btn laboratory-care-button" type="button" onClick={startCare}>
+          <button className="btn laboratory-care-button" type="button" data-menu-start onClick={startCare}>
             Cuidar da planta
           </button>
         ) : null}

@@ -2,9 +2,10 @@ import { INPUT, ROCKET } from "../config/gameConfig.js";
 
 const TAP_TOLERANCE_PX = 8;
 
-export function createInputController(target, controlMode = "pointer", prepareTap) {
+export function createInputController(target, controlMode = "pointer", prepareTap, selectAnswerLane) {
   let activeControlMode = controlMode;
   let enabled = true;
+  let pauseRequested = false;
   const state = {
     pointerX: null,
     pointerActive: false,
@@ -51,8 +52,17 @@ export function createInputController(target, controlMode = "pointer", prepareTa
   };
 
   const onKeyDown = (event) => {
-    if (!enabled) return;
+    if (!enabled || event.defaultPrevented) return;
+    if (selectAnswerLane && !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey
+      && /^[1-4]$/.test(event.key) && selectAnswerLane(Number(event.key) - 1)) {
+      event.preventDefault();
+      return;
+    }
     if (["ArrowLeft", "ArrowRight", "Escape"].includes(event.key)) event.preventDefault();
+    if (event.key === "Escape" || event.key.toLowerCase() === "p") {
+      pauseRequested ||= !event.repeat;
+      return;
+    }
     state.keys.add(event.key);
   };
 
@@ -61,6 +71,7 @@ export function createInputController(target, controlMode = "pointer", prepareTa
   };
 
   const onWindowBlur = () => {
+    pauseRequested = false;
     state.keys.clear();
     cancelPointer();
   };
@@ -83,6 +94,7 @@ export function createInputController(target, controlMode = "pointer", prepareTa
     setEnabled(nextEnabled) {
       enabled = nextEnabled;
       if (!enabled) {
+        pauseRequested = false;
         state.keys.clear();
         state.pointerX = null;
         cancelPointer();
@@ -110,12 +122,10 @@ export function createInputController(target, controlMode = "pointer", prepareTa
       }
     },
     wantsPause() {
-      return state.keys.has("Escape") || state.keys.has("p") || state.keys.has("P");
+      return pauseRequested;
     },
     consumePause() {
-      state.keys.delete("Escape");
-      state.keys.delete("p");
-      state.keys.delete("P");
+      pauseRequested = false;
     },
     destroy() {
       target.removeEventListener("pointerdown", onPointerDown);

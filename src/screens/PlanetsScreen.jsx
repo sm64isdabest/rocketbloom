@@ -40,7 +40,7 @@ const stageStatusLabel = (stage) => {
 };
 
 export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, preferredStageId, onBack, onPlay, onPlayEndless,
-  onMarkPlanetSeen, onSettings, muted, onToggleMute, onCommandRoom, onSelectionChange, reducedMotion, selectionGuide, storageButtonRef, onStorage }) {
+  onMarkPlanetSeen, onSettings, muted, onToggleMute, onCommandRoom, onSelectionChange, onPlanetChange, reducedMotion, selectionGuide, storageButtonRef, onStorage }) {
   const validPreferredPlanetId = PLANETS.some(({ id }) => id === preferredPlanetId) ? preferredPlanetId : null;
   const initialPlanetId = validPreferredPlanetId ?? getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const initialStageId = PLANETS.find(({ id }) => id === initialPlanetId)?.stages.some(({ id }) => id === preferredStageId)
@@ -78,6 +78,14 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   const orbitStage = getOrbitStage(model.stages, selectedStageId);
   const showFirstStageHint = selectionGuide === "first-flight" && planet.id === "earth" && !progress.onboarding?.earthTutorialSeen;
   const showLaboratoryGuide = selectionGuide === "laboratory" && planet.id === "earth" && getPendingLaboratoryStage(planet, progress) !== null;
+  const showStorageGuide = selectionGuide === "storage" && planet.id === "earth";
+  const guideActive = showFirstStageHint || showLaboratoryGuide || showStorageGuide;
+  const completedIndex = model.stages.findIndex((stage) => stage.id === completedStageId);
+  const nextStage = completedIndex >= 0 ? model.stages[completedIndex + 1] : null;
+  const nextStageId = nextStage?.available && !nextStage.completed ? nextStage.id : null;
+  const nextPlanetUnlocked = !guideActive && completedIndex === model.stages.length - 1
+    && nextPlanet && PLANETS.indexOf(nextPlanet) > PLANETS.indexOf(planet)
+    && progress.unlockedPlanetIds.includes(nextPlanet.id) && !progress.completedStageIds.includes(nextPlanet.stages[0].id);
   const baseClass = `phase-selection-canvas phase-selection-canvas--${planet.id}${revealingPlanetId === planet.id ? " is-revealing" : ""}`;
 
   const launchStage = (stage, targetElement) => {
@@ -95,6 +103,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
     onPlay(planet.id, stageId);
   };
   const selectPlanet = (planetId) => {
+    onPlanetChange?.();
     setRevealingPlanetId(null);
     setEndlessSelected(false);
     setSelectedStageId(null);
@@ -115,7 +124,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   };
 
   return (
-    <main className="phase-selection-screen" aria-label={`Seleção de fases: ${planet.name}`}>
+    <main className="phase-selection-screen" aria-label={`Seleção de fases: ${planet.name}`} data-guided={guideActive || undefined}>
       <div
         className={baseClass}
         onAnimationEnd={(event) => {
@@ -163,24 +172,25 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
               <img src={`${APP_BASE}assets/ui/coin.webp`} alt="" aria-hidden="true" />
               <span>{numberFormat.format(progress.gold.total)}</span>
             </div>
-            <StorageEntryButton gold={progress.gold} buttonRef={storageButtonRef} onClick={() => onStorage(planet.id, selectedStageId)} />
+            <StorageEntryButton gold={progress.gold} buttonRef={storageButtonRef} guided={showStorageGuide}
+              blocked={guideActive && !showStorageGuide} onClick={() => onStorage(planet.id, selectedStageId)} />
           </div>
 
           <nav className="phase-selection-navigation" aria-label="Navegação do seletor">
-            <button type="button" className="phase-selection-back" onClick={onBack} aria-label="Voltar ao menu" title="Voltar ao menu">
+            <button type="button" className="phase-selection-back" inert={guideActive} onClick={onBack} aria-label="Voltar ao menu" title="Voltar ao menu">
               <img src={getPauseAssetUrl(RETURN_ICON_FILE, APP_BASE)} alt="" />
             </button>
-            <MuteButton muted={muted} onToggle={onToggleMute} />
-            <button type="button" className="phase-selection-settings" onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
+            <MuteButton muted={muted} onToggle={onToggleMute} inert={guideActive} />
+            <button type="button" className="phase-selection-settings" inert={guideActive} onClick={onSettings} aria-label="Abrir configurações" title="Configurações">
               <img src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" aria-hidden="true" />
             </button>
             <button type="button" className="phase-selection-laboratory" onClick={() => onCommandRoom(planet.id, selectedStageId)}
-              ref={laboratoryButtonRef} autoFocus={showLaboratoryGuide} aria-label="Abrir Laboratório"
+              ref={laboratoryButtonRef} inert={guideActive && !showLaboratoryGuide} aria-label="Abrir Laboratório"
               aria-describedby={showLaboratoryGuide ? "phase-selection-guide-hint" : laboratoryAttention ? "laboratory-attention" : undefined} title="Laboratório">
               <img src={getMenuAssetUrl("laboratory.webp", APP_BASE)} alt="" aria-hidden="true" />
               {laboratoryAttention ? (
                 <>
-                  <img className="phase-selection-laboratory__notice" src={`${APP_BASE}assets/ui/laboratory-notice.webp`} alt="" />
+                  <img className="phase-selection-notice" src={`${APP_BASE}assets/ui/laboratory-notice.webp`} alt="" />
                   <span id="laboratory-attention" className="visually-hidden">Há novidades ou cuidados no laboratório.</span>
                 </>
               ) : null}
@@ -193,11 +203,12 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
             const [x, y] = STAGE_POSITIONS[planet.id]?.[stageIndex] ?? [0, 0];
             const current = activeStage?.id === stage.id;
             const guided = showFirstStageHint && stage.id === EARTH_TUTORIAL_STAGE_ID;
+            const next = !guideActive && stage.id === nextStageId;
             return (
               <li
                 key={stage.id}
                 ref={guided ? firstStageRef : undefined}
-                className={`phase-selection-stage${stage.status ? ` is-${stage.status}` : ""}${current ? " is-current" : ""}${selectedStageId === stage.id ? " is-selected" : ""}${completedStageId === stage.id ? " is-completing" : ""}`}
+                className={`phase-selection-stage${stage.status ? ` is-${stage.status}` : ""}${current ? " is-current" : ""}${selectedStageId === stage.id ? " is-selected" : ""}${completedStageId === stage.id ? " is-completing" : ""}${next ? " is-next" : ""}`}
                 style={{
                   "--stage-x": `${(x / PANEL_WIDTH) * 100}%`,
                   "--stage-y": `${(y / PANEL_HEIGHT) * 100}%`,
@@ -208,7 +219,8 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
                   type="button"
                   className="phase-selection-stage__button"
                   disabled={!stage.available}
-                  autoFocus={guided}
+                  inert={guideActive && !guided}
+                  data-menu-start={current || undefined}
                   aria-current={current ? "step" : undefined}
                   aria-describedby={guided ? "phase-selection-guide-hint" : undefined}
                   aria-pressed={selectedStageId === stage.id}
@@ -222,6 +234,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
                     aria-hidden="true"
                     draggable="false"
                   />
+                  {next && <span className="phase-selection-stage__next">Próxima</span>}
                   {stage.completed && <GameIcon name="check" className="phase-selection-stage__check" />}
                   {stage.progressPercent > 0 && !stage.completed && (
                     <span className="phase-selection-stage__progress" aria-hidden="true">{stage.progressPercent}%</span>
@@ -232,7 +245,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           })}
         </ol>
 
-        <div className="phase-selection-endless-slot"
+        <div className="phase-selection-endless-slot" inert={guideActive}
           style={{ "--endless-anchor": `${STAGE_POSITIONS[planet.id][1][1] / PANEL_HEIGHT * 100}%` }}>
           <button
             type="button"
@@ -253,6 +266,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
         <button
           type="button"
           className="phase-selection-arrow phase-selection-arrow--left"
+          inert={guideActive}
           disabled={!previousPlanet}
           onClick={() => previousPlanet && selectPlanet(previousPlanet.id)}
           aria-label={previousPlanet ? `Planeta anterior: ${previousPlanet.name}` : "Não há planeta anterior"}
@@ -261,12 +275,15 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
         </button>
         <button
           type="button"
-          className="phase-selection-arrow phase-selection-arrow--right"
+          className={`phase-selection-arrow phase-selection-arrow--right${nextPlanetUnlocked ? " is-next" : ""}`}
+          inert={guideActive}
+          data-menu-start={nextPlanetUnlocked || undefined}
           disabled={!nextPlanet}
           onClick={() => nextPlanet && selectPlanet(nextPlanet.id)}
           aria-label={nextPlanet ? `Próximo planeta: ${nextPlanet.name}` : "Não há próximo planeta"}
         >
           <img src={`${APP_BASE}assets/ui/level-frames/arrow-right.webp`} alt="" aria-hidden="true" draggable="false" />
+          {nextPlanetUnlocked ? <span className="phase-selection-stage__next">{nextPlanet.name}</span> : null}
         </button>
         <p className="visually-hidden" aria-live="polite">{planet.name}. {model.unlocked ? model.progressLabel : "Planeta bloqueado."}</p>
         {showFirstStageHint ? (
@@ -275,6 +292,9 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
         ) : null}
         {showLaboratoryGuide ? (
           <PhaseSelectionGuide kind="laboratory" targetRef={laboratoryButtonRef} message="Abra o Laboratório para cuidar da planta!" />
+        ) : null}
+        {showStorageGuide ? (
+          <PhaseSelectionGuide kind="storage" targetRef={storageButtonRef} message="Abra o Cofre para ver o ouro que você coletou!" />
         ) : null}
       </div>
     </main>

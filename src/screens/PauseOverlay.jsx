@@ -29,7 +29,7 @@ export function PauseOverlay({ onResume, onQuit, onSettings, onTapRocket, reduce
         </button>
         <nav className="pause-popup__actions" aria-label="Ações da fase pausada">
           {actions.map(({ id, label, asset, onClick }) => (
-            <button key={id} type="button" className="pause-popup__action" onClick={onClick} aria-label={label} title={label}>
+            <button key={id} type="button" className="pause-popup__action" data-menu-start={id === "resume" || undefined} onClick={onClick} aria-label={label} title={label}>
               <img src={id === "settings" ? getMenuAssetUrl(asset, APP_BASE) : getPauseAssetUrl(asset, APP_BASE)} alt="" />
             </button>
           ))}

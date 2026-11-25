@@ -147,3 +147,33 @@ test("desativar input do jogo deixa setas e espaço disponíveis para a interfac
     input.destroy();
   });
 });
+
+test("pressionar e soltar Esc entre frames ainda solicita a pausa uma vez", () => {
+  withInputEnvironment(({ listeners, target }) => {
+    const input = createInputController(target);
+    listeners.get("keydown")({ key: "Escape", preventDefault() {} });
+    listeners.get("keyup")({ key: "Escape" });
+    assert.equal(input.wantsPause(), true);
+    input.consumePause();
+    assert.equal(input.wantsPause(), false);
+    input.destroy();
+  });
+});
+
+test("atalhos de resposta enviam a faixa física e ignoram modificadores e repetições", () => {
+  withInputEnvironment(({ listeners, target }) => {
+    const lanes = [];
+    const input = createInputController(target, "keyboard", undefined, (lane) => { lanes.push(lane); return true; });
+    const keydown = listeners.get("keydown");
+    const send = (key, extra) => keydown({ key, preventDefault() {}, ...extra });
+    send("1");
+    send("4");
+    send("3", { repeat: true });
+    send("2", { altKey: true });
+    send("5");
+    input.setEnabled(false);
+    send("2");
+    assert.deepEqual(lanes, [0, 3]);
+    input.destroy();
+  });
+});

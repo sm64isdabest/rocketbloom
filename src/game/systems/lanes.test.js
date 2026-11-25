@@ -42,10 +42,13 @@ test("respostas ativas usam apenas bordas coloridas sem preenchimento ou rótulo
   assert.ok(borders.every(({ globalAlpha, lineWidth }) => globalAlpha === 0.25 && lineWidth === 1.25));
 });
 
-test("feedback de coluna desenha somente uma borda sem preencher sua área", () => {
+test("feedback preenche toda a coluna escolhida sem tingir as demais", () => {
   const { ctx, calls } = createRecordingContext();
   renderLaneColumns(ctx, 320, 640, { flashLane: 2, flashColor: "#00FF00", flashAlpha: 0.4 });
-  assert.equal(calls.filter(({ method }) => method === "fillRect").length, 0);
+  const fills = calls.filter(({ method }) => method === "fillRect");
+  assert.deepEqual(fills.map(({ args, fillStyle }) => ({ args, fillStyle })), [
+    { args: [160, 0, 80, 640], fillStyle: "#00FF00" },
+  ]);
   const borders = calls.filter(({ method }) => method === "strokeRect");
   assert.deepEqual(borders.map(({ strokeStyle }) => strokeStyle), ["#00FF00"]);
   assert.equal(borders[0].globalAlpha, 0.4);

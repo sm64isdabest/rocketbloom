@@ -365,3 +365,19 @@ test("recarregar um perfil novo preserva uma atividade sorteada e o estágio atu
   assert.deepEqual(progress.laboratoryActivities, { "earth-2": "clean" });
   assert.equal(progress.plantGrowthStages["victoria-amazonica"], 0);
 });
+
+test("preferências de acessibilidade do voo persistem e têm padrões compatíveis com saves antigos", () => {
+  const storage = memoryStorage();
+  const progress = createDefaultProgress();
+  const keys = ["largeFlightText", "highContrastFlight", "numberedAnswers"];
+
+  for (const key of keys) delete progress.settings[key];
+  storage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  const migrated = loadProgress(storage).progress;
+  assert.deepEqual(keys.map((key) => migrated.settings[key]), [false, false, false]);
+
+  for (const key of keys) migrated.settings[key] = true;
+  assert.ok(saveProgress(migrated, storage).ok);
+  const reloaded = loadProgress(storage).progress;
+  assert.deepEqual(keys.map((key) => reloaded.settings[key]), [true, true, true]);
+});

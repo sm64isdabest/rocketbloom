@@ -12,19 +12,19 @@ const cleaningGoal = 3;
 const games = {
   water: {
     title: "Irrigação das raízes",
-    instructions: "Escolha uma raiz e mantenha Regar pressionado até encher o medidor.",
+    instructions: "Encha o medidor das três raízes para ajudar a planta a crescer.",
     backdrop: "irrigation.webp",
     play: WaterCare,
   },
   bees: {
     title: "Polinização assistida",
-    instructions: "Escolha uma abelha na bandeja e leve-a até uma flor livre.",
+    instructions: "Leve uma abelha até cada uma das três flores.",
     backdrop: "pollination.webp",
     play: BeeCare,
   },
   clean: {
     title: "Limpeza do vaso",
-    instructions: "Esfregue ou toque três vezes em cada mancha do vaso.",
+    instructions: "Remova as três manchas do vaso.",
     backdrop: "cleaning.webp",
     play: CleanCare,
   },
@@ -56,8 +56,13 @@ function CareScene({ backdrop, plantImage, plantName, children, ...interaction }
   );
 }
 
-function CareControls({ count, progressLabel, onFinish, children }) {
+function CareControls({ count, progressLabel, hint, onFinish, children }) {
   const complete = count === slots.length;
+  const finishButtonRef = useRef(null);
+
+  useLayoutEffect(() => {
+    if (complete) finishButtonRef.current?.focus();
+  }, [complete]);
 
   return (
     <div className="plant-care__controls" data-has-tools={Boolean(children)}>
@@ -66,9 +71,10 @@ function CareControls({ count, progressLabel, onFinish, children }) {
           {slots.map((index) => <span key={index} data-done={index < count} />)}
         </span>
         <span>{count} de {slots.length} {progressLabel}</span>
+        <strong className="plant-care__hint">{complete ? "Agora selecione Concluir." : hint}</strong>
       </div>
       {children && <div className="plant-care__tools">{children}</div>}
-      <button className="plant-care__action" type="button" onClick={complete ? onFinish : undefined} disabled={!complete}>
+      <button className="plant-care__action" type="button" ref={finishButtonRef} onClick={onFinish} disabled={!complete}>
         Concluir
       </button>
     </div>
@@ -132,17 +138,19 @@ function WaterCare({ onFinish, ...scene }) {
             aria-label={`Raiz ${index + 1}, ${water[index] === waterGoal ? "regada" : `${water[index]}% de água`}`}
             aria-pressed={root === index}
             data-done={water[index] === waterGoal}
+            data-attention={!canWater && water[index] < waterGoal}
             onClick={(event) => {
               stopWater();
               setRoot(index);
-              if (event.detail === 0) waterButton.current?.focus();
+              if (event.detail === 0 && water[index] < waterGoal) waterButton.current?.focus();
             }}
           >
             {water[index] === waterGoal ? <GameIcon name="check" className="plant-care__root-check" /> : index + 1}
           </button>
         ))}
       </CareScene>
-      <CareControls count={count} progressLabel="raízes regadas" onFinish={onFinish}>
+      <CareControls count={count} progressLabel="raízes regadas" onFinish={onFinish}
+        hint={canWater ? `Segure Regar até a raiz ${root + 1} ficar cheia.` : "Escolha outra raiz numerada para regar."}>
         <label className="plant-care__gauge">
           <span>Raiz {root + 1}</span>
           <progress max={waterGoal} value={progress} />
@@ -153,6 +161,8 @@ function WaterCare({ onFinish, ...scene }) {
           ref={waterButton}
           aria-disabled={!canWater}
           data-pouring={watering}
+          data-menu-start={canWater || undefined}
+          data-attention={canWater && !watering}
           onPointerDown={(event) => {
             if (!event.isPrimary || event.button !== 0 || !canWater) return;
             event.currentTarget.setPointerCapture(event.pointerId);
@@ -241,7 +251,8 @@ function BeeCare({ onFinish, ...scene }) {
           );
         })}
       </CareScene>
-      <CareControls count={count} progressLabel="flores polinizadas" onFinish={onFinish}>
+      <CareControls count={count} progressLabel="flores polinizadas" onFinish={onFinish}
+        hint={selected === null ? "Selecione uma abelha na bandeja abaixo." : "Agora selecione uma das flores iluminadas."}>
         <div className="plant-care__bee-tray" role="group" aria-label="Bandeja de abelhas">
           {slots.map((bee) => {
             const placed = assignments.includes(bee);
@@ -255,6 +266,8 @@ function BeeCare({ onFinish, ...scene }) {
                 aria-label={`Abelha ${bee + 1}${placed ? ", na flor" : ""}`}
                 aria-pressed={selected === bee}
                 disabled={placed}
+                data-menu-start={!placed && selected === null ? true : undefined}
+                data-attention={!placed && selected === null}
                 draggable={!placed}
                 onClick={(event) => chooseBee(bee, event.detail === 0)}
                 onDragStart={(event) => {
@@ -340,18 +353,21 @@ function CleanCare({ onFinish, ...scene }) {
               aria-label={`Mancha ${index + 1}, ${clean ? "limpa" : patchStatus}`}
               aria-disabled={clean}
               data-care-patch={index}
+              data-attention={!clean}
               data-done={clean}
               onClick={(event) => {
                 if (!clean && (event.detail === 0 || !drag.current?.swiped)) scrub(index);
               }}
             >
               <img src={`${careAssets}dirt.webp`} alt="" draggable="false" />
-              {clean && <GameIcon name="check" className="plant-care__target-check" />}
+              {clean ? <GameIcon name="check" className="plant-care__target-check" />
+                : <span className="plant-care__passes" aria-hidden="true">{remaining}</span>}
             </button>
           );
         })}
       </CareScene>
-      <CareControls count={count} progressLabel="manchas removidas" onFinish={onFinish} />
+      <CareControls count={count} progressLabel="manchas removidas" onFinish={onFinish}
+        hint="Toque 3 vezes em cada mancha ou esfregue até o contador zerar." />
     </>
   );
 }
@@ -395,10 +411,7 @@ export function PlantCareGame({ gameId, planetName, plantName, currentPlantImage
       className={`plant-care plant-care--${gameId}`}
       aria-labelledby={titleId}
       aria-describedby={detailId}
-      onCancel={(event) => {
-        event.preventDefault();
-        onClose();
-      }}
+      onCancel={(event) => event.preventDefault()}
     >
       <header className="plant-care__header">
         <div>
@@ -408,9 +421,6 @@ export function PlantCareGame({ gameId, planetName, plantName, currentPlantImage
             {complete ? `${plantName} chegou ao estágio ${targetStage}.` : game.instructions}
           </p>
         </div>
-        <button className="plant-care__close" type="button" aria-label="Fechar minijogo" onClick={onClose}>
-          <img src={`${assetBase}assets/menu/close.webp`} alt="" draggable="false" />
-        </button>
       </header>
       {complete ? (
         <>

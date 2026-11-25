@@ -30,10 +30,12 @@ test("as imagens do projeto usam WebP e preservam a transparência dos sprites",
     "laboratory-dome-front.webp",
     "laboratory-equipment-base.webp",
     "return-portal.webp",
+    "coin.webp",
   ];
   const powerUpIcons = ["turbo.webp", "bubble.webp", "magnet.webp", "doubler.webp", "freeze.webp"];
   const requiredImages = [
     "menu/logo.webp",
+    "ui/rocket-cursor.png",
     "laboratory-background-clean.webp",
     "marte_background_seamless.webp",
     "netuno_background_seamless.webp",
@@ -55,6 +57,12 @@ test("as imagens do projeto usam WebP e preservam a transparência dos sprites",
 
   for (const path of imageFiles) {
     const image = readFileSync(path);
+    if (path.endsWith("/ui/rocket-cursor.png")) {
+      assert.equal(image.toString("hex", 0, 8), "89504e470d0a1a0a");
+      assert.ok(image.readUInt32BE(16) <= 32 && image.readUInt32BE(20) <= 32);
+      assert.equal(image[25], 6, "o cursor deve ter transparência RGBA");
+      continue;
+    }
     assert.match(path, /\.webp$/i, `${path} deve estar em WebP`);
     assert.equal(image.toString("ascii", 0, 4), "RIFF", `${path} deve ter assinatura RIFF`);
     assert.equal(image.toString("ascii", 8, 12), "WEBP", `${path} deve ter assinatura WebP`);

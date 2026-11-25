@@ -70,6 +70,7 @@ export const PROJECT_IMAGES = [
   "/assets/powerups/mystery-box.webp",
   ...["turbo", "bubble", "magnet", "doubler", "freeze"].map((power) => `/assets/powerups/${power}.webp`),
   "/assets/ui/coin.webp",
+  "/assets/ui/rocket-cursor.png",
   "/assets/ui/life-heart.webp",
   ...["astronaut", "astronaut-tired", "space", "score", "time", "correct", "incorrect", "return", "record"]
     .map((name) => `/assets/ui/victory/${name}.webp`),

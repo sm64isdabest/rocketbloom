@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { GameEngine } from "../game/engine/GameEngine.js";
 
-export function GameCanvas({ backdropRef, session, cosmetics, controlMode, reducedMotion = false, showHitboxes = false, running, onHud, onPauseRequest, onOutcome, onVictoryLaunchComplete, onEngineRef }) {
+export function GameCanvas({ backdropRef, session, cosmetics, controlMode, reducedMotion = false, flightAccessibility, showHitboxes = false, running, onHud, onPauseRequest, onOutcome, onVictoryLaunchComplete, onEngineRef }) {
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const runningRef = useRef(running);
@@ -24,6 +24,7 @@ export function GameCanvas({ backdropRef, session, cosmetics, controlMode, reduc
       cosmetics: cosmeticsRef.current,
       controlMode,
       reducedMotion,
+      flightAccessibility,
       showHitboxes,
       onHud,
       onPauseRequest,
@@ -50,6 +51,10 @@ export function GameCanvas({ backdropRef, session, cosmetics, controlMode, reduc
   useEffect(() => {
     if (engineRef.current) engineRef.current.reducedMotion = reducedMotion;
   }, [reducedMotion]);
+
+  useEffect(() => {
+    if (engineRef.current && flightAccessibility) engineRef.current.flightAccessibility = flightAccessibility;
+  }, [flightAccessibility]);
 
   useEffect(() => {
     if (engineRef.current) engineRef.current.showHitboxes = showHitboxes;

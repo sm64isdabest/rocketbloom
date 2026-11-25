@@ -6,7 +6,7 @@ import { useGameSession } from "../hooks/useGameSession.js";
 
 const APP_BASE = import.meta.env.BASE_URL;
 
-export function PlayScreen({ planetId, stageId, mode, cosmetics, controlMode, reducedMotion, showHitboxes = false, paused, showHud = true,
+export function PlayScreen({ planetId, stageId, mode, cosmetics, controlMode, reducedMotion, flightAccessibility = {}, showHitboxes = false, paused, showHud = true,
   introducing, launching, muted, onToggleMute, onPause, onHudRef, onOutcome, onVictoryLaunchComplete, onEngineRef }) {
   const session = useGameSession(planetId, stageId, mode);
   const [snapshot, setSnapshot] = useState(null);
@@ -30,7 +30,10 @@ export function PlayScreen({ planetId, stageId, mode, cosmetics, controlMode, re
   }
 
   return (
-    <section className={`play${introducing ? " play--introducing" : ""}`} style={{ "--flight-accent": session.planet.theme.accent }}>
+    <section className={`play${introducing ? " play--introducing" : ""}`} style={{ "--flight-accent": session.planet.theme.accent }}
+      data-flight-active={!paused || undefined}
+      data-large-text={flightAccessibility.largeText || undefined}
+      data-high-contrast={flightAccessibility.highContrast || undefined} inert={paused}>
       <canvas ref={backdropRef} className="play__backdrop" aria-hidden="true" />
       <div className="play__stage">
         <GameCanvas
@@ -39,6 +42,7 @@ export function PlayScreen({ planetId, stageId, mode, cosmetics, controlMode, re
           cosmetics={cosmetics}
           controlMode={controlMode}
           reducedMotion={reducedMotion}
+          flightAccessibility={flightAccessibility}
           showHitboxes={showHitboxes}
           running={!paused}
           onHud={handleHud}
@@ -58,7 +62,7 @@ export function PlayScreen({ planetId, stageId, mode, cosmetics, controlMode, re
         </>
       ) : null}
       {showHud ? <Hud snapshot={snapshot} endless={mode === "endless"} endlessIcon={session.planet.endlessIcon}
-        muted={muted} onToggleMute={onToggleMute} onPause={onPause} /> : null}
+        numberedAnswers={flightAccessibility.numberedAnswers} muted={muted} onToggleMute={onToggleMute} onPause={onPause} /> : null}
       {introducing ? (
         <div className="flight-intro" role="status">
           <img className="flight-intro__planet" src={`${APP_BASE}assets/ui/planets/${planetId}-icon.webp`} alt="" />

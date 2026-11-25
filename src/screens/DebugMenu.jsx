@@ -67,11 +67,12 @@ export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, 
   };
 
   const handleTabKeyDown = (event, index) => {
+    const key = event.key.toLowerCase();
     let nextIndex;
-    if (event.key === "ArrowRight") nextIndex = (index + 1) % TABS.length;
-    else if (event.key === "ArrowLeft") nextIndex = (index - 1 + TABS.length) % TABS.length;
-    else if (event.key === "Home") nextIndex = 0;
-    else if (event.key === "End") nextIndex = TABS.length - 1;
+    if (key === "arrowright" || key === "d") nextIndex = (index + 1) % TABS.length;
+    else if (key === "arrowleft" || key === "a") nextIndex = (index - 1 + TABS.length) % TABS.length;
+    else if (key === "home") nextIndex = 0;
+    else if (key === "end") nextIndex = TABS.length - 1;
     else return;
     event.preventDefault();
     setActiveTab(TABS[nextIndex].id);

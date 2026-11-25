@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getPlanetDifficulty, SPAWN } from "../config/gameConfig.js";
+import { ENDLESS, getPlanetDifficulty, SPAWN, SPEED } from "../config/gameConfig.js";
 import { PLANETS, getPlanetById } from "../data/planets.js";
 import { getObstaclesForPlanet } from "../data/obstacles.js";
 import { Obstacle } from "../entities/Obstacle.js";
@@ -191,7 +191,7 @@ function getSafeLaneIndexes(engine) {
   });
 }
 
-test("a seleção pelo centro do foguete registra acerto uma vez e recompensa após a animação", () => {
+test("a seleção pelo centro do foguete registra acerto e recompensa imediatamente, uma única vez", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
     const correct = engine.answers.find((answer) => answer.correct);
@@ -202,7 +202,7 @@ test("a seleção pelo centro do foguete registra acerto uma vez e recompensa ap
     assert.equal(engine.correctAnswers, 1);
     assert.equal(engine.incorrectAnswers, 0);
     assert.equal(engine.score, 100);
-    assert.equal(engine.speed, 120);
+    assert.equal(engine.speed, 154);
     assert.equal(engine.currentRound.status, "animating-correct");
     tickFor(engine, 1450);
     assert.equal(engine.currentRound.status, "feedback");
@@ -292,7 +292,7 @@ test("tocar um laser escolhe a alternativa da faixa sem causar dano", () => {
     assert.equal(laser.alive, true, "laser remains visible while fading out");
     assert.ok(engine.answerLasers.every((answerLaser) => answerLaser.fadeOutElapsedMs === 0), "all lasers start fading on the same frame");
     assert.equal(engine.rocket.damageFeedbackRemainingMs, 0);
-    assert.equal(engine.speed, speedBeforeTouch);
+    assert.equal(engine.speed, speedBeforeTouch + SPEED.correctAnswerBonus);
     engine.tick(0.14);
     assert.ok(engine.answerLasers.every((answerLaser) => answerLaser.opacity > 0 && answerLaser.opacity < 1));
     assert.equal(new Set(engine.answerLasers.map((answerLaser) => answerLaser.opacity)).size, 1, "all lasers fade at the same rate");
@@ -374,7 +374,15 @@ test("controles, obstáculos e progresso continuam ativos durante animação de 
     const engine = new GameEngine(engineOptions(canvas));
     const correct = engine.answers.find((answer) => answer.correct);
     moveRocketToLane(engine, correct.lane);
-    engine.resolveCurrentAnswer(correct);
+    const speed = engine.speed;
+    const beam = engine.answerLasers.find((laser) => laser.lane === correct.lane);
+    assert.equal(beam.width, engine.view.width / 4);
+    beam.y = engine.rocket.y;
+    engine.updateQuestions(0, 0);
+    assert.equal(engine.speed, speed + SPEED.correctAnswerBonus);
+    assert.equal(engine.columnFlashLane, correct.lane);
+    assert.equal(engine.columnFlashColor, "#00FF00");
+    assert.equal(engine.getSnapshot().answerResult.correct, true);
     const initialX = engine.rocket.x;
     let inputUpdates = 0;
     engine.input.apply = (rocket) => {
@@ -651,8 +659,17 @@ test("o infinito perde um coração por erro ou impacto e termina quando perde o
     assert.equal(engine.getSnapshot().speed, initialSpeed);
 
     collide();
+    assert.equal(engine.getSnapshot().lives, 2, "um impacto imediato é ignorado");
+    engine.pause();
+    tickFor(engine, ENDLESS.invulnerabilityMs);
+    engine.resume();
+    collide();
+    assert.equal(engine.getSnapshot().lives, 2, "a proteção congela na pausa");
+    tickFor(engine, ENDLESS.invulnerabilityMs);
+    collide();
     assert.equal(engine.getSnapshot().lives, 1);
     assert.equal(engine.getEntitySpeed(100), entitySpeed);
+    tickFor(engine, ENDLESS.invulnerabilityMs);
     collide();
     assert.equal(engine.getSnapshot().lives, 0);
     const { elapsedMs } = engine.getSnapshot();
@@ -988,6 +1005,23 @@ test("redução temporária do impacto preserva movimento e não causa derrota",
     assert.equal(engine.ended, false);
     assert.deepEqual(outcomes, []);
     engine.stop();
+  });
+});
+
+test("a moeda gira durante o voo e mantém a face inteira em movimento reduzido", () => {
+  withCanvasEnvironment(({ canvas, drawnImageCalls }) => {
+    const coin = new Collectible({ id: "coin-spin", kind: "coin", x: 0, y: 90, width: 32, height: 32 });
+    const ctx = canvas.getContext("2d");
+    coin.render(ctx);
+    assert.equal(drawnImageCalls.at(-1)[3], 32);
+
+    coin.update(0.675, false);
+    coin.render(ctx);
+    assert.ok(drawnImageCalls.at(-1)[3] < 8);
+    assert.equal(drawnImageCalls.at(-1)[4], 32);
+
+    coin.render(ctx, true);
+    assert.equal(drawnImageCalls.at(-1)[3], 32);
   });
 });
 
@@ -1366,6 +1400,24 @@ test("derrota mantém a fase no canvas e desenha a explosão no lugar do foguete
 
     assert.equal(rocketRenderCount, 0);
     assert.ok(drawnImages.includes(explosionImage));
+    engine.stop();
+  });
+});
+
+test("faixas anunciadas e atalhos usam a mesma ordem da esquerda para a direita", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const correct = engine.answers.find((answer) => answer.correct);
+    assert.equal(engine.getSnapshot().answerChoices[correct.lane], correct.value);
+    assert.equal(engine.selectAnswerLane(correct.lane), false, "atalhos são opcionais");
+
+    engine.flightAccessibility = { numberedAnswers: true };
+    engine.pause();
+    assert.equal(engine.selectAnswerLane(correct.lane), false);
+    engine.resume();
+    assert.equal(engine.selectAnswerLane(correct.lane), true);
+    assert.equal(engine.getSnapshot().answerResult.correct, true);
+    assert.equal(engine.selectAnswerLane(correct.lane), false, "uma escolha por rodada");
     engine.stop();
   });
 });

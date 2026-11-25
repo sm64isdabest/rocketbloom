@@ -6,10 +6,11 @@ import { getActiveQuestion, getHudAssetUrl, getPowerUpAssetUrl, getStageProgress
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const numberFormat = new Intl.NumberFormat("pt-BR");
 
-export function Hud({ snapshot, endless, endlessIcon, muted, onToggleMute, onPause }) {
+export function Hud({ snapshot, endless, endlessIcon, numberedAnswers, muted, onToggleMute, onPause }) {
   const activeQuestion = getActiveQuestion(snapshot);
   const stageProgress = getStageProgressPercent(snapshot);
   const lives = snapshot?.lives ?? ENDLESS.lives;
+  const answerResult = snapshot?.answerResult;
 
   return (
     <div className={`hud${endless ? " hud--endless" : ""}${stageProgress === null ? "" : " hud--timed"}`} aria-label="Indicadores da fase">
@@ -35,6 +36,7 @@ export function Hud({ snapshot, endless, endlessIcon, muted, onToggleMute, onPau
         {endless ? (
           <div className="hud__stat hud__lives" role="status" aria-label={`${lives} de ${ENDLESS.lives} vidas`}>
             <span className="sr-only">{lives} de {ENDLESS.lives} vidas</span>
+            {snapshot?.invulnerable ? <span className="hud__invulnerable">Protegido</span> : null}
             {Array.from({ length: ENDLESS.lives }, (_, index) => (
               <img key={index} className={index >= lives ? "hud__heart--lost" : undefined}
                 src={getHudAssetUrl("life-heart.webp", APP_BASE)} alt="" />
@@ -43,7 +45,7 @@ export function Hud({ snapshot, endless, endlessIcon, muted, onToggleMute, onPau
         ) : null}
         <div className="hud__actions">
           <MuteButton className="hud__control" muted={muted} onToggle={onToggleMute} />
-          <button type="button" className="hud__control" onClick={onPause} aria-label="Pausar fase">
+          <button type="button" className="hud__control" data-menu-start onClick={onPause} aria-label="Pausar fase">
             <GameIcon name="pause" />
           </button>
         </div>
@@ -66,9 +68,28 @@ export function Hud({ snapshot, endless, endlessIcon, muted, onToggleMute, onPau
           {power.remainingMs ? <span><i style={{ width: `${Math.max(0, Math.min(100, power.remainingMs / power.durationMs * 100))}%` }} /></span> : null}
         </div>)}
       </div> : null}
+      <span className="sr-only" role="status" aria-atomic="true">
+        {activeQuestion && snapshot?.answerChoices
+          ? `${activeQuestion.prompt} ${snapshot.answerChoices.map((value, lane) => `Faixa ${lane + 1}: ${value}`).join(". ")}`
+          : ""}
+      </span>
       {activeQuestion ? <div key={activeQuestion.id ?? activeQuestion.prompt} className="hud__question" role="group" aria-label="Pergunta atual">
         <strong>{activeQuestion.prompt}</strong>
-        {activeQuestion.choices?.length ? <span className="sr-only" aria-live="polite">Alternativas: {activeQuestion.choices.join(", ")}</span> : null}
+        {answerResult ? (
+          <span className={`hud__answer-result hud__answer-result--${answerResult.correct ? "correct" : "incorrect"}`} role="status">
+            {answerResult.correct ? "✓ Acertou!" : `× Errou! Resposta: ${activeQuestion.correctAnswer}`}
+          </span>
+        ) : null}
+        {numberedAnswers && snapshot?.answerChoices ? (
+          <div className="hud__answer-guide">
+            <span className="hud__answer-keys">Teclas 1 a 4</span>
+            <div className="hud__answer-preview" aria-hidden="true">
+              {snapshot.answerChoices.map((value, lane) => (
+                <span key={lane}><kbd>{lane + 1}</kbd><b>{value}</b></span>
+              ))}
+            </div>
+          </div>
+        ) : null}
         {snapshot?.answerState === "awaiting-resolution" ? <span className="sr-only" aria-live="polite">Coluna selecionada: {(snapshot.selectedLane ?? 0) + 1}</span> : null}
       </div> : null}
     </div>

@@ -10,6 +10,8 @@ export function PhaseSelectionGuide({ kind, targetRef, message }) {
     const guide = guideRef.current;
     const target = targetRef.current;
     if (!target) return undefined;
+    const button = target.matches("button") ? target : target.querySelector("button");
+    button?.focus({ preventScroll: true });
 
     const align = () => {
       const { left, top } = guide.getBoundingClientRect();

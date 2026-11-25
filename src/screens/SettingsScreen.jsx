@@ -6,6 +6,12 @@ import { clampAudioVolume, getAudioVolumeChange } from "./settingsModel.js";
 
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 
+const FLIGHT_ACCESSIBILITY = [
+  { key: "largeFlightText", label: "Texto maior no voo", description: "Amplia as perguntas, as alternativas e o aviso de acerto ou erro." },
+  { key: "highContrastFlight", label: "Alto contraste no voo", description: "Escurece o cenário e destaca os números, as faixas e os indicadores." },
+  { key: "numberedAnswers", label: "Faixas numeradas e atalhos", description: "Mostra as faixas de 1 a 4, da esquerda para a direita. Use essas teclas para escolher a resposta." },
+];
+
 export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) {
   const ids = useId();
   const [activeTab, setActiveTab] = useState("audio");
@@ -54,11 +60,12 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
   ];
 
   const handleTabKeyDown = (event, index) => {
+    const key = event.key.toLowerCase();
     let nextIndex;
-    if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
-    else if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabs.length) % tabs.length;
-    else if (event.key === "Home") nextIndex = 0;
-    else if (event.key === "End") nextIndex = tabs.length - 1;
+    if (key === "arrowright" || key === "d") nextIndex = (index + 1) % tabs.length;
+    else if (key === "arrowleft" || key === "a") nextIndex = (index - 1 + tabs.length) % tabs.length;
+    else if (key === "home") nextIndex = 0;
+    else if (key === "end") nextIndex = tabs.length - 1;
     else return;
     event.preventDefault();
     setActiveTab(tabs[nextIndex].id);
@@ -212,10 +219,28 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
               <h2 id={`${ids}-motion`}>Reduzir animações</h2>
               <p className="settings-popup__description">Diminui os movimentos decorativos e as partículas.</p>
             </div>
-            <button type="button" role="switch" aria-checked={reducedMotion} className={`toggle ${reducedMotion ? "is-on" : ""}`} onClick={() => onChange({ reducedMotion: !reducedMotion })}>
+            <button type="button" role="switch" aria-checked={reducedMotion} aria-labelledby={`${ids}-motion`} className={`toggle ${reducedMotion ? "is-on" : ""}`} onClick={() => onChange({ reducedMotion: !reducedMotion })}>
               <span />{reducedMotion ? "Ligado" : "Desligado"}
             </button>
           </section>
+
+          {FLIGHT_ACCESSIBILITY.map(({ key, label, description }) => {
+            const enabled = progress.settings[key] === true;
+            const labelId = `${ids}-${key}`;
+            return (
+              <section key={key} className="settings-popup__accessibility" aria-labelledby={labelId}>
+                <div>
+                  <h2 id={labelId}>{label}</h2>
+                  <p className="settings-popup__description" id={`${labelId}-description`}>{description}</p>
+                </div>
+                <button type="button" role="switch" aria-checked={enabled} aria-labelledby={labelId}
+                  aria-describedby={`${labelId}-description`} className={`toggle ${enabled ? "is-on" : ""}`}
+                  onClick={() => onChange({ [key]: !enabled })}>
+                  <span />{enabled ? "Ligado" : "Desligado"}
+                </button>
+              </section>
+            );
+          })}
 
           <section className="settings-popup__accessibility" aria-labelledby={`${ids}-hitboxes`}>
             <div>

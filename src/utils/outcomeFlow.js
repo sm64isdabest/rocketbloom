@@ -1,13 +1,12 @@
 import { SCREEN } from "./screenStates.js";
 
 export function getOutcomeReturn(outcome, snapshot) {
-  if (outcome !== "victory" && snapshot?.mode !== "endless") {
-    return { menuPage: SCREEN.MENU, completedStageId: null };
-  }
+  const completedStageId = outcome === "victory" && snapshot?.firstCompletion ? snapshot.stageId ?? null : null;
+  const guide = { "earth-2": "laboratory", "earth-3": "storage" }[completedStageId];
 
   return {
     menuPage: SCREEN.PLANETS,
-    completedStageId: snapshot?.stageId ?? null,
-    ...(outcome === "victory" && snapshot?.firstCompletion && snapshot.stageId === "earth-2" ? { guide: "laboratory" } : {}),
+    completedStageId,
+    ...(guide ? { guide } : {}),
   };
 }

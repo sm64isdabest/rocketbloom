@@ -25,7 +25,13 @@ export function scaleAudioVolume(sourceVolume, volumePercent) {
   return sourceVolume * percent / AUDIO.maxVolume;
 }
 
-const GAMEPLAY_MUSIC_URL = new URL("../../assets/gameplay-space-loop.mp3", import.meta.url).href;
+const GAMEPLAY_MUSIC_URLS = {
+  earth: new URL("../../assets/gameplay-space-loop.mp3", import.meta.url).href,
+  mars: new URL("../../assets/gameplay-mars-loop.mp3", import.meta.url).href,
+  saturn: new URL("../../assets/gameplay-saturn-loop.mp3", import.meta.url).href,
+  neptune: new URL("../../assets/gameplay-neptune-loop.mp3", import.meta.url).href,
+};
+let gameplayMusicUrl = GAMEPLAY_MUSIC_URLS.earth;
 const MENU_MUSIC_URL = new URL("../../assets/menu-space-loop.mp3", import.meta.url).href;
 const SOUND_NOTES = {
   correct: { notes: [523.25, 659.25, 783.99], duration: 0.11, wave: "sine", volume: 0.12 },
@@ -167,7 +173,7 @@ function startMusic() {
   if (typeof Audio === "undefined") return;
   if (!gameplayMusic) {
     try {
-      gameplayMusic = new Audio(GAMEPLAY_MUSIC_URL);
+      gameplayMusic = new Audio(gameplayMusicUrl);
       gameplayMusic.loop = true;
       gameplayMusic.preload = "auto";
     } catch {
@@ -235,8 +241,14 @@ export function configureAudio(nextPreferences = {}) {
   else if (menuAudioActive) startMenuTrack();
 }
 
-export function startGameAudio() {
+export function startGameAudio(planetId = "earth") {
   pauseMenuAudio();
+  const trackUrl = Object.hasOwn(GAMEPLAY_MUSIC_URLS, planetId) ? GAMEPLAY_MUSIC_URLS[planetId] : GAMEPLAY_MUSIC_URLS.earth;
+  if (gameplayMusicUrl !== trackUrl) {
+    stopMusic();
+    gameplayMusic = null;
+    gameplayMusicUrl = trackUrl;
+  }
   gameAudioActive = true;
   startMusic();
 }
