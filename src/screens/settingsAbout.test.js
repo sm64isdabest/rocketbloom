@@ -31,7 +31,7 @@ test("Sobre nós apresenta igualmente os quatro desenvolvedores, orientador e lo
   for (const name of ["Luiz Neto", "Isaac Pessoa", "Ricardo Santos", "Thiago Pinheiro"]) assert.ok(source.includes(name));
   assert.match(source, /Professor Peterson Lobato/);
   assert.match(source, /assets\/ui\/uneb-logo\.png/);
-  assert.match(source, /Uma jornada em equipe/);
+  assert.match(source, /Quem somos\?/);
   assert.match(source, /Criar o RocketBloom foi uma experiência cheia de ideias, descobertas e aprendizado/);
   assert.doesNotMatch(source, /Enfrentamos desafios/);
 });

@@ -241,7 +241,7 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
           {activeTab === "about" ? <section className="settings-popup__about" aria-labelledby={`${ids}-about`}>
             <header className="settings-popup__about-intro">
               <p className="settings-popup__section-label">EQUIPE E PROJETO</p>
-              <h2 id={`${ids}-about`}>Uma jornada em equipe</h2>
+              <h2 id={`${ids}-about`}>Quem somos?</h2>
               <p>Criar o RocketBloom foi uma experiência cheia de ideias, descobertas e aprendizado. Trabalhamos juntos para transformar o que aprendemos em uma aventura que aproxima educação e diversão. Ver o projeto ganhar forma em cada etapa tornou essa jornada ainda mais especial.</p>
             </header>
             <div className="settings-popup__team" aria-label="Desenvolvedores">
