@@ -7,6 +7,8 @@ import { EMPTY_TREASURE, getRocketCosmeticUrl, GOLD_GOALS, ROCKET_COSMETICS } fr
 import { getCrossedGoals, getGoldMeterProgress, getHighestGoldGoal, getNextGoldGoal } from "../game/systems/goalSystem.js";
 import { hasUnseenGoldGoals } from "../utils/goldStorage.js";
 import { Decorations } from "./Decorations.jsx";
+import { getMenuAssetUrl } from "./menuModel.js";
+import { getPauseAssetUrl, RETURN_ICON_FILE } from "./pauseModel.js";
 import { createDepositTimeline, drawDepositFrame, getDepositFrame } from "./storageAnimation.js";
 import { StorageTreasure } from "./StorageTreasure.jsx";
 import "../styles/storageScreen.css";
@@ -97,6 +99,7 @@ export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showD
   const total = animating ? frame.total : gold.total;
 
   const highestGoal = getHighestGoldGoal(total);
+  const decorationsLabel = showDecorations ? "Ocultar decorações" : "Mostrar decorações";
   const revealed = getCrossedGoals(0, total).filter(({ id }) => !seenAtEntry.includes(id));
 
   const finish = useCallback(() => {
@@ -190,12 +193,12 @@ export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showD
       <header className="laboratory-scene__topbar gold-storage__header">
         <button type="button" className="laboratory-scene__icon-button gold-storage__button gold-storage__back" onClick={onBack}
           aria-label="Voltar à seleção de fases" title="Voltar à seleção de fases">
-          <VaultIcon name="back" />
+          <img className="gold-storage__button-art" src={getPauseAssetUrl(RETURN_ICON_FILE, APP_BASE)} alt="" draggable={false} />
         </button>
         <h1 id="gold-title" className="laboratory-scene__title" ref={titleRef} tabIndex={-1}>Cofre de Moedas</h1>
         <button type="button" className="laboratory-scene__icon-button laboratory-scene__icon-button--settings gold-storage__button"
           onClick={onSettings} aria-label="Abrir configurações">
-          <VaultIcon name="settings" />
+          <img className="gold-storage__button-art" src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" draggable={false} />
         </button>
       </header>
 
@@ -215,12 +218,13 @@ export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showD
             </>
           ) : (
             <div className="gold-storage__customization-actions">
-              <button className="gold-storage__button" type="button" onClick={onToggleDecorations}>
+              <button className="gold-storage__button gold-storage__button--icon" type="button" onClick={onToggleDecorations}
+                aria-label={decorationsLabel} title={decorationsLabel}>
                 <VaultIcon name="decorations" />
-                {showDecorations ? "Ocultar decorações" : "Mostrar decorações"}
               </button>
-              <button className="gold-storage__button" type="button" aria-haspopup="dialog"
-                onClick={() => cosmeticsRef.current?.showModal()}><VaultIcon name="cosmetics" /> Personalizar foguete</button>
+              <button className="gold-storage__button gold-storage__button--icon" type="button" aria-haspopup="dialog"
+                aria-label="Personalizar foguete" title="Personalizar foguete"
+                onClick={() => cosmeticsRef.current?.showModal()}><VaultIcon name="cosmetics" /></button>
             </div>
           )}
           <div className="gold-storage__balance">{format.format(total)} ouro</div>

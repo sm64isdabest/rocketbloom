@@ -1,0 +1,142 @@
+.screen.mission-intro {
+  display: grid;
+  place-items: center;
+  padding: clamp(58px, 8dvh, 90px) clamp(14px, 5vw, 72px) 24px;
+  overflow-y: auto;
+  background: radial-gradient(ellipse at 26% 55%, #1e5199, transparent 58%), #060e2b;
+}
+.screen.mission-intro::before {
+  background:
+    radial-gradient(1.5px 1.5px at 24% 31%, #a1eaff 45%, transparent 70%),
+    radial-gradient(1px 1px at 61% 71%, #d9ebff 45%, transparent 70%),
+    radial-gradient(1.5px 1.5px at 74% 18%, #ffe09a 45%, transparent 70%);
+  background-size: 221px 187px, 331px 274px, 390px 321px;
+}
+.mission-intro__layout {
+  display: grid;
+  width: min(100%, 1070px);
+  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+  align-items: center;
+  gap: clamp(10px, 3vw, 46px);
+}
+.mission-intro__astronaut {
+  display: block;
+  width: 100%;
+  height: min(57dvh, 540px);
+  object-fit: contain;
+  filter: drop-shadow(0 0 18px #319af47d);
+  animation: mission-astronaut-enter .55s cubic-bezier(.18,.78,.3,1) both;
+}
+@keyframes mission-astronaut-enter {
+  from { opacity: 0; transform: translateX(-28%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.mission-intro__dialogue, .earth-tutorial {
+  min-width: 0;
+  padding: clamp(18px, 3.5vw, 46px);
+  border: 2px solid #39bdff;
+  border-radius: clamp(14px, 3vw, 28px);
+  background: linear-gradient(155deg, #143869, #091b40 72%);
+  box-shadow: 0 0 28px #058ee459, inset 0 2px #82cbff31;
+  color: #eff7ff;
+}
+.mission-intro__dialogue h1 {
+  margin: 0 0 14px;
+  color: #fff0ad;
+  font-size: clamp(1.9rem, 4.9vw, 4rem);
+  letter-spacing: -.05em;
+  line-height: 1.03;
+  text-shadow: 0 3px 0 #6d441a;
+}
+.mission-intro__dialogue h1:focus { outline: none; }
+.mission-intro__copy, .earth-tutorial > p:not(.eyebrow) {
+  margin: 0 0 16px;
+  color: #cfe7ff;
+  font-size: clamp(.92rem, 2vw, 1.16rem);
+  line-height: 1.55;
+}
+.mission-intro__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: clamp(14px, 3vw, 27px);
+}
+.mission-intro__actions .btn:not(.btn--ghost) {
+  border-color: #baff92;
+  background: linear-gradient(#a0f860, #55c635);
+  color: #113413;
+}
+.earth-tutorial {
+  width: min(540px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  overflow-y: auto;
+}
+.earth-tutorial::backdrop { background: #020a23b8; }
+.earth-tutorial h1 { margin: 0 0 9px; color: #fff0ad; font-size: clamp(1.55rem, 4vw, 2.4rem); }
+.earth-tutorial__controls { display: grid; gap: 8px; min-width: 0; margin: 0 0 10px; padding: 0; border: 0; }
+.earth-tutorial__controls legend { margin-bottom: 8px; font-weight: 800; }
+.earth-tutorial__choice {
+  display: grid;
+  grid-template-columns: auto 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #5292be;
+  border-radius: 10px;
+  background: #071c40;
+  cursor: pointer;
+}
+.earth-tutorial__choice:has(input:checked) { border-color: #a8ec91; background: #123d46; }
+.earth-tutorial__choice:focus-within { outline: 2px solid #a4e4ff; outline-offset: 2px; }
+.earth-tutorial__choice input { accent-color: #a6e785; }
+.earth-tutorial__choice img { width: 100%; height: 32px; object-fit: contain; }
+.earth-tutorial__choice span { display: grid; gap: 2px; }
+.earth-tutorial__choice small { color: #c9e7ff; line-height: 1.35; }
+.earth-tutorial > .earth-tutorial__note:not(.eyebrow) { margin: 0; font-size: .82rem; }
+.phase-selection-first-hint {
+  position: absolute;
+  z-index: 5;
+  top: calc(50% - clamp(65px, 16dvh, 150px));
+  left: 50%;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  margin: 0;
+  padding: 7px 14px;
+  border: 1px solid #ffdb73;
+  border-radius: 12px;
+  background: #091c42f5;
+  color: #fff0a8;
+  font-size: clamp(.76rem, 1.7vw, .99rem);
+  font-weight: 800;
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.phase-selection-stage.is-guided .phase-selection-stage__button::before {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #ffe072;
+  border-radius: 50%;
+  box-shadow: 0 0 18px #ffce697a;
+  content: "";
+  pointer-events: none;
+  animation: first-stage-pulse 1.4s ease-in-out infinite alternate;
+}
+@keyframes first-stage-pulse {
+  from { opacity: .6; transform: scale(.93); }
+  to { opacity: 1; transform: scale(1.13); }
+}
+@media (max-width: 640px) and (orientation: portrait) {
+  .mission-intro__layout { grid-template-columns: minmax(0, 1fr); }
+  .mission-intro__astronaut { height: clamp(110px, 29dvh, 250px); }
+  .mission-intro__actions { justify-content: center; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .mission-intro__astronaut { height: min(63dvh, 270px); }
+  .mission-intro__dialogue { padding: 12px 17px; }
+  .mission-intro__dialogue h1 { font-size: clamp(1.55rem, 4vw, 2.3rem); }
+  .mission-intro__dialogue .btn { min-height: 36px; padding: 6px 13px; }
+}

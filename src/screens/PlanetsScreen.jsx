@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { GameIcon } from "../components/GameIcon.jsx";
 import { MuteButton } from "../components/MuteButton.jsx";
 import { PLANETS } from "../game/data/planets.js";
+import { EARTH_TUTORIAL_STAGE_ID } from "../game/data/missionIntro.js";
 import { playGameSound } from "../game/audio/audioManager.js";
 import { hasLaboratoryAttention } from "../utils/laboratoryProgress.js";
 import { canNavigateToPlanet, getInitialExpandedPlanetId, getOrbitStage, getPlanetIdForStage, getPlanetSelectorModel, getStageClickAction } from "./planetSelectorModel.js";
@@ -76,6 +77,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   const activeStage = model.stages.find((stage) => stage.available && !stage.completed);
   const orbitStage = getOrbitStage(model.stages, selectedStageId);
   const baseClass = `phase-selection-canvas phase-selection-canvas--${planet.id}${revealingPlanetId === planet.id ? " is-revealing" : ""}`;
+  const showFirstStageHint = planet.id === "earth" && progress.onboarding?.missionSeen && !progress.onboarding.earthTutorialSeen;
 
   const launchStage = (stageId, targetElement) => {
     setEndlessSelected(false);
@@ -181,14 +183,22 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           </nav>
         </header>
 
+        {showFirstStageHint ? (
+          <p className="phase-selection-first-hint" id="first-flight-hint" role="status">
+            {selectedStageId === EARTH_TUTORIAL_STAGE_ID
+              ? "Ative o Nível 1 de novo para decolar."
+              : "Selecione o Nível 1 da Terra para começar a missão."}
+          </p>
+        ) : null}
         <ol className="phase-selection-stages" aria-label={`Fases de ${planet.name}`}>
           {model.stages.map((stage, stageIndex) => {
             const [x, y] = STAGE_POSITIONS[planet.id]?.[stageIndex] ?? [0, 0];
             const current = activeStage?.id === stage.id;
+            const guided = showFirstStageHint && stage.id === EARTH_TUTORIAL_STAGE_ID;
             return (
               <li
                 key={stage.id}
-                className={`phase-selection-stage${stage.status ? ` is-${stage.status}` : ""}${current ? " is-current" : ""}${selectedStageId === stage.id ? " is-selected" : ""}${completedStageId === stage.id ? " is-completing" : ""}`}
+                className={`phase-selection-stage${stage.status ? ` is-${stage.status}` : ""}${current ? " is-current" : ""}${guided ? " is-guided" : ""}${selectedStageId === stage.id ? " is-selected" : ""}${completedStageId === stage.id ? " is-completing" : ""}`}
                 style={{
                   "--stage-x": `${(x / PANEL_WIDTH) * 100}%`,
                   "--stage-y": `${(y / PANEL_HEIGHT) * 100}%`,
@@ -199,7 +209,9 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
                   type="button"
                   className="phase-selection-stage__button"
                   disabled={!stage.available}
+                  autoFocus={guided}
                   aria-current={current ? "step" : undefined}
+                  aria-describedby={guided ? "first-flight-hint" : undefined}
                   aria-pressed={selectedStageId === stage.id}
                   aria-label={`${planet.name}, fase ${stageIndex + 1}, ${stageStatusLabel(stage)}, ${selectedStageId === stage.id ? "selecionada, clique novamente para entrar" : "clique para selecionar"}`}
                   onClick={(event) => launchStage(stage.id, event.currentTarget)}

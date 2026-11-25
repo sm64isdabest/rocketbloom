@@ -18,6 +18,29 @@ function memoryStorage(seed = {}) {
   };
 }
 
+test("a introdução e o tutorial são independentes e voltam após reiniciar a campanha", () => {
+  const profile = createDefaultProgress();
+  assert.deepEqual(profile.onboarding, { missionSeen: false, earthTutorialSeen: false });
+  profile.onboarding.missionSeen = true;
+  profile.settings.controlMode = "keyboard";
+  const storage = memoryStorage();
+  assert.ok(saveProgress(profile, storage).ok);
+  const saved = loadProgress(storage).progress;
+  assert.deepEqual(saved.onboarding, { missionSeen: true, earthTutorialSeen: false });
+
+  const reset = progressStorage.resetSavedProgress(saved, storage);
+  assert.ok(reset.ok);
+  assert.deepEqual(loadProgress(storage).progress.onboarding, { missionSeen: false, earthTutorialSeen: false });
+  assert.equal(reset.progress.settings.controlMode, "keyboard");
+});
+
+test("um perfil antigo que já voou não repete a introdução nem o tutorial", () => {
+  const legacy = { ...createDefaultProgress(), processedRunIds: ["voo-anterior"] };
+  delete legacy.onboarding;
+  const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
+  assert.deepEqual(loadProgress(storage).progress.onboarding, { missionSeen: true, earthTutorialSeen: true });
+});
+
 test("a preferência de decorações do Cofre sobrevive ao recarregar e o perfil antigo começa com elas visíveis", () => {
   const profile = createDefaultProgress();
   const legacy = { ...profile, settings: {} };

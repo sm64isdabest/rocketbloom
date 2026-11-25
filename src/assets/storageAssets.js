@@ -17,8 +17,6 @@ const TREASURE_ART = [
 
 export const VAULT_BASE_ART = new URL("./storage/vault/platform.webp", import.meta.url).href;
 export const VAULT_BUTTON_ART = {
-  back: new URL("./storage/vault/button-back.webp", import.meta.url).href,
-  settings: new URL("./storage/vault/button-settings.webp", import.meta.url).href,
   skip: new URL("./storage/vault/button-skip.webp", import.meta.url).href,
   decorations: new URL("./storage/vault/button-decorations.webp", import.meta.url).href,
   cosmetics: new URL("./storage/vault/button-cosmetics.webp", import.meta.url).href,

@@ -1,4 +1,5 @@
 import { OBSTACLE_SPRITES } from "./obstacles.js";
+import { MISSION_INTRO } from "./missionIntro.js";
 import { getRocketCosmeticUrl, HONEY_TRAIL_FRAMES, ROCKET_COSMETICS } from "../config/goldConfig.js";
 import { CAMPAIGN_CONFIG, PLANETS } from "./planets.js";
 import { PLANTS } from "./plants.js";
@@ -15,9 +16,10 @@ export const PROJECT_IMAGES = [
   ...PLANTS.flatMap(({ growthArt }) =>
     growthArt.map((id) => `/assets/laboratory/plant-${String(id).padStart(2, "0")}.png`),
   ),
-  ...["irrigation", "pollination", "cleaning", "can", "bee", "dirt", "brush", "pot"].map(
+  ...["irrigation", "pollination", "cleaning", "can", "bee", "dirt", "brush", "pot", "flower"].map(
     (file) => `/assets/laboratory/care/${file}.webp`,
   ),
+  ...MISSION_INTRO.map(({ image }) => image),
   "/assets/explosion.webp",
   "/assets/folha-verde-cartunesca-brilhante.webp",
   "/assets/lasers/idle/frame_01.webp",

@@ -25,6 +25,7 @@ export function createDefaultProgress() {
     laboratoryActivities: {},
     sustainabilityPoints: 0,
     processedRunIds: [],
+    onboarding: { missionSeen: false, earthTutorialSeen: false },
     settings: {
       music: true,
       soundEffects: true,
@@ -100,6 +101,10 @@ export function loadProgress(providedStorage) {
     const endlessHighScores = Object.fromEntries(Object.entries(sanitizeProgressMap(parsed.endlessHighScores, Number.MAX_SAFE_INTEGER))
       .filter(([id]) => PLANETS.some((planet) => planet.id === id))
       .map(([id, score]) => [id, Math.floor(score)]));
+    const processedRunIds = Array.isArray(parsed.processedRunIds)
+      ? parsed.processedRunIds.filter((id) => typeof id === "string").slice(-1000) : [];
+    const hasFlown = completedStageIds.length > 0 || processedRunIds.length > 0
+      || Object.values(stageProgress).some((value) => value > 0) || Object.values(endlessHighScores).some((value) => value > 0);
     const currentLaboratory = Array.isArray(parsed.laboratoryNotices);
     const storedActivities = parsed.laboratoryActivities;
     const laboratoryActivities = storedActivities && typeof storedActivities === "object" && !Array.isArray(storedActivities)
@@ -112,8 +117,11 @@ export function loadProgress(providedStorage) {
         ...createDefaultProgress(),
         ...parsed,
         gold: createGoldStorage(parsed.gold),
-        processedRunIds: Array.isArray(parsed.processedRunIds)
-          ? parsed.processedRunIds.filter((id) => typeof id === "string").slice(-1000) : [],
+        processedRunIds,
+        onboarding: {
+          missionSeen: typeof parsed.onboarding?.missionSeen === "boolean" ? parsed.onboarding.missionSeen : hasFlown,
+          earthTutorialSeen: typeof parsed.onboarding?.earthTutorialSeen === "boolean" ? parsed.onboarding.earthTutorialSeen : hasFlown,
+        },
         completedStageIds,
         unlockedPlanetIds: getCampaignUnlocks(parsed.unlockedPlanetIds, completedStageIds),
         seenPlanetIds: Array.isArray(parsed.seenPlanetIds)

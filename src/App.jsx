@@ -11,6 +11,9 @@ import { acknowledgeGold, creditGold, creditNextGoldGoal } from "./utils/goldSto
 import { BootScreen } from "./screens/BootScreen.jsx";
 import { ErrorScreen } from "./screens/ErrorScreen.jsx";
 import { MenuScreen } from "./screens/MenuScreen.jsx";
+import { MissionIntroScreen } from "./screens/MissionIntroScreen.jsx";
+import { EarthFlightTutorial } from "./screens/EarthFlightTutorial.jsx";
+import { EARTH_TUTORIAL_STAGE_ID } from "./game/data/missionIntro.js";
 import { PlanetsScreen } from "./screens/PlanetsScreen.jsx";
 import { SettingsScreen } from "./screens/SettingsScreen.jsx";
 import { CommandRoomScreen } from "./screens/CommandRoomScreen.jsx";
@@ -181,7 +184,7 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    if (!progress || [SCREEN.BOOT, SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH, SCREEN.VICTORY, SCREEN.ERROR].includes(screen)) {
+    if (!progress || [SCREEN.BOOT, SCREEN.FLIGHT_TUTORIAL, SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH, SCREEN.VICTORY, SCREEN.ERROR].includes(screen)) {
       pauseMenuAudio();
       return undefined;
     }
@@ -219,7 +222,33 @@ export default function App() {
     setRunKey((value) => value + 1);
     setOutcomeSnapshot(null);
     hudRef.current = null;
+    if (mode === "campaign" && stageId === EARTH_TUTORIAL_STAGE_ID && !progress.onboarding.earthTutorialSeen) {
+      setScreen(SCREEN.FLIGHT_TUTORIAL);
+      return;
+    }
     setScreen(reducedMotion ? SCREEN.PLAYING : SCREEN.FLIGHT_INTRO);
+  };
+
+  const completeMissionIntro = () => {
+    persist((current) => ({ ...current, onboarding: { ...current.onboarding, missionSeen: true } }));
+    dispatchNavigationContext({ type: "select-stage", planetId: "earth", selectedStageId: null });
+    setMenuPage(SCREEN.PLANETS);
+  };
+
+  const startTutorialFlight = (controlMode) => {
+    persist((current) => ({
+      ...current,
+      onboarding: { ...current.onboarding, earthTutorialSeen: true },
+      settings: { ...current.settings, controlMode },
+    }));
+    setScreen(reducedMotion ? SCREEN.PLAYING : SCREEN.FLIGHT_INTRO);
+  };
+
+  const exitTutorial = () => {
+    dispatchNavigationContext({ type: "exit-run" });
+    setRun(null);
+    setMenuPage(SCREEN.PLANETS);
+    setScreen(SCREEN.MENU);
   };
 
   const debugCompleteStage = (planetId, stageId) => {
@@ -360,7 +389,7 @@ export default function App() {
     setCompletionStageId(null);
     setDebugOpen(false);
     setSettingsOpen(false);
-    setMenuPage(SCREEN.MENU);
+    setMenuPage(SCREEN.MISSION_INTRO);
     setScreen(SCREEN.MENU);
     return result;
   };
@@ -442,7 +471,7 @@ export default function App() {
   const endlessResult = screen === SCREEN.DEFEAT && outcomeSnapshot?.mode === "endless";
   const stage = run?.mode === "endless" ? planet?.endlessStage : getStageById(planet, run?.stageId);
   const showFlight = run && (screen === SCREEN.PLAYING || screen === SCREEN.PAUSED
-    || screen === SCREEN.FLIGHT_INTRO || screen === SCREEN.VICTORY_LAUNCH
+    || screen === SCREEN.FLIGHT_TUTORIAL || screen === SCREEN.FLIGHT_INTRO || screen === SCREEN.VICTORY_LAUNCH
     || (screen === SCREEN.DEFEAT && !endlessResult));
   const equippedCosmetics = getEquippedRocketCosmetics(progress.gold.total, progress.settings.rocketCosmetics);
 
@@ -457,7 +486,7 @@ export default function App() {
   return (
     <>
     <FullscreenButton
-      hidden={settingsOpen || [SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH].includes(screen)
+      hidden={settingsOpen || [SCREEN.FLIGHT_TUTORIAL, SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH].includes(screen)
       || (screen === SCREEN.MENU && menuPage === SCREEN.COMMAND)} />
     <div
       className={`app-shell ${reducedMotion ? "motion-reduced" : ""}`}
@@ -473,9 +502,12 @@ export default function App() {
           warning={warning}
           muted={muted}
           onToggleMute={toggleMute}
-          onPlay={() => setMenuPage(SCREEN.PLANETS)}
+          onPlay={() => setMenuPage(progress.onboarding.missionSeen ? SCREEN.PLANETS : SCREEN.MISSION_INTRO)}
           onSettings={openSettings}
         />
+      ) : null}
+      {screen === SCREEN.MENU && menuPage === SCREEN.MISSION_INTRO ? (
+        <MissionIntroScreen onComplete={completeMissionIntro} />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.STORAGE ? (
         <StorageScreen
@@ -556,6 +588,9 @@ export default function App() {
           onTapRocket={() => playGameSound("angryTouch")}
           reducedMotion={reducedMotion}
         />
+      ) : null}
+      {screen === SCREEN.FLIGHT_TUTORIAL ? (
+        <EarthFlightTutorial controlMode={progress.settings.controlMode} onStart={startTutorialFlight} onBack={exitTutorial} />
       ) : null}
       {screen === SCREEN.VICTORY || endlessResult ? (
         <VictoryScreen
