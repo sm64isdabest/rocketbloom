@@ -51,12 +51,12 @@ test("selector can return to the planet containing the phase just completed", ()
   assert.equal(getPlanetIdForStage("unknown-stage"), null);
 });
 
-test("as setas mostram os vizinhos de qualquer planeta, sem dar a volta nas extremidades", () => {
+test("as setas percorrem os planetas em ciclo nos dois sentidos", () => {
   const [earth, mars, saturn, neptune] = PLANETS;
-  assert.deepEqual(getAdjacentPlanets("earth"), { previousPlanet: null, nextPlanet: mars });
+  assert.deepEqual(getAdjacentPlanets("earth"), { previousPlanet: neptune, nextPlanet: mars });
   assert.deepEqual(getAdjacentPlanets("mars"), { previousPlanet: earth, nextPlanet: saturn });
   assert.deepEqual(getAdjacentPlanets("saturn"), { previousPlanet: mars, nextPlanet: neptune });
-  assert.deepEqual(getAdjacentPlanets("neptune"), { previousPlanet: saturn, nextPlanet: null });
+  assert.deepEqual(getAdjacentPlanets("neptune"), { previousPlanet: saturn, nextPlanet: earth });
 });
 
 test("visitar planetas bloqueados não libera fases nem o modo infinito", () => {

@@ -23,9 +23,10 @@ export function getInitialExpandedPlanetId(progress, planets = PLANETS) {
 
 export function getAdjacentPlanets(planetId, planets = PLANETS) {
   const index = planets.findIndex((planet) => planet.id === planetId);
+  if (index < 0) return { previousPlanet: null, nextPlanet: null };
   return {
-    previousPlanet: planets[index - 1] ?? null,
-    nextPlanet: index < 0 ? null : planets[index + 1] ?? null,
+    previousPlanet: planets.at(index - 1),
+    nextPlanet: planets[(index + 1) % planets.length],
   };
 }
 
