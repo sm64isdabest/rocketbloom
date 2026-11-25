@@ -254,7 +254,7 @@ export function SettingsScreen({ progress, onBack, onChange, onResetProgress }) 
             <div className="settings-popup__about-footer">
               <section className="settings-popup__advisor" aria-labelledby={`${ids}-advisor`}>
                 <p className="settings-popup__section-label">PROFESSOR ORIENTADOR</p>
-                <h3 id={`${ids}-advisor`}>Professor Peterson Lobato</h3>
+                <h3 id={`${ids}-advisor`}>Peterson Lobato</h3>
               </section>
               <section className="settings-popup__institution" aria-label="UNEB — Universidade do Estado da Bahia">
                 <img src={`${APP_BASE}assets/ui/uneb-logo.png`} alt="UNEB — Universidade do Estado da Bahia" />
