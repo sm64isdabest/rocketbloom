@@ -1,4 +1,5 @@
 import { ROCKET } from "../config/gameConfig.js";
+import { getRocketCosmeticUrl } from "../config/goldConfig.js";
 
 const ROCKET_SOURCE = { x: 292, y: 51, width: 494, height: 965 };
 const ROCKET_BODY_SOURCE = { ...ROCKET_SOURCE, height: 740 };
@@ -17,10 +18,10 @@ export function getFlameImageUrl(frameIndex, basePath = import.meta.env?.BASE_UR
   return `${normalizedBase}assets/flames/${filename}`;
 }
 
-function createRocketImage() {
+function createImage(src) {
   if (typeof Image === "undefined") return null;
   const image = new Image();
-  image.src = getRocketImageUrl();
+  image.src = src;
   return image;
 }
 
@@ -34,7 +35,7 @@ function createFlameImages() {
 }
 
 export class Rocket {
-  constructor({ image, flameImages } = {}) {
+  constructor({ image, flameImages, cosmetics = [] } = {}) {
     this.width = ROCKET.width;
     this.height = ROCKET.height;
     this.x = 0;
@@ -43,8 +44,9 @@ export class Rocket {
     this.rotation = 0;
     this.damageFeedbackDurationMs = 0;
     this.damageFeedbackRemainingMs = 0;
-    this.image = image ?? createRocketImage();
+    this.image = image ?? createImage(getRocketImageUrl());
     this.flameImages = flameImages ?? createFlameImages();
+    this.cosmeticImages = Object.fromEntries(cosmetics.map((id) => [id, createImage(getRocketCosmeticUrl(id))]));
   }
 
   triggerDamageFeedback(durationMs = 900) {
@@ -102,10 +104,12 @@ export class Rocket {
     ctx.rotate(this.rotation);
 
     const flameFrame = reducedMotion ? 0 : Math.floor(elapsedMs / FLAME_FRAME_DURATION_MS) % FLAME_FRAME_COUNT;
-    const flameImage = this.flameImages[flameFrame];
+    const { antenna, skin, trail } = this.cosmeticImages;
+    const customTrail = trail?.complete && trail.naturalWidth > 0;
+    const flameImage = customTrail ? trail : this.flameImages[flameFrame];
     if (flameImage?.complete && flameImage.naturalWidth > 0) {
       const bodyHeight = height * ROCKET_BODY_SOURCE.height / ROCKET_SOURCE.height;
-      const flameHeight = height * 0.48;
+      const flameHeight = height * (customTrail ? 0.59 + (reducedMotion ? 0 : Math.sin(elapsedMs / 73) * 0.035) : 0.48);
       const flameWidth = flameHeight * flameImage.naturalWidth / flameImage.naturalHeight;
       const flameY = -height / 2 + bodyHeight - 3;
       ctx.drawImage(flameImage, -flameWidth / 2, flameY, flameWidth, flameHeight);
@@ -115,10 +119,20 @@ export class Rocket {
       const drawWidth = Math.min(width, height * ROCKET_BODY_SOURCE.width / ROCKET_SOURCE.height);
       const drawHeight = height * ROCKET_BODY_SOURCE.height / ROCKET_SOURCE.height;
       const drawX = (width - drawWidth) / 2 + ROCKET_IMAGE_OFFSET_X;
-      const drawRocket = () => ctx.drawImage(
-        this.image, ROCKET_BODY_SOURCE.x, ROCKET_BODY_SOURCE.y, ROCKET_BODY_SOURCE.width, ROCKET_BODY_SOURCE.height,
-        drawX, -height / 2, drawWidth, drawHeight,
-      );
+      const drawRocket = () => {
+        if (skin?.complete && skin.naturalWidth > 0) {
+          ctx.drawImage(skin, drawX, -height / 2, drawWidth, drawHeight);
+        } else {
+          ctx.drawImage(this.image, ROCKET_BODY_SOURCE.x, ROCKET_BODY_SOURCE.y, ROCKET_BODY_SOURCE.width, ROCKET_BODY_SOURCE.height,
+            drawX, -height / 2, drawWidth, drawHeight);
+        }
+        if (antenna?.complete && antenna.naturalWidth > 0) {
+          const antennaWidth = drawWidth * .58;
+          const antennaHeight = antennaWidth * antenna.naturalHeight / antenna.naturalWidth;
+          ctx.drawImage(antenna, drawX + (drawWidth - antennaWidth) / 2,
+            -height / 2 - antennaHeight * .82, antennaWidth, antennaHeight);
+        }
+      };
       drawRocket();
       if (tintAlpha > 0) {
         ctx.save();

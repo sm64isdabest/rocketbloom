@@ -26,6 +26,7 @@ import { canPlayEndless } from "./screens/planetSelectorModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
 import { addDebugCoins, completeDebugStage, isDebugShortcut, unlockAllPlanets, uncompleteDebugStage } from "./utils/debugTools.js";
 import { FullscreenButton } from "./components/FullscreenButton.jsx";
+import { getEquippedRocketCosmetics, ROCKET_COSMETICS } from "./game/config/goldConfig.js";
 import { getOutcomeReturn } from "./utils/outcomeFlow.js";
 import { initialNavigationContext, navigationContextReducer } from "./utils/navigationContext.js";
 
@@ -445,9 +446,19 @@ export default function App() {
     || screen === SCREEN.FLIGHT_INTRO || screen === SCREEN.VICTORY_LAUNCH
     || (screen === SCREEN.DEFEAT && !endlessResult));
   const decoration = <Decorations total={progress.gold.total} />;
+  const equippedCosmetics = getEquippedRocketCosmetics(progress.gold.total, progress.settings.rocketCosmetics);
+
+  const toggleRocketCosmetic = (id) => persist((current) => {
+    const cosmetic = ROCKET_COSMETICS.find((item) => item.id === id);
+    if (!cosmetic || current.gold.total < cosmetic.amount) return current;
+    const rocketCosmetics = { ...current.settings.rocketCosmetics };
+    if (rocketCosmetics[id]) delete rocketCosmetics[id];
+    else rocketCosmetics[id] = true;
+    return { ...current, settings: { ...current.settings, rocketCosmetics } };
+  });
   return (
     <>
-    <FullscreenButton docked={screen === SCREEN.MENU && menuPage === SCREEN.STORAGE}
+    <FullscreenButton
       hidden={settingsOpen || [SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH].includes(screen)
       || (screen === SCREEN.MENU && menuPage === SCREEN.COMMAND)} />
     <div
@@ -472,6 +483,8 @@ export default function App() {
         <StorageScreen
           key={progress.gold.total}
           gold={progress.gold}
+          equippedCosmetics={equippedCosmetics}
+          onToggleCosmetic={toggleRocketCosmetic}
           showDecorations={progress.settings.showVaultDecorations}
           onToggleDecorations={() => patchSettings({ showVaultDecorations: !progress.settings.showVaultDecorations })}
           reducedMotion={reducedMotion}
@@ -522,6 +535,7 @@ export default function App() {
           planetId={run.planetId}
           stageId={run.stageId}
           mode={run.mode}
+          cosmetics={equippedCosmetics}
           controlMode={progress.settings.controlMode}
           reducedMotion={reducedMotion}
           muted={muted}
@@ -550,7 +564,7 @@ export default function App() {
       {screen === SCREEN.VICTORY || endlessResult ? (
         <VictoryScreen
           planet={planet}
-          decoration={decoration}
+          decoration={endlessResult ? decoration : null}
           stage={stage}
           snapshot={outcomeSnapshot}
           bestScore={progress.endlessHighScores?.[planet?.id] ?? 0}

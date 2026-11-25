@@ -110,22 +110,65 @@
   max-height: max(84px, calc(100dvh - max(72px, calc(env(safe-area-inset-top) + 65px)) - max(12px, env(safe-area-inset-bottom)) - 132px));
 }
 .gold-storage__vault { position: relative; isolation: isolate; width: min(92%, 500px); min-height: 80px; padding-top: 43px; }
-.gold-storage__decoration-toggle {
+.gold-storage__customization-actions {
   position: absolute;
   inset: 0 0 auto;
-  width: max-content;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.gold-storage__decoration-toggle {
   min-height: 36px;
-  margin-inline: auto;
-  padding: 5px 12px;
+  padding: 4px clamp(4px, 1.5vw, 12px);
   border: 1px solid #d8ac67;
   border-radius: 10px;
   background: #121e38ed;
   color: #fff1c7;
-  font-size: .79rem;
+  font-size: clamp(.67rem, 2.5vw, .79rem);
   font-weight: 700;
   cursor: pointer;
 }
 .gold-storage__decoration-toggle:hover { background: #293c62; }
+.gold-storage__cosmetics {
+  width: min(440px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: clamp(10px, 3vw, 20px);
+  border: 2px solid #52bcea;
+  border-radius: 18px;
+  background: linear-gradient(155deg, #163664, #0a1734);
+  color: #e9f7ff;
+  box-shadow: 0 0 24px #2699cb77;
+}
+.gold-storage__cosmetics::backdrop { background: #040b22b8; }
+.gold-storage__cosmetics-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.gold-storage__cosmetics-heading h2 { margin: 0; font-size: clamp(1.02rem, 4vw, 1.4rem); }
+.gold-storage__cosmetics-list { display: grid; gap: 7px; margin: 12px 0 0; padding: 0; list-style: none; }
+.gold-storage__cosmetic {
+  display: grid;
+  width: 100%;
+  min-height: 64px;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border: 1px solid #5588b6;
+  border-radius: 12px;
+  background: #0a1b3d;
+  text-align: left;
+  cursor: pointer;
+}
+.gold-storage__cosmetic img { width: 38px; height: 46px; object-fit: contain; }
+.gold-storage__cosmetic span { display: grid; gap: 3px; font-size: clamp(.78rem, 3vw, .92rem); }
+.gold-storage__cosmetic small { color: #ffe0a4; font-size: .7rem; }
+.gold-storage__cosmetic:hover:not(:disabled) { background: #183c63; }
+.gold-storage__cosmetic[aria-pressed="true"] { border-color: #9bdf9d; background: #153839; }
+.gold-storage__cosmetic:disabled { opacity: .68; cursor: not-allowed; }
 .gold-storage__balance {
   margin: 0 0 6px;
   color: #ffe099;

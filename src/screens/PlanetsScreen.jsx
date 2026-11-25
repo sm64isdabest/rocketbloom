@@ -61,7 +61,7 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
   const endlessRecord = `Recorde: ${numberFormat.format(model.endless.highScore)} pts`;
   const endlessLabel = model.endless.unlocked
     ? `${endlessRecord}. ${endlessSelected ? "Ative novamente para jogar." : "Ative para selecionar."}`
-    : "Conclua as três fases para desbloquear.";
+    : `${endlessRecord}. Conclua as três fases para desbloquear.`;
 
   useEffect(() => {
     if (!planet || !model.unlocked || discoveryHandled.current.has(planet.id)) return;
@@ -235,9 +235,9 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           >
             <img src={`${APP_BASE}assets/ui/${planet.endlessIcon}`} alt="" draggable="false" />
             <span>Modo infinito</span>
+            <span className="phase-selection-endless-score" aria-hidden="true">{endlessRecord}</span>
           </button>
           <span id="endless-description" className="visually-hidden">{endlessLabel}</span>
-          {model.endless.unlocked ? <span className="phase-selection-endless-score" aria-hidden="true">{endlessRecord}</span> : null}
         </div>
 
         <button

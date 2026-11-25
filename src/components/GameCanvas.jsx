@@ -1,13 +1,15 @@
 import { useEffect, useRef } from "react";
 import { GameEngine } from "../game/engine/GameEngine.js";
 
-export function GameCanvas({ backdropRef, session, controlMode, reducedMotion = false, showHitboxes = false, running, onHud, onPauseRequest, onOutcome, onVictoryLaunchComplete, onEngineRef }) {
+export function GameCanvas({ backdropRef, session, cosmetics, controlMode, reducedMotion = false, showHitboxes = false, running, onHud, onPauseRequest, onOutcome, onVictoryLaunchComplete, onEngineRef }) {
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const runningRef = useRef(running);
   const onOutcomeRef = useRef(onOutcome);
+  const cosmeticsRef = useRef(cosmetics);
   runningRef.current = running;
   onOutcomeRef.current = onOutcome;
+  cosmeticsRef.current = cosmetics;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -19,6 +21,7 @@ export function GameCanvas({ backdropRef, session, controlMode, reducedMotion = 
       canvas,
       backdrop: backdropRef?.current,
       session,
+      cosmetics: cosmeticsRef.current,
       controlMode,
       reducedMotion,
       showHitboxes,

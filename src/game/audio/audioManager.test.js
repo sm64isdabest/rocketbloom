@@ -9,6 +9,41 @@ test("audio volume scales linearly and clamps the percentage", () => {
   assert.equal(scaleAudioVolume(0.8, 150), 0.8);
 });
 
+test("os cinco poderes tocam efeitos distintos e respeitam o silêncio geral", async () => {
+  const notes = [];
+  const priorWindow = globalThis.window;
+  globalThis.window = {
+    addEventListener() {},
+    AudioContext: class {
+      currentTime = 1;
+      state = "running";
+      destination = {};
+      createGain() {
+        return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} };
+      }
+      createOscillator() {
+        return { frequency: { setValueAtTime: (value) => notes.push(value) }, connect() {}, start() {}, stop() {} };
+      }
+    },
+  };
+  try {
+    const audio = await import("./audioManager.js?power-up-sounds");
+    const sounds = ["turbo", "bubble", "magnet", "doubler", "freeze"].map((power) => {
+      audio.playGameSound(power);
+      const melody = notes.splice(0);
+      assert.ok(melody.length >= 2, power);
+      return melody.join(",");
+    });
+    assert.equal(new Set(sounds).size, 5);
+    audio.configureAudio({ muteAll: true });
+    audio.playGameSound("turbo");
+    assert.deepEqual(notes, []);
+  } finally {
+    if (priorWindow === undefined) delete globalThis.window;
+    else globalThis.window = priorWindow;
+  }
+});
+
 test("discovery plays a five-note fanfare through the configured effects volume", () => {
   const frequencies = [];
   class FakeAudioContext {

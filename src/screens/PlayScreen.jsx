@@ -6,7 +6,7 @@ import { useGameSession } from "../hooks/useGameSession.js";
 
 const APP_BASE = import.meta.env.BASE_URL;
 
-export function PlayScreen({ planetId, stageId, mode, controlMode, reducedMotion, showHitboxes = false, paused, showHud = true,
+export function PlayScreen({ planetId, stageId, mode, cosmetics, controlMode, reducedMotion, showHitboxes = false, paused, showHud = true,
   introducing, launching, muted, onToggleMute, onPause, onHudRef, onOutcome, onVictoryLaunchComplete, onEngineRef }) {
   const session = useGameSession(planetId, stageId, mode);
   const [snapshot, setSnapshot] = useState(null);
@@ -36,6 +36,7 @@ export function PlayScreen({ planetId, stageId, mode, controlMode, reducedMotion
         <GameCanvas
           backdropRef={backdropRef}
           session={session}
+          cosmetics={cosmetics}
           controlMode={controlMode}
           reducedMotion={reducedMotion}
           showHitboxes={showHitboxes}

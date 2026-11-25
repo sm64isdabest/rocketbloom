@@ -44,8 +44,8 @@ function createOperands(category, limits, rng) {
     return { a, b, answer: a * b, prompt: `Quanto é ${a} × ${b}?` };
   }
 
-  const divisor = randomInt(2, divisorMax, rng);
-  const quotient = randomInt(2, divisorMax, rng);
+  const divisor = randomInt(2, Math.min(49, divisorMax), rng);
+  const quotient = randomInt(2, Math.min(divisorMax, Math.floor(99 / divisor)), rng);
   const dividend = divisor * quotient;
   return { a: dividend, b: divisor, answer: quotient, prompt: `Quanto é ${dividend} ÷ ${divisor}?` };
 }

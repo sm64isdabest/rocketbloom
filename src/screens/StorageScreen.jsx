@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getHudAssetUrl } from "../components/hudModel.js";
 import { playGameSound } from "../game/audio/audioManager.js";
-import { EMPTY_TREASURE, GOLD_GOALS } from "../game/config/goldConfig.js";
+import { EMPTY_TREASURE, getRocketCosmeticUrl, GOLD_GOALS, ROCKET_COSMETICS } from "../game/config/goldConfig.js";
 import { getCrossedGoals, getGoldMeterProgress, getHighestGoldGoal } from "../game/systems/goalSystem.js";
 import { hasUnseenGoldGoals } from "../utils/goldStorage.js";
 import { Decorations } from "./Decorations.jsx";
@@ -32,7 +32,8 @@ function GoldMeter({ total, trackRef, pulse }) {
   );
 }
 
-export function StorageScreen({ gold, showDecorations, onToggleDecorations, reducedMotion, inputBlocked, onBack, onSettings, onAcknowledge }) {
+export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showDecorations, onToggleDecorations,
+  reducedMotion, inputBlocked, onBack, onSettings, onAcknowledge }) {
   const [from] = useState(gold.seenTotal);
   const [seenAtEntry] = useState(gold.seenGoalIds);
   const [frame, setFrame] = useState({ total: from, arrived: 0 });
@@ -43,6 +44,7 @@ export function StorageScreen({ gold, showDecorations, onToggleDecorations, redu
   const trackRef = useRef(null);
   const skipRef = useRef(null);
   const elapsedRef = useRef(0);
+  const cosmeticsRef = useRef(null);
   const animating = !finished && !reducedMotion;
   const total = animating ? frame.total : gold.total;
 
@@ -161,9 +163,13 @@ export function StorageScreen({ gold, showDecorations, onToggleDecorations, redu
               <button className="gold-storage__skip" ref={skipRef} type="button">Pular animação</button>
             </>
           ) : (
-            <button className="gold-storage__decoration-toggle" type="button" onClick={onToggleDecorations}>
-              {showDecorations ? "Ocultar decorações" : "Mostrar decorações"}
-            </button>
+            <div className="gold-storage__customization-actions">
+              <button className="gold-storage__decoration-toggle" type="button" onClick={onToggleDecorations}>
+                {showDecorations ? "Ocultar decorações" : "Mostrar decorações"}
+              </button>
+              <button className="gold-storage__decoration-toggle" type="button" aria-haspopup="dialog"
+                onClick={() => cosmeticsRef.current?.showModal()}>Personalizar foguete</button>
+            </div>
           )}
           <div className="gold-storage__balance">{format.format(total)} ouro</div>
           <GoldMeter total={total} trackRef={trackRef} pulse={animating ? frame.arrived : 0} />
@@ -172,6 +178,28 @@ export function StorageScreen({ gold, showDecorations, onToggleDecorations, redu
           </div>
         </section>
       </div>
+      <dialog ref={cosmeticsRef} className="gold-storage__cosmetics" aria-labelledby="rocket-cosmetics-title">
+        <div className="gold-storage__cosmetics-heading">
+          <h2 id="rocket-cosmetics-title">Cosméticos do foguete</h2>
+          <button type="button" className="gold-storage__decoration-toggle" onClick={() => cosmeticsRef.current?.close()}>Fechar</button>
+        </div>
+        <ul className="gold-storage__cosmetics-list">
+          {ROCKET_COSMETICS.map(({ id, name, amount }) => {
+            const unlocked = gold.total >= amount;
+            const equipped = equippedCosmetics.includes(id);
+            return (
+              <li key={id}>
+                <button className="gold-storage__cosmetic" type="button" disabled={!unlocked} aria-pressed={equipped}
+                  onClick={() => onToggleCosmetic(id)}>
+                  <img src={getRocketCosmeticUrl(id, APP_BASE)} alt="" draggable={false} />
+                  <span><strong>{name}</strong><small>{format.format(amount)} de ouro</small></span>
+                  <small>{equipped ? "Em uso" : unlocked ? "Liberado" : "Bloqueado"}</small>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </dialog>
     </main>
   );
 }

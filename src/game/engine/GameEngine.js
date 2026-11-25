@@ -39,7 +39,7 @@ function clamp(value, min, max) {
 }
 
 export class GameEngine {
-  constructor({ canvas, backdrop, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, onVictoryLaunchComplete, rng = Math.random, runId = makeRunId(), explosionImage, bubbleImage, initialQuestionDelayMs = 3000 }) {
+  constructor({ canvas, backdrop, session, cosmetics, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, onVictoryLaunchComplete, rng = Math.random, runId = makeRunId(), explosionImage, bubbleImage, initialQuestionDelayMs = 3000 }) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.backdrop = backdrop;
@@ -62,7 +62,7 @@ export class GameEngine {
     this.runId = runId;
 
     this.view = { width: 0, height: 0, dpr: 1 };
-    this.rocket = new Rocket();
+    this.rocket = new Rocket({ cosmetics });
     this.explosionImage = explosionImage ?? this.createExplosionImage();
     this.bubbleImage = bubbleImage ?? this.createBubbleImage();
     this.powerUpImages = this.createPowerUpImages();
@@ -721,7 +721,7 @@ export class GameEngine {
     if (this.endless && power === "turbo") return;
     this.powerUpReveal = { id: power, elapsedMs: 0 };
     this.powerUps = activatePowerUp(this.powerUps, power);
-    playGameSound("discovery");
+    playGameSound(power);
     this.emitHud(true);
   }
 

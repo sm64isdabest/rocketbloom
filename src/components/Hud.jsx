@@ -52,7 +52,9 @@ export function Hud({ snapshot, endless, endlessIcon, muted, onToggleMute, onPau
         <div className="hud__progress">
           <div className="hud__progress-track" role="progressbar" aria-label="Progresso da fase"
             aria-valuemin={0} aria-valuemax={100} aria-valuenow={stageProgress}>
-            <div className="hud__progress-fill" style={{ width: `${stageProgress}%` }} />
+            <div className="hud__progress-fill" style={{ width: `${stageProgress}%` }}>
+              {stageProgress > 0 && stageProgress < 100 ? <span className="hud__progress-spark" aria-hidden="true" /> : null}
+            </div>
           </div>
           <span aria-hidden="true">{stageProgress}%</span>
         </div>

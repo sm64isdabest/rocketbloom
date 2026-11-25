@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { STORAGE_KEY } from "../game/config/gameConfig.js";
+import { getEquippedRocketCosmetics } from "../game/config/goldConfig.js";
 import { createDefaultProgress, loadProgress, saveProgress } from "./storage.js";
 import * as progressStorage from "./storage.js";
 import { acknowledgeGold, creditGold } from "./goldStorage.js";
@@ -26,6 +27,20 @@ test("a preferência de decorações do Cofre sobrevive ao recarregar e o perfil
   profile.settings.showVaultDecorations = false;
   assert.ok(saveProgress(profile, storage).ok);
   assert.equal(loadProgress(storage).progress.settings.showVaultDecorations, false);
+});
+
+test("cosméticos do foguete começam desligados em perfis antigos e são carregados como escolhas independentes", () => {
+  const legacy = { ...createDefaultProgress(), settings: {} };
+  const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) });
+  assert.deepEqual(loadProgress(storage).progress.settings.rocketCosmetics, {});
+  legacy.settings.rocketCosmetics = { antenna: true, skin: false, trail: "true", desconhecido: true };
+  assert.ok(saveProgress(legacy, storage).ok);
+  assert.deepEqual(loadProgress(storage).progress.settings.rocketCosmetics, { antenna: true });
+  const equipped = { antenna: true, skin: true, trail: true };
+  assert.deepEqual(getEquippedRocketCosmetics(99, equipped), []);
+  assert.deepEqual(getEquippedRocketCosmetics(100, equipped), ["antenna"]);
+  assert.deepEqual(getEquippedRocketCosmetics(300, equipped), ["antenna", "skin"]);
+  assert.deepEqual(getEquippedRocketCosmetics(600, equipped), ["antenna", "skin", "trail"]);
 });
 
 test("perfil antigo descarta diamantes e preserva ouro e progresso", () => {

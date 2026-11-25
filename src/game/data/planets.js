@@ -1,4 +1,5 @@
 import { REWARDS } from "../config/gameConfig.js";
+import { getObstaclesForPlanet } from "./obstacles.js";
 
 // Edit this value to rebalance campaign length without changing planet content.
 export const CAMPAIGN_CONFIG = {
@@ -29,34 +30,34 @@ const PLANET_CONFIG = [
     blurb: "Explore a Amazônia, entre copas, rios e rotas de pesquisa. Desvie de aviões, helicópteros e balões.",
     biome: "amazon",
     theme: { skyTop: "#071a12", skyBottom: "#1c5a38", accent: "#3dcc7a", starAlpha: 0.22 },
-    obstacleIds: ["plane", "helicopter", "balloon"], plantId: "victoria-amazonica",
+    plantId: "victoria-amazonica",
     difficulty: 1,
     questionLimits: { operandMax: 10, multiplierMax: 5, divisorMax: 6 },
   },
   {
     id: "mars", name: "Marte", order: 2,
-    blurb: "Atravesse desertos de ferro e cânions marcianos. Asteroides cruzam a rota.",
+    blurb: "Atravesse desertos e cânions marcianos entre asteroides vermelhos e visitantes cósmicos.",
     biome: "mars",
     theme: { skyTop: "#140806", skyBottom: "#8a3a22", accent: "#e07a4a", starAlpha: 0.5 },
-    obstacleIds: ["asteroid"], plantId: "mars-lichen",
+    plantId: "mars-lichen",
     difficulty: 2,
     questionLimits: { operandMax: 16, multiplierMax: 8, divisorMax: 9 },
   },
   {
     id: "saturn", name: "Saturno", order: 3,
-    blurb: "Navegue pelo sistema de anéis, entre asteroides e cometas.",
+    blurb: "Navegue entre asteroides dourados e visitantes cósmicos no sistema de anéis.",
     biome: "saturn",
     theme: { skyTop: "#0b0a18", skyBottom: "#3a2f6b", accent: "#d6c27a", starAlpha: 0.76 },
-    obstacleIds: ["asteroid", "comet"], plantId: "ring-fern",
+    plantId: "ring-fern",
     difficulty: 3,
     questionLimits: { operandMax: 24, multiplierMax: 10, divisorMax: 12 },
   },
   {
     id: "neptune", name: "Netuno", order: 4,
-    blurb: "Explore o brilho azul de Netuno, entre cometas e asteroides.",
+    blurb: "Explore o brilho de Netuno entre cometas azuis e visitantes cósmicos.",
     biome: "neptune",
     theme: { skyTop: "#030716", skyBottom: "#123a7a", accent: "#7ad4ff", starAlpha: 0.94 },
-    obstacleIds: ["comet", "asteroid"], plantId: "ice-orchid",
+    plantId: "ice-orchid",
     difficulty: 4,
     questionLimits: { operandMax: 40, multiplierMax: 12, divisorMax: 15 },
   },
@@ -99,6 +100,7 @@ export const PLANETS = PLANET_CONFIG.map((planet) => {
   const stages = buildStages(planet);
   return {
     ...planet,
+    obstacleIds: getObstaclesForPlanet(planet.id).map(({ id }) => id),
     stages,
     endlessIcon: `endless/${planet.id}.webp`,
     endlessStage: {

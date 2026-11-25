@@ -25,8 +25,9 @@ export function BootScreen({ progress = { total: 0, completed: 0, loaded: 0, fai
             aria-valuenow={percentage}
             aria-valuetext={`${percentage}% · ${progress.completed} de ${progress.total} imagens`}
           >
-            <span className="boot__progress-fill" style={{ width: `${percentage}%` }} />
-            <span className="boot__progress-glow" style={{ left: `${percentage}%` }} />
+            <span className="boot__progress-fill" style={{ width: `${percentage}%` }}>
+              <img className="boot__progress-rocket" src={`${baseUrl}assets/rocket.webp`} alt="" draggable={false} />
+            </span>
           </div>
           <div className="boot__loading-foot">
             <span><i className="boot__signal" /> {progress.failed ? `${progress.failed} recurso(s) indisponível(is)` : "Sincronizando carta estelar"}</span>

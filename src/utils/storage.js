@@ -3,6 +3,7 @@ import { getCampaignUnlocks, PLANETS } from "../game/data/planets.js";
 import { PLANTS } from "../game/data/plants.js";
 import { LABORATORY_GAME_IDS } from "./laboratoryProgress.js";
 import { createGoldStorage } from "./goldStorage.js";
+import { ROCKET_COSMETICS } from "../game/config/goldConfig.js";
 
 const campaignStageIds = new Set(PLANETS.flatMap(({ stages }) => stages.map(({ id }) => id)));
 const laboratoryStageIds = new Set(PLANETS.flatMap(({ stages }) => stages.slice(1).map(({ id }) => id)));
@@ -35,6 +36,7 @@ export function createDefaultProgress() {
       reducedMotion: false,
       showHitboxes: false,
       showVaultDecorations: true,
+      rocketCosmetics: {},
       controlMode: "pointer",
     },
   };
@@ -140,6 +142,9 @@ export function loadProgress(providedStorage) {
           reducedMotion: parsed.settings?.reducedMotion === true,
           showHitboxes: parsed.settings?.showHitboxes === true,
           showVaultDecorations: parsed.settings?.showVaultDecorations !== false,
+          rocketCosmetics: Object.fromEntries(
+            ROCKET_COSMETICS.filter(({ id }) => parsed.settings?.rocketCosmetics?.[id] === true).map(({ id }) => [id, true]),
+          ),
           controlMode: parsed.settings?.controlMode === "keyboard" ? "keyboard" : "pointer",
         },
       },
