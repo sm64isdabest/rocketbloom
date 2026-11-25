@@ -35,6 +35,7 @@ test("os modelos de crescimento e o terreno de Marte usam PNG transparente", () 
     "laboratory-equipment-base.webp",
     "return-portal.webp",
   ];
+  const powerUpIcons = ["turbo.png", "bubble.png", "magnet.png", "doubler.png", "freeze.png"];
   const requiredImages = [
     "menu/logo.webp",
     "laboratory-background-clean.webp",
@@ -49,10 +50,11 @@ test("os modelos de crescimento e o terreno de Marte usam PNG transparente", () 
 
   const levelSprites = imageFiles.filter((path) => path.includes("/levels/"));
   const plantSprites = imageFiles.filter((path) => /\/laboratory\/plant-\d+\.png$/i.test(path));
-  const transparentPngs = imageFiles.filter((path) => path.endsWith("marte-red-seamless.png") || plantSprites.includes(path));
+  const transparentPngs = imageFiles.filter((path) => path.endsWith("marte-red-seamless.png") || plantSprites.includes(path)
+    || powerUpIcons.some((filename) => path.endsWith(`/powerups/${filename}`)));
   assert.equal(levelSprites.length, 12, "cada fase deve ter sua arte");
   assert.equal(plantSprites.length, 12, "cada planeta deve ter três sprites de crescimento");
-  assert.equal(transparentPngs.length, 13, "os 12 estágios e o terreno recortado devem ser PNG");
+  assert.equal(transparentPngs.length, 18, "os 12 estágios, o terreno e os cinco poderes devem ser PNG");
 
   for (const path of imageFiles) {
     const image = readFileSync(path);

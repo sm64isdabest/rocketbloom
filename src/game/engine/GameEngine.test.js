@@ -261,17 +261,12 @@ test("GODMODE prevents speed-triggered defeat when speed is set to zero", () => 
   });
 });
 
-test("debug grants every configured powerup immediately, including shrink", () => {
+test("debug grants exactly the five configured powerups immediately", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
-    let shrinkMs = null;
-    engine.obstacles = [{ startShrink: (durationMs) => { shrinkMs = durationMs; } }];
-
-    for (const power of ["turbo", "star", "bubble", "shrink"]) engine.grantDebugPowerUp(power);
-
-    assert.deepEqual(engine.getSnapshot().powerUps.map(({ id }) => id), ["turbo", "star", "bubble", "shrink"]);
-    assert.equal(shrinkMs, 600);
-    assert.equal(engine.hazardClearRemainingMs, 3000);
+    for (const power of ["turbo", "bubble", "magnet", "doubler", "freeze"]) engine.grantDebugPowerUp(power);
+    assert.deepEqual(engine.getSnapshot().powerUps.map(({ id }) => id), ["turbo", "bubble", "magnet", "doubler", "freeze"]);
+    assert.deepEqual([engine.powerUps.magnetMs, engine.powerUps.doublerMs, engine.powerUps.freezeMs], [7000, 7000, 7000]);
     engine.stop();
   });
 });
@@ -890,25 +885,52 @@ test("moedas coletadas atualizam o HUD uma vez por item", () => {
   });
 });
 
-test("estrela tem prioridade sobre a bolha e bolha absorve uma única penalidade", () => {
+test("ímã conduz moedas até a nave e a coleta usa a contagem existente", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
-    engine.powerUps = activatePowerUp(activatePowerUp(createPowerUpState(), "star"), "bubble");
+    engine.session.obstacles = [];
+    const coin = new Collectible({ id: "coin", kind: "coin", x: 0, y: 120, width: 24, height: 24, speed: 0 });
+    engine.collectibles.push(coin);
+    engine.powerUps = activatePowerUp(createPowerUpState(), "magnet");
+    const startX = coin.x;
+    let frames = 0;
+    for (; frames < 100 && engine.coins === 0; frames += 1) engine.tick(0.05);
+    assert.ok(coin.x > startX, "the coin moves toward the rocket");
+    assert.equal(engine.coins, 1, "the coin is automatically collected and credited once");
+    assert.equal(engine.powerUps.magnetMs, 7000 - frames * 50, "the seven second effect counts down during active play");
+    engine.stop();
+  });
+});
+
+test("duplicador dobra moedas normais e moedas atraídas, e expira sem alterar moedas", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.session.obstacles = [];
+    engine.powerUps = activatePowerUp(createPowerUpState(), "doubler");
+    engine.collectibles.push(new Collectible({ id: "coin-a", kind: "coin", x: engine.rocket.x, y: engine.rocket.y, width: 24, height: 24 }));
+    engine.tick(0.016);
+    assert.equal(engine.coins, 2);
+    engine.powerUps.doublerMs = 1;
+    engine.collectibles.push(new Collectible({ id: "coin-b", kind: "coin", x: engine.rocket.x, y: engine.rocket.y, width: 24, height: 24 }));
+    engine.tick(0.016);
+    assert.equal(engine.coins, 3, "a coin collected after expiration has normal value");
+    engine.stop();
+  });
+});
+
+test("bolha protege contra uma penalidade e é consumida no primeiro impacto", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    engine.powerUps = activatePowerUp(createPowerUpState(), "bubble");
     const wrong = engine.answers.find((answer) => !answer.correct);
     assert.equal(engine.resolveCurrentAnswer(wrong), true);
-    assert.equal(engine.speed, 120, "star prevents the wrong-answer speed penalty");
-    assert.equal(engine.getSnapshot().powerUps.some((power) => power.id === "bubble"), true, "star takes priority without consuming the bubble");
+    assert.equal(engine.speed, 120, "bubble prevents the wrong-answer speed penalty");
+    assert.equal(engine.powerUps.bubble, false, "bubble absorbs that penalty");
 
-    engine.obstacles.push(new Obstacle({ id: "asteroid", x: engine.rocket.x, y: engine.rocket.y, width: 44, height: 44 }));
-    engine.tick(0.016);
-    assert.equal(engine.speed, 120, "star prevents obstacle damage too");
-    assert.equal(engine.powerUps.bubble, true);
-
-    engine.powerUps.starMs = 0;
-    engine.obstacles.push(new Obstacle({ id: "asteroid", x: engine.rocket.x, y: engine.rocket.y, width: 44, height: 44 }));
-    engine.tick(0.016);
+    assert.equal(engine.protectFromPenalty("obstacle"), false, "later obstacle impacts work normally");
+    engine.powerUps = activatePowerUp(engine.powerUps, "bubble");
+    assert.equal(engine.protectFromPenalty("obstacle"), true, "bubble protects from a collision");
     assert.equal(engine.powerUps.bubble, false);
-    assert.equal(engine.speed, 120, "bubble absorbs exactly one collision penalty");
     engine.stop();
   });
 });
@@ -935,10 +957,10 @@ test("roleta desenha a arte do poder em um cartão quadrado com borda branca", (
     engine.powerUps.rouletteMs = 500;
     engine.render();
 
-    const cardImage = drawnImageCalls.find(([image]) => image.src?.endsWith("/assets/powerups/turbo.webp"));
+    const cardImage = drawnImageCalls.find(([image]) => image.src?.endsWith("/assets/powerups/turbo.png"));
     assert.ok(cardImage, "a arte do poder deve ser desenhada no canvas");
     assert.equal(cardImage[3], cardImage[4], "a área da imagem deve ser quadrada");
-    assert.equal(engine.powerUpImages.turbo.src, "/assets/powerups/turbo.webp");
+    assert.equal(engine.powerUpImages.turbo.src, "/assets/powerups/turbo.png");
     assert.equal(roundedCards[0][2], roundedCards[0][3], "o cartão deve manter proporção 1:1");
     assert.equal(strokeColors.at(-1), "#fff", "o contorno do cartão deve ser branco");
     engine.stop();
@@ -948,12 +970,12 @@ test("roleta desenha a arte do poder em um cartão quadrado com borda branca", (
 test("poder sorteado faz zoom e fade suaves e a apresentação termina", () => {
   withCanvasEnvironment(({ canvas, drawnImageCalls, drawnImageAlphas }) => {
     const engine = new GameEngine(engineOptions(canvas));
-    engine.pendingPowerUp = "star";
+    engine.pendingPowerUp = "doubler";
     engine.powerUps.rouletteMs = 1;
     engine.tick(0.05);
-    assert.deepEqual(engine.powerUpReveal, { id: "star", elapsedMs: 0 });
+    assert.deepEqual(engine.powerUpReveal, { id: "doubler", elapsedMs: 0 });
 
-    const getRevealSize = () => drawnImageCalls.filter(([image]) => image.src?.endsWith("/assets/powerups/star.webp")).at(-1).slice(3, 5);
+    const getRevealSize = () => drawnImageCalls.filter(([image]) => image.src?.endsWith("/assets/powerups/doubler.png")).at(-1).slice(3, 5);
     engine.render();
     const initialSize = getRevealSize();
     engine.tick(0.05);
@@ -963,7 +985,7 @@ test("poder sorteado faz zoom e fade suaves e a apresentação termina", () => {
 
     for (let frame = 0; frame < 9; frame += 1) engine.tick(0.05);
     engine.render();
-    const revealDrawIndex = drawnImageCalls.findLastIndex(([image]) => image.src?.endsWith("/assets/powerups/star.webp"));
+    const revealDrawIndex = drawnImageCalls.findLastIndex(([image]) => image.src?.endsWith("/assets/powerups/doubler.png"));
     assert.ok(drawnImageAlphas[revealDrawIndex] < 0.6, "a imagem deve ficar translúcida durante a saída");
 
     for (let frame = 0; frame < 10; frame += 1) engine.tick(0.05);
@@ -979,20 +1001,20 @@ test("movimento reduzido mantém a arte do resultado estática e opaca", () => {
     engine.powerUpReveal = { id: "bubble", elapsedMs: 500 };
     engine.render();
 
-    const revealIndex = drawnImageCalls.findLastIndex(([image]) => image.src?.endsWith("/assets/powerups/bubble.webp"));
+    const revealIndex = drawnImageCalls.findLastIndex(([image]) => image.src?.endsWith("/assets/powerups/bubble.png"));
     assert.ok(revealIndex >= 0, "a imagem do resultado deve continuar visível");
-    assert.equal(drawnImageCalls[revealIndex][3], Math.min(96, Math.max(64, engine.view.width * 0.23)) * 0.76,
+    assert.equal(drawnImageCalls[revealIndex][3], Math.min(96, Math.max(64, engine.view.width * 0.23)) * 0.76 * 0.86,
       "a arte deve usar o tamanho do espaço lógico do gameplay");
     assert.equal(drawnImageAlphas[revealIndex], 1, "a arte não deve desaparecer");
     engine.stop();
   });
 });
 
-test("os quatro poderes recebem apresentações distintas no canvas", () => {
+test("os cinco poderes usam artes proporcionais dentro do cartão quadrado", () => {
   withCanvasEnvironment(({ canvas, drawnImageCalls }) => {
     const engine = new GameEngine(engineOptions(canvas));
     const sizes = {};
-    for (const power of ["turbo", "star", "bubble", "shrink"]) {
+    for (const power of ["turbo", "bubble", "magnet", "doubler", "freeze"]) {
       engine.grantDebugPowerUp(power);
       drawnImageCalls.length = 0;
       tickFor(engine, 300);
@@ -1000,10 +1022,8 @@ test("os quatro poderes recebem apresentações distintas no canvas", () => {
       assert.ok(draw >= 0, `a arte de ${power} aparece assim que o poder é recebido`);
       sizes[power] = drawnImageCalls[draw].slice(3, 5);
     }
-    assert.ok(sizes.turbo[0] < sizes.turbo[1], "o turbo se alonga verticalmente");
-    assert.ok(sizes.shrink[0] < sizes.shrink[1] && sizes.shrink[1] < sizes.star[1], "o raio comprime o cartão");
-    assert.ok(sizes.bubble[0] > sizes.star[0], "a bolha tem uma expansão própria");
-    assert.equal(sizes.star[0], sizes.star[1], "a estrela mantém a proporção ao girar");
+    for (const [width, height] of Object.values(sizes)) assert.ok(width <= 96 && height <= 96);
+    assert.notDeepEqual(sizes.magnet, sizes.doubler, "a proporção original varia conforme a ilustração");
     engine.stop();
   });
 });
@@ -1035,26 +1055,26 @@ test("turbo acelera o scroll e desacelera suavemente quando termina", () => {
   });
 });
 
-test("raio encolhedor torna obstáculos inofensivos e pausa novos spawns por três segundos", () => {
+test("congelamento pausa obstáculos existentes e os que surgirem, sem afetar a nave", () => {
   withCanvasEnvironment(({ canvas }) => {
     const engine = new GameEngine(engineOptions(canvas));
     engine.session.obstacles = [{ id: "asteroid", width: 44, height: 44, color: "#777" }];
-    const obstacle = new Obstacle({ id: "asteroid", x: engine.rocket.x, y: 10, width: 44, height: 44 });
+    const obstacle = new Obstacle({ id: "asteroid", x: 0, y: 10, width: 44, height: 44 });
     engine.obstacles.push(obstacle);
-    engine.pendingPowerUp = "shrink";
+    engine.pendingPowerUp = "freeze";
     engine.revealPendingPowerUp();
-    assert.equal(obstacle.isDamaging, false);
-    assert.equal(engine.hazardClearRemainingMs, 3000);
+    const obstacleY = obstacle.y;
     engine.obstacleAcc = 10_000;
-    engine.collectibleAcc = SPAWN.collectibleIntervalMs;
     engine.tick(0.05);
-    assert.equal(engine.obstacles.length, 1, "new obstacles stay suppressed during the clear effect");
-    assert.ok(engine.collectibles.length > 0, "coins continue to spawn during the clear effect");
-    tickFor(engine, 2850);
-    assert.ok(engine.hazardClearRemainingMs > 0, "obstacle spawning remains suppressed just before three seconds");
-    assert.equal(engine.obstacles.filter((active) => !active.shrinking).length, 0);
-    tickFor(engine, 200);
-    assert.ok(engine.obstacles.some((active) => !active.shrinking), "obstacles resume spawning after three seconds");
+    assert.equal(obstacle.y, obstacleY, "existing obstacles stop moving");
+    assert.ok(engine.obstacles.length > 1, "normal spawn generation remains active while frozen");
+    const frozenPositions = engine.obstacles.map(({ x, y }) => [x, y]);
+    engine.tick(0.05);
+    assert.deepEqual(engine.obstacles.map(({ x, y }) => [x, y]), frozenPositions, "new obstacles also remain frozen");
+    engine.powerUps.freezeMs = 1;
+    engine.tick(0.05);
+    assert.equal(engine.powerUps.freezeMs, 0);
+    assert.ok(obstacle.y > obstacleY, "obstacles resume after the effect ends");
     engine.stop();
   });
 });

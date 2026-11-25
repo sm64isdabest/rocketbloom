@@ -18,9 +18,10 @@ const TABS = [
 
 const POWER_UPS = [
   { id: "turbo", label: "Turbo" },
-  { id: "star", label: "Estrela" },
   { id: "bubble", label: "Bolha" },
-  { id: "shrink", label: "Raio encolhedor" },
+  { id: "magnet", label: "Ímã" },
+  { id: "doubler", label: "Moedas x2" },
+  { id: "freeze", label: "Congelamento" },
 ];
 
 const DEBUG_SCREENS = [

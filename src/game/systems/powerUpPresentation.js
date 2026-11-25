@@ -1,8 +1,9 @@
 const POWER_COLORS = {
   turbo: "#ffc06b",
-  star: "#ffe776",
   bubble: "#92ecff",
-  shrink: "#b8b5ff",
+  magnet: "#ff976b",
+  doubler: "#ffe776",
+  freeze: "#8feaff",
 };
 
 export function renderPowerUpIntro(ctx, power, progress, size) {
@@ -32,7 +33,7 @@ export function renderPowerUpIntro(ctx, power, progress, size) {
       }
       break;
     }
-    case "star": {
+    case "doubler": {
       width *= 1 + eased * 0.6;
       height = width;
       rotation = Math.sin(progress * Math.PI) * 0.36;
@@ -56,7 +57,17 @@ export function renderPowerUpIntro(ctx, power, progress, size) {
       }
       break;
     }
-    case "shrink": {
+    case "magnet": {
+      rotation = Math.sin(progress * Math.PI * 2) * 0.18;
+      const radius = size * (0.3 + eased * 0.28);
+      for (const side of [-1, 1]) {
+        ctx.moveTo(side * radius, -radius);
+        ctx.lineTo(side * radius, radius * 0.45);
+        ctx.quadraticCurveTo(side * radius, radius * 0.95, 0, radius * 0.95);
+      }
+      break;
+    }
+    case "freeze": {
       width *= 1 - eased * 0.86;
       height *= 1 - eased * 0.49;
       const edge = size * (0.72 - eased * 0.45);

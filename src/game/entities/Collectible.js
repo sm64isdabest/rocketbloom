@@ -28,8 +28,15 @@ export class Collectible {
     this.shineTime = 0;
   }
 
-  update(dt, reducedMotion) {
+  update(dt, reducedMotion, attractionTarget = null) {
     this.y += this.speed * dt;
+    if (attractionTarget) {
+      const follow = 1 - Math.exp(-6 * Math.max(0, dt));
+      const targetX = attractionTarget.x + attractionTarget.width / 2 - this.width / 2;
+      const targetY = attractionTarget.y + attractionTarget.height / 2 - this.height / 2;
+      this.x += (targetX - this.x) * follow;
+      this.y += (targetY - this.y) * follow;
+    }
     if (this.kind === "coin") this.shineTime = reducedMotion ? 0 : this.shineTime + dt;
   }
 

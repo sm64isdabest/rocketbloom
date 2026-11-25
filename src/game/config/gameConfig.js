@@ -88,9 +88,10 @@ export const MYSTERY_BOX = {
 
 export const POWER_UPS = {
   turbo: { durationMs: 7000, speedMultiplier: 2.5 },
-  star: { durationMs: 5000, warningMs: 1500 },
   bubble: { durationMs: null },
-  shrink: { durationMs: 3000, shrinkMs: 600 },
+  magnet: { durationMs: 7000 },
+  doubler: { durationMs: 7000 },
+  freeze: { durationMs: 7000 },
 };
 
 export const QUESTION_TIMING = {

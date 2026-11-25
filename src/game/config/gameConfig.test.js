@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { SPEED, REWARDS, getPlanetDifficulty } from "./gameConfig.js";
+import { SPEED, REWARDS, POWER_UPS, getPlanetDifficulty } from "./gameConfig.js";
 
 test("valores de velocidade e derrota estão definidos", () => {
   assert.equal(typeof SPEED.start, "number");
@@ -14,6 +14,12 @@ test("valores de velocidade e derrota estão definidos", () => {
 test("recompensas numéricas ficam na configuração", () => {
   assert.equal(REWARDS.coinValue, 1);
   assert.ok(REWARDS.plantMoney > 0);
+});
+
+test("os três poderes novos usam exatamente a duração existente do turbo", () => {
+  assert.equal(POWER_UPS.turbo.durationMs, 7000);
+  assert.deepEqual([POWER_UPS.magnet.durationMs, POWER_UPS.doubler.durationMs, POWER_UPS.freeze.durationMs], [7000, 7000, 7000]);
+  assert.deepEqual(Object.keys(POWER_UPS), ["turbo", "bubble", "magnet", "doubler", "freeze"]);
 });
 
 test("elementos de fase ficam maiores sem alterar o tamanho do foguete", async () => {
