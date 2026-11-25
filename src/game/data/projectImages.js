@@ -1,5 +1,5 @@
 import { OBSTACLE_SPRITES } from "./obstacles.js";
-import { FIRST_FLIGHT_POINTER, MISSION_INTRO } from "./missionIntro.js";
+import { ASTRONAUT_POINTER, MISSION_INTRO } from "./missionIntro.js";
 import { getRocketCosmeticUrl, HONEY_TRAIL_FRAMES, ROCKET_COSMETICS } from "../config/goldConfig.js";
 import { CAMPAIGN_CONFIG, PLANETS } from "./planets.js";
 import { PLANTS } from "./plants.js";
@@ -14,13 +14,13 @@ export const PROJECT_IMAGES = [
   "/assets/laboratory/arrow-left.webp",
   "/assets/laboratory/arrow-right.webp",
   ...PLANTS.flatMap(({ growthArt }) =>
-    growthArt.map((id) => `/assets/laboratory/plant-${String(id).padStart(2, "0")}.png`),
+    growthArt.map((id) => `/assets/laboratory/plant-${String(id).padStart(2, "0")}.webp`),
   ),
   ...["irrigation", "pollination", "cleaning", "can", "bee", "dirt", "brush", "pot", "flower"].map(
     (file) => `/assets/laboratory/care/${file}.webp`,
   ),
   ...MISSION_INTRO.map(({ image }) => image),
-  FIRST_FLIGHT_POINTER,
+  ASTRONAUT_POINTER,
   "/assets/explosion.webp",
   "/assets/folha-verde-cartunesca-brilhante.webp",
   "/assets/lasers/idle/frame_01.webp",
@@ -66,7 +66,7 @@ export const PROJECT_IMAGES = [
   ...HONEY_TRAIL_FRAMES.slice(1).map((id) => getRocketCosmeticUrl(id, "/")),
   "/assets/powerups/bubble-shield.webp",
   "/assets/powerups/mystery-box.webp",
-  ...["turbo", "bubble", "magnet", "doubler", "freeze"].map((power) => `/assets/powerups/${power}.png`),
+  ...["turbo", "bubble", "magnet", "doubler", "freeze"].map((power) => `/assets/powerups/${power}.webp`),
   "/assets/ui/coin.webp",
   "/assets/ui/life-heart.webp",
   ...["astronaut", "astronaut-tired", "space", "score", "time", "correct", "incorrect", "return", "record"]
@@ -78,7 +78,7 @@ export const PROJECT_IMAGES = [
   ...PLANETS.map(({ id }) => `/assets/ui/planets/${id}-route.webp`),
   "/assets/ui/warning-alert.webp",
   "/assets/ui/laboratory-notice.webp",
-  "/assets/ui/uneb-logo.png",
+  "/assets/ui/uneb-logo.webp",
   "/assets/ui/selection-rocket.webp",
   "/assets/ui/level-frames/arrow-left.webp",
   "/assets/ui/level-frames/arrow-right.webp",

@@ -14,7 +14,7 @@ test("laboratory sprites follow each planet's seedling-to-mature artwork order",
   for (const [planetId, stages] of Object.entries(expectedStages)) {
     assert.deepEqual(
       stages.map((_, index) => getLaboratoryPlantImage(planetId, index)),
-      stages.map((assetId) => `/assets/laboratory/plant-${String(assetId).padStart(2, "0")}.png`),
+      stages.map((assetId) => `/assets/laboratory/plant-${String(assetId).padStart(2, "0")}.webp`),
       `${planetId} should use three sprites in growth order`,
     );
   }
@@ -25,8 +25,8 @@ test("Saturn keeps its current three growth stages and the final ringed plant as
 });
 
 test("laboratory sprite stage is clamped and supports a Vite base path", () => {
-  assert.equal(getLaboratoryPlantImage("earth", -3), "/assets/laboratory/plant-02.png");
-  assert.equal(getLaboratoryPlantImage("earth", 99, "/rocketbloom/"), "/rocketbloom/assets/laboratory/plant-05.png");
+  assert.equal(getLaboratoryPlantImage("earth", -3), "/assets/laboratory/plant-02.webp");
+  assert.equal(getLaboratoryPlantImage("earth", 99, "/rocketbloom/"), "/rocketbloom/assets/laboratory/plant-05.webp");
 });
 
 test("as três artes ganham escala à medida que a planta cresce", () => {

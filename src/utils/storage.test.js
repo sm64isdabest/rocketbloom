@@ -18,20 +18,34 @@ function memoryStorage(seed = {}) {
   };
 }
 
-test("a introdução e o tutorial são independentes e voltam após reiniciar a campanha", () => {
+test("reiniciar a campanha preserva a introdução vista e reativa o tutorial de voo", () => {
   const profile = createDefaultProgress();
   assert.deepEqual(profile.onboarding, { missionSeen: false, earthTutorialSeen: false });
   profile.onboarding.missionSeen = true;
+  profile.onboarding.earthTutorialSeen = true;
   profile.settings.controlMode = "keyboard";
   const storage = memoryStorage();
   assert.ok(saveProgress(profile, storage).ok);
   const saved = loadProgress(storage).progress;
-  assert.deepEqual(saved.onboarding, { missionSeen: true, earthTutorialSeen: false });
+  assert.deepEqual(saved.onboarding, { missionSeen: true, earthTutorialSeen: true });
 
   const reset = progressStorage.resetSavedProgress(saved, storage);
   assert.ok(reset.ok);
-  assert.deepEqual(loadProgress(storage).progress.onboarding, { missionSeen: false, earthTutorialSeen: false });
+  assert.deepEqual(loadProgress(storage).progress.onboarding, { missionSeen: true, earthTutorialSeen: false });
   assert.equal(reset.progress.settings.controlMode, "keyboard");
+});
+
+test("uma segunda aba não repete uma atualização já feita no perfil", () => {
+  const openTab = createDefaultProgress();
+  const storage = memoryStorage();
+  const seeMission = (current) => current.onboarding.missionSeen ? current
+    : { ...current, onboarding: { ...current.onboarding, missionSeen: true } };
+  const first = progressStorage.updateSavedProgress(openTab, seeMission, { storage });
+  const second = progressStorage.updateSavedProgress(openTab, seeMission, { storage });
+  assert.equal(first.changed, true);
+  assert.equal(second.changed, false);
+  assert.equal(second.progress.onboarding.missionSeen, true);
+  assert.equal(progressStorage.resetSavedProgress(openTab, storage).progress.onboarding.missionSeen, true);
 });
 
 test("um perfil antigo que já voou não repete a introdução nem o tutorial", () => {

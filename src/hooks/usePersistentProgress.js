@@ -25,15 +25,16 @@ export function usePersistentProgress() {
     const result = updateSavedProgress(current, update, { preferMemory: hasUnsavedProgress.current });
     if (result.stale) {
       window.location.reload();
-      return;
+      return result;
     }
-    if (result.progress === current) return;
+    if (result.progress === current) return result;
     currentProgress.current = result.progress;
     hasUnsavedProgress.current = !result.ok;
     setProgress(result.progress);
     if (!result.ok) {
       setWarning(result.error);
     }
+    return result;
   }, []);
 
   const patchSettings = useCallback(

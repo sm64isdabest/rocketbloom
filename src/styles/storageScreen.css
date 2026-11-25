@@ -65,6 +65,7 @@
 .gold-storage__back span { position: absolute; bottom: -8px; color: #e7f7ff; font-size: .68rem; text-shadow: 0 2px 3px #071333; }
 
 .gold-storage__layout {
+  --vault-action-size: clamp(52px, 7vw, 68px);
   position: relative;
   z-index: 2;
   display: grid;
@@ -78,9 +79,10 @@
   position: relative;
   isolation: isolate;
   aspect-ratio: 1.75;
-  max-height: max(84px, calc(100dvh - max(72px, calc(env(safe-area-inset-top) + 65px)) - max(12px, env(safe-area-inset-bottom)) - 132px));
+  max-height: max(84px, calc(100dvh - max(72px, calc(env(safe-area-inset-top) + 65px)) - max(12px, env(safe-area-inset-bottom)) - var(--vault-action-size) - 82px));
 }
 .gold-storage__vault { position: relative; isolation: isolate; width: min(92%, 500px); min-height: 80px; padding-top: 43px; }
+.gold-storage__vault:has(.gold-storage__customization-actions) { padding-top: calc(var(--vault-action-size) + 4px); }
 .gold-storage__customization-actions {
   position: absolute;
   inset: 0 0 auto;
@@ -106,8 +108,16 @@
 }
 .laboratory-scene.gold-storage .gold-storage__button:hover { background: linear-gradient(#226eaa, #123256); }
 .gold-storage .gold-storage__button-art { width: clamp(14px, 3.6vw, 20px); height: auto; aspect-ratio: 1; object-fit: contain; }
-.laboratory-scene.gold-storage .gold-storage__button--icon { width: 47px; min-height: 40px; padding: 5px; }
-.gold-storage .gold-storage__button--icon .gold-storage__button-art { width: 26px; }
+.laboratory-scene.gold-storage .gold-storage__button--icon {
+  width: var(--vault-action-size);
+  height: var(--vault-action-size);
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.laboratory-scene.gold-storage .gold-storage__button--icon:hover { background: transparent; filter: brightness(1.18); }
+.gold-storage .gold-storage__button--icon .gold-storage__button-art { width: 100%; }
 .gold-storage__cosmetics {
   width: min(440px, calc(100vw - 24px));
   max-height: calc(100dvh - 24px);

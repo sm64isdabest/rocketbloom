@@ -96,24 +96,28 @@
 .earth-tutorial__choice span { display: grid; gap: 2px; }
 .earth-tutorial__choice small { color: #c9e7ff; line-height: 1.35; }
 .earth-tutorial > .earth-tutorial__note:not(.eyebrow) { margin: 0; font-size: .82rem; }
-.phase-selection-canvas.is-guiding-first-flight {
-  --first-stage-center-y: calc(var(--first-stage-y) + var(--first-stage-offset, 0px));
-}
-.fullscreen-float:has(~ .app-shell .is-guiding-first-flight):not(:hover, :focus-visible) { opacity: .35; }
-.phase-selection-canvas.is-guiding-first-flight::after {
+.phase-selection-guide {
+  --guide-size: max(var(--guide-width), var(--guide-height));
   position: absolute;
   z-index: 6;
   inset: 0;
-  background: radial-gradient(circle at var(--first-stage-x) var(--first-stage-center-y),
-    transparent calc(var(--phase-stage-size) * .53), #01091e9c calc(var(--phase-stage-size) * 1.35),
-    #01071bdf calc(var(--phase-stage-size) * 2.55));
-  content: "";
   pointer-events: none;
 }
-.phase-selection-first-hint {
+.fullscreen-float:has(~ .app-shell .phase-selection-guide):not(:hover, :focus-visible) { opacity: .35; }
+.phase-selection-guide::before {
   position: absolute;
-  z-index: 7;
-  top: calc(var(--first-stage-center-y) - var(--phase-stage-size) * .70);
+  inset: 0;
+  background: radial-gradient(circle at var(--guide-x) var(--guide-y),
+    transparent calc(var(--guide-size) * .53), #01091e9c calc(var(--guide-size) * 1.35),
+    #01071bdf calc(var(--guide-size) * 2.55));
+  content: "";
+}
+.phase-selection-canvas:has(button:focus-visible:not([aria-describedby="phase-selection-guide-hint"])) .phase-selection-guide::before {
+  opacity: .38;
+}
+.phase-selection-guide__hint {
+  position: absolute;
+  top: calc(var(--guide-y) - var(--guide-size) * .70);
   left: 50%;
   width: max-content;
   max-width: calc(100% - 24px);
@@ -130,28 +134,25 @@
   text-shadow: 0 2px 0 #041430;
   box-shadow: 0 0 20px #ffca4f58, inset 0 1px #fff0a54d;
   transform: translate(-50%, -100%);
-  pointer-events: none;
 }
-.phase-selection-guide {
+.phase-selection-guide__target {
   position: absolute;
-  z-index: 7;
-  top: var(--first-stage-center-y);
-  left: var(--first-stage-x);
-  width: var(--phase-stage-size);
-  aspect-ratio: 1;
+  top: var(--guide-y);
+  left: var(--guide-x);
+  width: var(--guide-width);
+  height: var(--guide-height);
   transform: translate(-50%, -50%);
-  pointer-events: none;
 }
-.phase-selection-guide::before {
+.phase-selection-guide__target::before {
   position: absolute;
   inset: -5%;
   border: 3px solid #ffe48d;
   border-radius: 50%;
   box-shadow: 0 0 16px #ffce69, inset 0 0 14px #ffc8486e;
   content: "";
-  animation: first-stage-pulse 1.2s ease-in-out infinite alternate;
+  animation: selection-guide-pulse 1.2s ease-in-out infinite alternate;
 }
-.phase-selection-guide img {
+.phase-selection-guide__target img {
   position: absolute;
   top: 69%;
   left: 77%;
@@ -159,19 +160,26 @@
   height: 67%;
   object-fit: contain;
   filter: drop-shadow(0 3px 5px #13172f) drop-shadow(0 0 7px #59d5ff);
-  animation: first-stage-tap 1.05s ease-in-out infinite alternate;
+  animation: selection-guide-tap 1.05s ease-in-out infinite alternate;
 }
-@keyframes first-stage-pulse {
+.phase-selection-guide--laboratory .phase-selection-guide__hint {
+  top: calc(var(--guide-y) + var(--guide-size) * .96 + 11px);
+  transform: translateX(-50%);
+}
+.phase-selection-guide--laboratory .phase-selection-guide__target img {
+  width: max(40px, 94%);
+  height: max(40px, 94%);
+}
+@keyframes selection-guide-pulse {
   from { opacity: .76; transform: scale(.99); }
   to { opacity: 1; transform: scale(1.10); }
 }
-@keyframes first-stage-tap {
+@keyframes selection-guide-tap {
   from { transform: translate(0, 0); }
   to { transform: translate(-12%, -12%); }
 }
 @media (orientation: landscape) and (max-height: 360px) {
-  .phase-selection-canvas.is-guiding-first-flight { --first-stage-offset: -4dvh; }
-  .phase-selection-first-hint { font-size: clamp(1rem, 2.9vw, 1.7rem); }
+  .phase-selection-guide__hint { font-size: clamp(1rem, 2.9vw, 1.7rem); }
 }
 @media (max-width: 640px) and (orientation: portrait) {
   .mission-intro__layout { grid-template-columns: minmax(0, 1fr); }

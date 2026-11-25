@@ -1,5 +1,5 @@
 export const EARTH_TUTORIAL_STAGE_ID = "earth-1";
-export const FIRST_FLIGHT_POINTER = "/assets/mission/astronaut-pointer.webp";
+export const ASTRONAUT_POINTER = "/assets/mission/astronaut-pointer.webp";
 
 export const MISSION_INTRO = [
   {

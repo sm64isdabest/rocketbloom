@@ -160,7 +160,7 @@ export class GameEngine {
     const base = basePath.endsWith("/") ? basePath : `${basePath}/`;
     return Object.fromEntries(Object.keys(POWER_UPS).map((power) => {
       const image = new Image();
-      image.src = `${base}assets/powerups/${power}.png`;
+      image.src = `${base}assets/powerups/${power}.webp`;
       return [power, image];
     }));
   }

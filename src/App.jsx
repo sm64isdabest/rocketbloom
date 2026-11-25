@@ -40,7 +40,7 @@ export default function App() {
   const { progress, warning, fatal, patchSettings, persist, resetProgress } = usePersistentProgress();
   const [screen, setScreen] = useState(SCREEN.BOOT);
   const [menuPage, setMenuPage] = useState(SCREEN.MENU);
-  const [showFirstFlightGuide, setShowFirstFlightGuide] = useState(false);
+  const [selectionGuide, setSelectionGuide] = useState(null);
   const selectorStorageButton = useRef(null);
   const [navigationContext, dispatchNavigationContext] = useReducer(navigationContextReducer, initialNavigationContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -226,13 +226,24 @@ export default function App() {
       setScreen(SCREEN.FLIGHT_TUTORIAL);
       return;
     }
+    setSelectionGuide(null);
     setScreen(reducedMotion ? SCREEN.PLAYING : SCREEN.FLIGHT_INTRO);
   };
 
+  const openCampaign = () => {
+    if (progress.onboarding.missionSeen) {
+      setMenuPage(SCREEN.PLANETS);
+      return;
+    }
+    const result = persist((current) => current.onboarding.missionSeen ? current
+      : { ...current, onboarding: { ...current.onboarding, missionSeen: true } });
+    if (result?.stale) return;
+    setMenuPage(result?.changed ? SCREEN.MISSION_INTRO : SCREEN.PLANETS);
+  };
+
   const completeMissionIntro = () => {
-    persist((current) => ({ ...current, onboarding: { ...current.onboarding, missionSeen: true } }));
     dispatchNavigationContext({ type: "select-stage", planetId: "earth", selectedStageId: null });
-    setShowFirstFlightGuide(true);
+    setSelectionGuide("first-flight");
     setMenuPage(SCREEN.PLANETS);
   };
 
@@ -242,7 +253,7 @@ export default function App() {
       onboarding: { ...current.onboarding, earthTutorialSeen: true },
       settings: { ...current.settings, controlMode },
     }));
-    setShowFirstFlightGuide(false);
+    setSelectionGuide(null);
     setScreen(reducedMotion ? SCREEN.PLAYING : SCREEN.FLIGHT_INTRO);
   };
 
@@ -297,8 +308,14 @@ export default function App() {
   };
 
   const recordOutcome = useCallback((outcome, snapshot) => {
-    if (!snapshot) return;
-    persist((current) => applyRunOutcome(current, snapshot, outcome).progress);
+    if (!snapshot) return false;
+    let stageCompleted = false;
+    const result = persist((current) => {
+      const { progress: next, rewards } = applyRunOutcome(current, snapshot, outcome);
+      stageCompleted = rewards.stageCompleted;
+      return next;
+    });
+    return !result?.stale && stageCompleted;
   }, [persist]);
 
   const exitLevel = () => {
@@ -317,6 +334,7 @@ export default function App() {
   };
 
   const enterLaboratory = (planetId, selectedStageId) => {
+    if (selectionGuide === "laboratory") setSelectionGuide(null);
     dispatchNavigationContext({ type: "open-laboratory", planetId, selectedStageId });
     const visitPlanet = getLaboratoryVisitPlanet(progress, planetId);
     setLaboratoryPlanetId(visitPlanet.id);
@@ -339,8 +357,8 @@ export default function App() {
   }, []);
 
   const onOutcome = useCallback((outcome, snapshot, { launching = false } = {}) => {
-    recordOutcome(outcome, snapshot);
-    setOutcomeSnapshot(snapshot ?? null);
+    const firstCompletion = recordOutcome(outcome, snapshot);
+    setOutcomeSnapshot(snapshot ? { ...snapshot, firstCompletion } : null);
     if (outcome === "victory") {
       setScreen(launching ? SCREEN.VICTORY_LAUNCH : SCREEN.VICTORY);
     } else {
@@ -359,6 +377,7 @@ export default function App() {
     setOutcomeSnapshot(null);
     setMenuPage(destination.menuPage);
     setCompletionStageId(destination.completedStageId);
+    setSelectionGuide(destination.guide ?? null);
     setScreen(SCREEN.MENU);
   };
 
@@ -381,7 +400,7 @@ export default function App() {
   const resetCampaign = () => {
     const result = resetProgress();
     if (!result.ok) return result;
-    setShowFirstFlightGuide(false);
+    setSelectionGuide(null);
     debugEngineRef.current?.stop();
     hudRef.current = null;
     settingsTrigger.current = null;
@@ -391,7 +410,7 @@ export default function App() {
     setCompletionStageId(null);
     setDebugOpen(false);
     setSettingsOpen(false);
-    setMenuPage(SCREEN.MISSION_INTRO);
+    setMenuPage(SCREEN.MENU);
     setScreen(SCREEN.MENU);
     return result;
   };
@@ -504,7 +523,7 @@ export default function App() {
           warning={warning}
           muted={muted}
           onToggleMute={toggleMute}
-          onPlay={() => setMenuPage(progress.onboarding.missionSeen ? SCREEN.PLANETS : SCREEN.MISSION_INTRO)}
+          onPlay={openCampaign}
           onSettings={openSettings}
         />
       ) : null}
@@ -532,11 +551,11 @@ export default function App() {
           completedStageId={completionStageId}
           preferredPlanetId={navigationContext.selector.planetId}
           preferredStageId={navigationContext.selector.selectedStageId}
-          showFirstFlightGuide={showFirstFlightGuide}
+          selectionGuide={selectionGuide}
           storageButtonRef={selectorStorageButton}
           onStorage={enterStorageFromSelector}
           onBack={() => {
-            setShowFirstFlightGuide(false);
+            setSelectionGuide(null);
             setMenuPage(SCREEN.MENU);
           }}
           onPlay={startStage}

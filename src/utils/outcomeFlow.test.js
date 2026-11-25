@@ -23,3 +23,10 @@ test("fim do modo infinito retorna ao seletor sem destacar uma fase de campanha"
     completedStageId: null,
   });
 });
+
+test("o guia do Laboratório aparece só ao voltar da primeira vitória no Nível 2 da Terra", () => {
+  assert.equal(getOutcomeReturn("victory", { stageId: "earth-2", firstCompletion: true }).guide, "laboratory");
+  assert.equal(getOutcomeReturn("victory", { stageId: "earth-2", firstCompletion: false }).guide, undefined);
+  assert.equal(getOutcomeReturn("victory", { stageId: "mars-2", firstCompletion: true }).guide, undefined);
+  assert.equal(getOutcomeReturn("defeat", { stageId: "earth-2", firstCompletion: true }).guide, undefined);
+});

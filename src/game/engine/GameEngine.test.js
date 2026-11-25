@@ -1074,10 +1074,10 @@ test("roleta desenha a arte do poder em um cartão quadrado com borda branca", (
     engine.powerUps.rouletteMs = 500;
     engine.render();
 
-    const cardImage = drawnImageCalls.find(([image]) => image.src?.endsWith("/assets/powerups/turbo.png"));
+    const cardImage = drawnImageCalls.find(([image]) => image.src?.endsWith("/assets/powerups/turbo.webp"));
     assert.ok(cardImage, "a arte do poder deve ser desenhada no canvas");
     assert.equal(cardImage[3], cardImage[4], "a área da imagem deve ser quadrada");
-    assert.equal(engine.powerUpImages.turbo.src, "/assets/powerups/turbo.png");
+    assert.equal(engine.powerUpImages.turbo.src, "/assets/powerups/turbo.webp");
     assert.equal(roundedCards[0][2], roundedCards[0][3], "o cartão deve manter proporção 1:1");
     assert.equal(strokeColors.at(-1), "#fff", "o contorno do cartão deve ser branco");
     engine.stop();
@@ -1092,7 +1092,7 @@ test("poder sorteado faz zoom e fade suaves e a apresentação termina", () => {
     engine.tick(0.05);
     assert.deepEqual(engine.powerUpReveal, { id: "doubler", elapsedMs: 0 });
 
-    const getRevealSize = () => drawnImageCalls.filter(([image]) => image.src?.endsWith("/assets/powerups/doubler.png")).at(-1).slice(3, 5);
+    const getRevealSize = () => drawnImageCalls.filter(([image]) => image.src?.endsWith("/assets/powerups/doubler.webp")).at(-1).slice(3, 5);
     engine.render();
     const initialSize = getRevealSize();
     engine.tick(0.05);
@@ -1102,7 +1102,7 @@ test("poder sorteado faz zoom e fade suaves e a apresentação termina", () => {
 
     for (let frame = 0; frame < 9; frame += 1) engine.tick(0.05);
     engine.render();
-    const revealDrawIndex = drawnImageCalls.findLastIndex(([image]) => image.src?.endsWith("/assets/powerups/doubler.png"));
+    const revealDrawIndex = drawnImageCalls.findLastIndex(([image]) => image.src?.endsWith("/assets/powerups/doubler.webp"));
     assert.ok(drawnImageAlphas[revealDrawIndex] < 0.6, "a imagem deve ficar translúcida durante a saída");
 
     for (let frame = 0; frame < 10; frame += 1) engine.tick(0.05);
@@ -1118,7 +1118,7 @@ test("movimento reduzido mantém a arte do resultado estática e opaca", () => {
     engine.powerUpReveal = { id: "bubble", elapsedMs: 500 };
     engine.render();
 
-    const revealIndex = drawnImageCalls.findLastIndex(([image]) => image.src?.endsWith("/assets/powerups/bubble.png"));
+    const revealIndex = drawnImageCalls.findLastIndex(([image]) => image.src?.endsWith("/assets/powerups/bubble.webp"));
     assert.ok(revealIndex >= 0, "a imagem do resultado deve continuar visível");
     assert.equal(drawnImageCalls[revealIndex][3], Math.min(96, Math.max(64, engine.view.width * 0.23)) * 0.76 * 0.86,
       "a arte deve usar o tamanho do espaço lógico do gameplay");
