@@ -8,7 +8,6 @@ import { usePersistentProgress } from "./hooks/usePersistentProgress.js";
 import { applyRunOutcome } from "./utils/runProgress.js";
 import { completeLaboratoryCare, getLaboratoryVisitPlanet, prepareLaboratoryVisit } from "./utils/laboratoryProgress.js";
 import { acknowledgeGold, creditGold, creditNextGoldGoal } from "./utils/goldStorage.js";
-import { Decorations } from "./screens/Decorations.jsx";
 import { BootScreen } from "./screens/BootScreen.jsx";
 import { ErrorScreen } from "./screens/ErrorScreen.jsx";
 import { MenuScreen } from "./screens/MenuScreen.jsx";
@@ -445,7 +444,6 @@ export default function App() {
   const showFlight = run && (screen === SCREEN.PLAYING || screen === SCREEN.PAUSED
     || screen === SCREEN.FLIGHT_INTRO || screen === SCREEN.VICTORY_LAUNCH
     || (screen === SCREEN.DEFEAT && !endlessResult));
-  const decoration = <Decorations total={progress.gold.total} />;
   const equippedCosmetics = getEquippedRocketCosmetics(progress.gold.total, progress.settings.rocketCosmetics);
 
   const toggleRocketCosmetic = (id) => persist((current) => {
@@ -497,7 +495,6 @@ export default function App() {
       {screen === SCREEN.MENU && menuPage === SCREEN.PLANETS ? (
         <PlanetsScreen
           progress={progress}
-          decoration={decoration}
           completedStageId={completionStageId}
           preferredPlanetId={navigationContext.selector.planetId}
           preferredStageId={navigationContext.selector.selectedStageId}
@@ -520,7 +517,6 @@ export default function App() {
       {screen === SCREEN.MENU && menuPage === SCREEN.COMMAND ? (
         <CommandRoomScreen
           progress={progress}
-          decoration={decoration}
           initialPlanetId={laboratoryPlanetId}
           onVisitPlanet={visitLaboratoryPlant}
           onCareComplete={finishLaboratoryCare}
@@ -564,7 +560,6 @@ export default function App() {
       {screen === SCREEN.VICTORY || endlessResult ? (
         <VictoryScreen
           planet={planet}
-          decoration={endlessResult ? decoration : null}
           stage={stage}
           snapshot={outcomeSnapshot}
           bestScore={progress.endlessHighScores?.[planet?.id] ?? 0}

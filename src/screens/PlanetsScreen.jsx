@@ -37,7 +37,7 @@ const stageStatusLabel = (stage) => {
 };
 
 export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, preferredStageId, onBack, onPlay, onPlayEndless,
-  onMarkPlanetSeen, onSettings, muted, onToggleMute, onCommandRoom, onSelectionChange, reducedMotion, storageButtonRef, previousGoldBalance, goldCountPaused, onStorage, decoration }) {
+  onMarkPlanetSeen, onSettings, muted, onToggleMute, onCommandRoom, onSelectionChange, reducedMotion, storageButtonRef, previousGoldBalance, goldCountPaused, onStorage }) {
   const validPreferredPlanetId = PLANETS.some(({ id }) => id === preferredPlanetId) ? preferredPlanetId : null;
   const initialPlanetId = validPreferredPlanetId ?? getPlanetIdForStage(completedStageId) ?? getInitialExpandedPlanetId(progress) ?? PLANETS[0]?.id ?? null;
   const initialStageId = PLANETS.find(({ id }) => id === initialPlanetId)?.stages.some(({ id }) => id === preferredStageId)
@@ -125,7 +125,6 @@ export function PlanetsScreen({ progress, completedStageId, preferredPlanetId, p
           draggable="false"
           aria-hidden="true"
         />
-        {decoration}
         <img
           className="phase-selection-route"
           src={`${APP_BASE}assets/ui/planets/${planet.id}-route.webp`}

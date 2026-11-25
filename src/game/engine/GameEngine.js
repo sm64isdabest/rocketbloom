@@ -1,3 +1,4 @@
+import { pickObstacle } from "../data/obstacles.js";
 import { COLLECTIBLES } from "../data/items.js";
 import { getQuestionsForStage, pickQuestion } from "../data/questions.js";
 import { SPEED, SCORE, ENDLESS, SPAWN, QUESTION_TIMING, MYSTERY_BOX, POWER_UPS, REWARDS } from "../config/gameConfig.js";
@@ -726,8 +727,8 @@ export class GameEngine {
   }
 
   spawnObstacle() {
-    const catalog = this.session.obstacles;
-    const obstacle = catalog[Math.floor(this.rng() * catalog.length)];
+    const obstacle = pickObstacle(this.session.obstacles, this.rng);
+    if (!obstacle) return;
     const maxX = Math.max(0, this.view.width - obstacle.width);
     const candidates = Array.from({ length: 7 }, (_, index) => maxX * index / 6);
     const safe = candidates.filter((x) => Math.abs(x + obstacle.width / 2 - (this.rocket.x + this.rocket.width / 2)) >= SPAWN.obstacleMinLaneDistance
@@ -998,6 +999,16 @@ export class GameEngine {
     const tail = clamp((elapsed - VICTORY_ASCENT_END_MS) / tailMs, 0, 1);
     const distance = rocket.y + rocket.height * 1.45;
     const ascentAt = (time) => Math.max(0, (time - chargeMs) / ascentMs);
+    const ascentOffset = -distance * ascentAt(elapsed) ** 2;
+    if (rocket.usesHoneyTrail) {
+      if (tail === 0) {
+        ctx.save();
+        ctx.translate(0, ascentOffset);
+        rocket.render(ctx, this.elapsedMs + elapsed * 1.4, false);
+        ctx.restore();
+      }
+      return;
+    }
     const ascent = Math.min(1, ascentAt(elapsed));
     const centerX = rocket.x + rocket.width / 2;
     const nozzleY = rocket.y + rocket.height * 0.75;
@@ -1023,7 +1034,7 @@ export class GameEngine {
     const width = rocket.width * (0.15 + charge * 0.12);
 
     ctx.save();
-    ctx.translate(0, -distance * ascentAt(elapsed) ** 2);
+    ctx.translate(0, ascentOffset);
     ctx.save();
     const flame = ctx.createLinearGradient(centerX, nozzleY, centerX, nozzleY + length);
     flame.addColorStop(0, "#fff0b2");
@@ -1055,7 +1066,7 @@ export class GameEngine {
 
   renderPowerUpRocketEffects() {
     const { ctx, rocket } = this;
-    if (!ctx) return;
+    if (!ctx || rocket.usesHoneyTrail) return;
     if (this.powerUps.turboMs > 0 || this.turboSpeedFactor > 1.03) {
       ctx.save();
       const flicker = this.reducedMotion ? 1 : 0.8 + Math.sin(this.elapsedMs * 0.04) * 0.2;

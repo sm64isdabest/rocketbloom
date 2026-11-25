@@ -36,11 +36,13 @@ test("cosméticos do foguete começam desligados em perfis antigos e são carreg
   legacy.settings.rocketCosmetics = { antenna: true, skin: false, trail: "true", desconhecido: true };
   assert.ok(saveProgress(legacy, storage).ok);
   assert.deepEqual(loadProgress(storage).progress.settings.rocketCosmetics, { antenna: true });
-  const equipped = { antenna: true, skin: true, trail: true };
-  assert.deepEqual(getEquippedRocketCosmetics(99, equipped), []);
-  assert.deepEqual(getEquippedRocketCosmetics(100, equipped), ["antenna"]);
-  assert.deepEqual(getEquippedRocketCosmetics(300, equipped), ["antenna", "skin"]);
-  assert.deepEqual(getEquippedRocketCosmetics(600, equipped), ["antenna", "skin", "trail"]);
+  const equipped = { antenna: true, skin: true, trail: true, aura: true };
+  assert.deepEqual(getEquippedRocketCosmetics(19, equipped), []);
+  assert.deepEqual(getEquippedRocketCosmetics(20, equipped), ["antenna"]);
+  assert.deepEqual(getEquippedRocketCosmetics(45, equipped), ["antenna", "skin"]);
+  assert.deepEqual(getEquippedRocketCosmetics(75, equipped), ["antenna", "skin", "trail"]);
+  assert.deepEqual(getEquippedRocketCosmetics(149, equipped), ["antenna", "skin", "trail"]);
+  assert.deepEqual(getEquippedRocketCosmetics(150, equipped), ["antenna", "skin", "trail", "aura"]);
 });
 
 test("perfil antigo descarta diamantes e preserva ouro e progresso", () => {
@@ -65,15 +67,15 @@ test("ouro, depósitos ainda não vistos e metas vistas sobrevivem ao recarregar
 
 test("terminar uma animação preserva o saldo acrescentado por outra aba depois que ela começou", () => {
   const storage = memoryStorage();
-  const openTab = { ...createDefaultProgress(), gold: { total: 100, seenTotal: 0 } };
+  const openTab = { ...createDefaultProgress(), gold: { total: 20, seenTotal: 0 } };
   assert.ok(saveProgress(openTab, storage).ok);
   assert.ok(saveProgress({ ...openTab, coins: 12, gold: creditGold(openTab.gold, 1000) }, storage).ok);
   const result = progressStorage.updateSavedProgress(openTab, (current) => ({
-    ...current, gold: acknowledgeGold(current.gold, 100),
+    ...current, gold: acknowledgeGold(current.gold, 20),
   }), { storage });
   assert.ok(result.ok);
   const saved = loadProgress(storage).progress;
-  assert.deepEqual(saved.gold, { total: 1100, seenTotal: 100, seenGoalIds: ["aurora"] });
+  assert.deepEqual(saved.gold, { total: 1020, seenTotal: 20, seenGoalIds: ["aurora"] });
   assert.equal(saved.coins, 12);
 });
 

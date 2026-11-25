@@ -9,7 +9,7 @@ import { PlantCareGame } from "./PlantCareGame.jsx";
 const APP_BASE = import.meta.env?.BASE_URL ?? "/";
 const asset = (path) => `${APP_BASE}${path}`;
 
-export function CommandRoomScreen({ progress, onBack, onSettings, decoration, initialPlanetId, onVisitPlanet, onCareComplete }) {
+export function CommandRoomScreen({ progress, onBack, onSettings, initialPlanetId, onVisitPlanet, onCareComplete }) {
   const [planetIndex, setPlanetIndex] = useState(() => Math.max(0, PLANETS.findIndex(({ id }) => id === initialPlanetId)));
   const planet = PLANETS[planetIndex];
   const [activeStageId, setActiveStageId] = useState(() => getPendingLaboratoryStage(planet, progress)?.id ?? null);
@@ -38,7 +38,6 @@ export function CommandRoomScreen({ progress, onBack, onSettings, decoration, in
   return (
     <main className={`laboratory-scene laboratory-scene--${planet.id}`} aria-label="Laboratório orbital">
       <img className="laboratory-scene__background" src={asset("assets/laboratory/laboratory-background-clean.webp")} alt="" aria-hidden="true" />
-      {decoration}
 
       <header className="laboratory-scene__topbar">
         <button type="button" className="laboratory-scene__icon-button" onClick={onBack} aria-label="Voltar à base">

@@ -1299,6 +1299,7 @@ button:focus-visible, [role="switch"]:focus-visible, canvas:focus-visible { outl
   background-image: radial-gradient(ellipse at 59% 52%, #0543a34d, transparent 65%), var(--victory-background);
 }
 .victory-screen__panel {
+  position: relative;
   width: min(100%, 1300px);
   padding: 0 0 0 31%;
   margin: auto;

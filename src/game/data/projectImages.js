@@ -1,5 +1,5 @@
 import { OBSTACLE_SPRITES } from "./obstacles.js";
-import { getRocketCosmeticUrl, ROCKET_COSMETICS } from "../config/goldConfig.js";
+import { getRocketCosmeticUrl, HONEY_TRAIL_FRAMES, ROCKET_COSMETICS } from "../config/goldConfig.js";
 import { CAMPAIGN_CONFIG, PLANETS } from "./planets.js";
 import { PLANTS } from "./plants.js";
 
@@ -60,6 +60,7 @@ export const PROJECT_IMAGES = [
   "/assets/menu/shop.webp",
   ...Object.values(OBSTACLE_SPRITES).map((file) => `/assets/obstacles/${file}`),
   ...ROCKET_COSMETICS.map(({ id }) => getRocketCosmeticUrl(id, "/")),
+  ...HONEY_TRAIL_FRAMES.slice(1).map((id) => getRocketCosmeticUrl(id, "/")),
   "/assets/powerups/bubble-shield.webp",
   "/assets/powerups/mystery-box.webp",
   ...["turbo", "bubble", "magnet", "doubler", "freeze"].map((power) => `/assets/powerups/${power}.png`),

@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { VAULT_BUTTON_ART } from "../assets/storageAssets.js";
+import { StorageArt } from "../components/StorageArt.jsx";
 import { getHudAssetUrl } from "../components/hudModel.js";
 import { playGameSound } from "../game/audio/audioManager.js";
 import { EMPTY_TREASURE, getRocketCosmeticUrl, GOLD_GOALS, ROCKET_COSMETICS } from "../game/config/goldConfig.js";
-import { getCrossedGoals, getGoldMeterProgress, getHighestGoldGoal } from "../game/systems/goalSystem.js";
+import { getCrossedGoals, getGoldMeterProgress, getHighestGoldGoal, getNextGoldGoal } from "../game/systems/goalSystem.js";
 import { hasUnseenGoldGoals } from "../utils/goldStorage.js";
 import { Decorations } from "./Decorations.jsx";
-import { getMenuAssetUrl } from "./menuModel.js";
-import { getPauseAssetUrl, RETURN_ICON_FILE } from "./pauseModel.js";
 import { createDepositTimeline, drawDepositFrame, getDepositFrame } from "./storageAnimation.js";
 import { StorageTreasure } from "./StorageTreasure.jsx";
 import "../styles/storageScreen.css";
@@ -16,20 +16,68 @@ const COIN_URL = getHudAssetUrl("coin.webp", APP_BASE);
 const format = new Intl.NumberFormat("pt-BR");
 
 function GoldMeter({ total, trackRef, pulse }) {
-  const amount = GOLD_GOALS.at(-1)?.amount ?? 100;
+  const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const tooltipId = useId();
+  const amount = GOLD_GOALS.at(-1).amount;
   const progress = getGoldMeterProgress(total);
+  const next = getNextGoldGoal(total);
+  const remaining = next ? next.amount - total : 0;
+  const message = next
+    ? `${remaining === 1 ? "Falta 1 moeda" : `Faltam ${format.format(remaining)} moedas`} para a meta de ${format.format(next.amount)}.`
+    : "Todas as metas foram atingidas.";
+  const visible = !dismissed && (open || hovered);
+  useEffect(() => {
+    if (!visible) return undefined;
+    const dismissOnEscape = (event) => {
+      if (event.key !== "Escape") return;
+      event.stopPropagation();
+      setOpen(false);
+      setDismissed(true);
+    };
+    window.addEventListener("keydown", dismissOnEscape, true);
+    return () => window.removeEventListener("keydown", dismissOnEscape, true);
+  }, [visible]);
   return (
-    <div ref={trackRef} className="gold-meter gold-meter--large"
-      role="progressbar" aria-label="Progresso das metas de ouro" aria-valuemin={0} aria-valuemax={amount}
-      aria-valuenow={Math.min(total, amount)} aria-valuetext={`${format.format(total)} de ouro`}>
-      <div className="gold-meter__fill" style={{ width: `${progress * 100}%` }} />
-      {GOLD_GOALS.slice(0, -1).map(({ id }, index) => (
-        <span key={id} className="gold-meter__marker" aria-hidden="true"
-          style={{ left: `${(index + 1) / GOLD_GOALS.length * 100}%` }} />
-      ))}
-      {pulse ? <div className="gold-meter__pulse" key={pulse} aria-hidden="true" /> : null}
+    <div className="gold-meter__wrapper" data-open={visible} data-dismissed={dismissed}
+      onPointerEnter={(event) => {
+        if (event.pointerType === "touch") return;
+        setHovered(true);
+        setDismissed(false);
+      }}
+      onPointerLeave={() => setHovered(false)}>
+      <div ref={trackRef} className="gold-meter gold-meter--large"
+        role="progressbar" aria-label="Progresso das metas de ouro" aria-valuemin={0} aria-valuemax={amount}
+        aria-valuenow={Math.min(total, amount)} aria-valuetext={`${format.format(total)} de ouro`}>
+        <div className="gold-meter__fill" style={{ width: `${progress * 100}%` }} />
+        {GOLD_GOALS.slice(0, -1).map(({ id }, index) => (
+          <span key={id} className="gold-meter__marker" aria-hidden="true"
+            style={{ left: `${(index + 1) / GOLD_GOALS.length * 100}%` }} />
+        ))}
+        {pulse ? <div className="gold-meter__pulse" key={pulse} aria-hidden="true" /> : null}
+      </div>
+      <button className="gold-meter__inspect" type="button" aria-label="Consultar próxima meta"
+        aria-describedby={tooltipId} aria-controls={tooltipId}
+        onFocus={() => setDismissed(false)}
+        onBlur={() => setOpen(false)}
+        onClick={() => {
+          setOpen(!open);
+          setDismissed(open);
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== "Escape") return;
+          event.stopPropagation();
+          setOpen(false);
+          setDismissed(true);
+        }} />
+      <span id={tooltipId} className="gold-meter__tooltip" role="tooltip">{message}</span>
     </div>
   );
+}
+
+function VaultIcon({ name }) {
+  return <StorageArt src={VAULT_BUTTON_ART[name]} className="gold-storage__button-art" />;
 }
 
 export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showDecorations, onToggleDecorations,
@@ -116,6 +164,7 @@ export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showD
     if (!animating || inputBlocked) return undefined;
     const onKeyDown = (event) => {
       if (!["Enter", " ", "Escape"].includes(event.key) || event.repeat) return;
+      if (event.target.closest?.(".gold-meter__inspect")) return;
       if (event.key !== "Escape" && !event.target.closest?.(".gold-storage")) return;
       event.preventDefault();
       if (document.activeElement === skipRef.current) titleRef.current?.focus();
@@ -127,7 +176,7 @@ export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showD
 
   return (
     <main className="laboratory-scene gold-storage" aria-labelledby="gold-title" onClickCapture={(event) => {
-      if (!animating || inputBlocked) return;
+      if (!animating || inputBlocked || event.target.closest?.(".gold-meter__inspect")) return;
       event.preventDefault();
       event.stopPropagation();
       if (document.activeElement === skipRef.current) titleRef.current?.focus();
@@ -139,19 +188,19 @@ export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showD
       {animating ? <canvas ref={canvasRef} className="gold-storage__flights" aria-hidden="true" /> : null}
 
       <header className="laboratory-scene__topbar gold-storage__header">
-        <button type="button" className="laboratory-scene__icon-button gold-storage__back" onClick={onBack}
+        <button type="button" className="laboratory-scene__icon-button gold-storage__button gold-storage__back" onClick={onBack}
           aria-label="Voltar à seleção de fases" title="Voltar à seleção de fases">
-          <img className="laboratory-scene__back-icon" src={getPauseAssetUrl(RETURN_ICON_FILE, APP_BASE)} alt="" />
+          <VaultIcon name="back" />
         </button>
         <h1 id="gold-title" className="laboratory-scene__title" ref={titleRef} tabIndex={-1}>Cofre de Moedas</h1>
-        <button type="button" className="laboratory-scene__icon-button laboratory-scene__icon-button--settings"
+        <button type="button" className="laboratory-scene__icon-button laboratory-scene__icon-button--settings gold-storage__button"
           onClick={onSettings} aria-label="Abrir configurações">
-          <img src={getMenuAssetUrl("settings.webp", APP_BASE)} alt="" />
+          <VaultIcon name="settings" />
         </button>
       </header>
 
       <div className="gold-storage__layout">
-        <StorageTreasure treasure={highestGoal?.treasure ?? EMPTY_TREASURE}
+        <StorageTreasure treasure={highestGoal?.treasure ?? EMPTY_TREASURE} hasGold={total > 0}
           isFinal={highestGoal === GOLD_GOALS.at(-1)} reducedMotion={reducedMotion} />
         <section className="gold-storage__vault" aria-label="Saldo de ouro">
           {animating ? (
@@ -160,15 +209,18 @@ export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showD
                 <img ref={coinRef} src={COIN_URL} alt="" />
                 <span><strong>+{format.format(gold.total - total)}</strong> a depositar</span>
               </div>
-              <button className="gold-storage__skip" ref={skipRef} type="button">Pular animação</button>
+              <button className="gold-storage__button gold-storage__skip" ref={skipRef} type="button">
+                <VaultIcon name="skip" /> Pular animação
+              </button>
             </>
           ) : (
             <div className="gold-storage__customization-actions">
-              <button className="gold-storage__decoration-toggle" type="button" onClick={onToggleDecorations}>
+              <button className="gold-storage__button" type="button" onClick={onToggleDecorations}>
+                <VaultIcon name="decorations" />
                 {showDecorations ? "Ocultar decorações" : "Mostrar decorações"}
               </button>
-              <button className="gold-storage__decoration-toggle" type="button" aria-haspopup="dialog"
-                onClick={() => cosmeticsRef.current?.showModal()}>Personalizar foguete</button>
+              <button className="gold-storage__button" type="button" aria-haspopup="dialog"
+                onClick={() => cosmeticsRef.current?.showModal()}><VaultIcon name="cosmetics" /> Personalizar foguete</button>
             </div>
           )}
           <div className="gold-storage__balance">{format.format(total)} ouro</div>
@@ -181,7 +233,9 @@ export function StorageScreen({ gold, equippedCosmetics, onToggleCosmetic, showD
       <dialog ref={cosmeticsRef} className="gold-storage__cosmetics" aria-labelledby="rocket-cosmetics-title">
         <div className="gold-storage__cosmetics-heading">
           <h2 id="rocket-cosmetics-title">Cosméticos do foguete</h2>
-          <button type="button" className="gold-storage__decoration-toggle" onClick={() => cosmeticsRef.current?.close()}>Fechar</button>
+          <button type="button" className="gold-storage__button" onClick={() => cosmeticsRef.current?.close()}>
+            <VaultIcon name="close" /> Fechar
+          </button>
         </div>
         <ul className="gold-storage__cosmetics-list">
           {ROCKET_COSMETICS.map(({ id, name, amount }) => {

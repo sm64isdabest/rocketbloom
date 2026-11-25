@@ -564,6 +564,27 @@ test("a decolagem acompanha o tempo real em frames lentos", () => {
   });
 });
 
+test("o rastro de mel substitui o fogo adicional do turbo e da decolagem", () => {
+  withCanvasEnvironment(({ canvas, drawnImages }) => {
+    const engine = new GameEngine({ ...engineOptions(canvas), cosmetics: ["trail"] });
+    const ctx = canvas.getContext("2d");
+    let flameFills = 0;
+    let emberFills = 0;
+    ctx.fill = () => { flameFills += 1; };
+    ctx.fillRect = () => { emberFills += 1; };
+    engine.powerUps = activatePowerUp(createPowerUpState(), "turbo");
+    engine.turboSpeedFactor = 2;
+    engine.renderPowerUpRocketEffects();
+    engine.victoryLaunchMs = 1200;
+    drawnImages.length = 0;
+    engine.renderVictoryLaunch();
+    assert.equal(flameFills, 0);
+    assert.equal(emberFills, 0);
+    assert.ok(drawnImages.some(({ src }) => src?.includes("rocket-trail")));
+    engine.stop();
+  });
+});
+
 test("trocar de aba durante a decolagem encerra a animação uma vez", () => {
   withCanvasEnvironment(({ canvas, scheduled }) => {
     const previousDocument = globalThis.document;

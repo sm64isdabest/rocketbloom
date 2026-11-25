@@ -11,7 +11,7 @@ function formatFlightTime(elapsedMs) {
   return `${minutes}:${seconds}`;
 }
 
-export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, onRetry, decoration }) {
+export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, onRetry }) {
   const titleRef = useRef(null);
 
   useEffect(() => { titleRef.current?.focus(); }, []);
@@ -34,7 +34,6 @@ export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, 
   return (
     <main className={`screen victory-screen${endless ? " victory-screen--endless" : ""}`} aria-labelledby="victory-title"
       style={{ "--victory-background": `url("${getHudAssetUrl("victory/space.webp", APP_BASE)}")` }}>
-      {decoration}
       <section className="victory-screen__panel">
         <img className="victory-screen__astronaut" src={getHudAssetUrl(`victory/${astronaut}`, APP_BASE)} alt="" />
         {planet && stage ? <p className="eyebrow victory-screen__stage">{planet.name} · {stage.name}</p> : null}

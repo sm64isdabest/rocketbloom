@@ -3,7 +3,8 @@ import test from "node:test";
 import { validateCatalog } from "./catalog.js";
 import { PLANETS } from "./planets.js";
 import { QUESTION_BANK } from "./questions.js";
-import { getObstaclesForPlanet } from "./obstacles.js";
+import * as obstacles from "./obstacles.js";
+const { getObstaclesForPlanet } = obstacles;
 
 test("catálogo de dados está consistente", () => {
   assert.deepEqual(validateCatalog(), []);
@@ -35,6 +36,15 @@ test("cada planeta espacial tem o obstáculo próprio e os cinco visitantes", ()
     assert.deepEqual(getObstaclesForPlanet(planet).map(({ id }) => id).sort(), [local, ...visitors].sort());
   }
   assert.deepEqual(getObstaclesForPlanet("earth").map(({ id }) => id), ["plane", "helicopter", "balloon"]);
+});
+
+test("o obstáculo local ocupa 80% dos sorteios e os visitantes dividem o restante", () => {
+  for (const id of ["mars", "saturn", "neptune"]) {
+    const catalog = getObstaclesForPlanet(id);
+    const selections = Array.from({ length: 100 }, (_, index) => obstacles.pickObstacle(catalog, () => index / 100));
+    assert.equal(selections.filter((item) => item.visitor).length, 20);
+    assert.equal(new Set(selections.filter((item) => item.visitor)).size, 5);
+  }
 });
 
 test("dificuldade cresce ao longo da campanha e Netuno 3 usa o limite configurado", () => {

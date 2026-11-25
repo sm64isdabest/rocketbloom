@@ -5,7 +5,7 @@
   aspect-ratio: 96 / 88;
   flex: none;
 }
-.storage-icon > :is(img, svg) { grid-area: 1 / 1; width: 100%; height: 100%; object-fit: contain; }
+.storage-icon > img { grid-area: 1 / 1; width: 100%; height: 100%; object-fit: contain; }
 .storage-icon__highlight { opacity: 0; transition: opacity .18s ease; }
 .phase-selection-storage:is(:hover, :active, :focus-visible, .has-new) .storage-icon__highlight { opacity: 1; }
 
@@ -117,18 +117,26 @@
   justify-content: center;
   gap: 6px;
 }
-.gold-storage__decoration-toggle {
+.laboratory-scene.gold-storage .gold-storage__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, 1vw, 7px);
   min-height: 36px;
   padding: 4px clamp(4px, 1.5vw, 12px);
-  border: 1px solid #d8ac67;
+  border: 1px solid #5cc8ff;
   border-radius: 10px;
-  background: #121e38ed;
-  color: #fff1c7;
+  background: linear-gradient(#184f86, #09234a 58%, #071831);
+  box-shadow: inset 0 1px #a9eaff85, 0 2px 8px #030d24ad;
+  color: #ecfaff;
   font-size: clamp(.67rem, 2.5vw, .79rem);
   font-weight: 700;
   cursor: pointer;
 }
-.gold-storage__decoration-toggle:hover { background: #293c62; }
+.laboratory-scene.gold-storage .gold-storage__button:hover { background: linear-gradient(#226eaa, #123256); }
+.gold-storage .gold-storage__button-art { width: clamp(14px, 3.6vw, 20px); height: auto; aspect-ratio: 1; object-fit: contain; }
+.gold-storage .gold-storage__header .gold-storage__button { padding: 5px; }
+.gold-storage .gold-storage__header .gold-storage__button-art { width: 100%; height: 100%; }
 .gold-storage__cosmetics {
   width: min(440px, calc(100vw - 24px));
   max-height: calc(100dvh - 24px);
@@ -180,7 +188,24 @@
 }
 
 .gold-treasure__art { position: absolute; inset: 0; }
-.gold-treasure__image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.gold-treasure__platform {
+  position: absolute;
+  bottom: 3%;
+  left: 6%;
+  width: 88%;
+  height: 43%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+.gold-treasure__pile {
+  position: absolute;
+  bottom: 30%;
+  left: 50%;
+  height: 68%;
+  translate: -50% 0;
+  transform-origin: center bottom;
+}
+.gold-treasure__image { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
 .gold-treasure__image--current { filter: drop-shadow(0 6px 8px #050b215c); }
 .gold-treasure__aura {
   position: absolute;
@@ -226,14 +251,6 @@
   z-index: 2;
   top: 0;
   right: 0;
-  min-height: 35px;
-  padding: 4px 9px;
-  border: 1px solid #cbb67a9e;
-  border-radius: 8px;
-  background: #1a3153;
-  color: #fff0c5;
-  font-size: .73rem;
-  cursor: pointer;
 }
 .gold-storage__flights { position: absolute; z-index: 3; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
@@ -244,6 +261,39 @@
 .gold-meter__pulse { background: radial-gradient(ellipse, #fff7c1, transparent 72%); animation: gold-meter-pop .29s ease-out both; }
 
 .gold-meter__pulse { position: absolute; inset: 0; pointer-events: none; }
+.gold-meter__wrapper { position: relative; }
+.gold-meter__inspect {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+.gold-meter__tooltip {
+  position: absolute;
+  z-index: 4;
+  right: 0;
+  bottom: calc(100% + 8px);
+  left: 0;
+  display: none;
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
+  padding: 6px 10px;
+  border: 1px solid #5cc8ff;
+  border-radius: 8px;
+  background: #081e43;
+  box-shadow: 0 3px 12px #031127a8;
+  color: #f4fbff;
+  font-size: .78rem;
+  text-align: center;
+}
+.gold-meter__wrapper[data-open="true"] .gold-meter__tooltip,
+.gold-meter__wrapper[data-dismissed="false"] .gold-meter__inspect:focus-visible + .gold-meter__tooltip { display: block; }
+.gold-meter__tooltip::after { position: absolute; inset: 100% 0 auto; height: 8px; content: ""; }
 
 .gold-decorations {
   position: absolute;
@@ -257,7 +307,6 @@
   user-select: none;
 }
 
-.victory-screen__panel { position: relative; z-index: 1; }
 .gold-storage .gold-decorations { z-index: 1; }
 
 @keyframes gold-meter-pop { from { opacity: 1; transform: scaleX(.2); } to { opacity: 0; transform: scaleX(1); } }

@@ -81,6 +81,38 @@ test("rocket flame animation advances through all eight frames and freezes for r
   assert.equal(calls.find(({ method }) => method === "drawImage")?.args[0], flameImages[0]);
 });
 
+test("o mel troca de sprite e a aura usa quatro abelhas em movimento sem alterar a hitbox", () => {
+  const originalImage = globalThis.Image;
+  globalThis.Image = class {
+    complete = true;
+    naturalWidth = 40;
+    naturalHeight = 60;
+  };
+  try {
+    const rocket = new Rocket({ cosmetics: ["trail", "aura"], flameImages: [] });
+    const capture = (time, reducedMotion = false) => {
+      const calls = [];
+      const ctx = new Proxy({}, { get: (_target, name) => (...args) => calls.push({ name, args }) });
+      rocket.render(ctx, time, reducedMotion);
+      return calls;
+    };
+    const first = capture(0);
+    const next = capture(150);
+    const sprite = (calls, file) => calls.filter(({ name, args }) => name === "drawImage" && args[0].src.endsWith(file));
+    assert.equal(sprite(first, "rocket-trail.webp").length, 1);
+    assert.equal(sprite(next, "rocket-trail-02.webp").length, 1);
+    assert.equal(sprite(first, "rocket-aura.webp").length, 4);
+    assert.notDeepEqual(
+      first.filter(({ name }) => name === "translate"),
+      next.filter(({ name }) => name === "translate"),
+    );
+    assert.deepEqual(capture(0, true), capture(150, true));
+    assert.deepEqual([rocket.width, rocket.height], [52, 88]);
+  } finally {
+    globalThis.Image = originalImage;
+  }
+});
+
 test("rocket tilts with horizontal movement and returns upright when it stops", () => {
   const rocket = new Rocket({ image: { complete: false } });
   rocket.place(320, 640);
