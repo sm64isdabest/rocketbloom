@@ -3,6 +3,7 @@ import { AUDIO } from "../game/config/gameConfig.js";
 import { PLANETS } from "../game/data/planets.js";
 import { SCREEN } from "../utils/screenStates.js";
 import { getNextGoldGoal } from "../game/systems/goalSystem.js";
+import { getFlightPowerUps } from "../game/systems/powerUps.js";
 import { getMenuAssetUrl } from "./menuModel.js";
 
 const APP_BASE = import.meta.env.BASE_URL;
@@ -48,6 +49,9 @@ export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, 
   const tabRefs = useRef([]);
   const planet = PLANETS.find(({ id }) => id === planetId) ?? PLANETS[0];
   const stage = planet.stages.find(({ id }) => id === stageId) ?? planet.stages[0];
+  const endlessRun = run?.mode === "endless";
+  const availablePowers = getFlightPowerUps(endlessRun);
+  const selectedPower = availablePowers.includes(powerUp) ? powerUp : availablePowers[0];
   const nextGoldGoal = activeTab === "gold" ? getNextGoldGoal(progress.gold.total) : null;
   const setting = (key, value, label) => (
     <label className="debug-menu__setting" key={key}>
@@ -164,14 +168,14 @@ export function DebugMenu({ progress, run, controls, canGrantRunCoins, onClose, 
             <h2>Controles da fase atual</h2>
             <p className="debug-menu__hint">Ajustes temporários da partida. Inicie uma fase para habilitar estes controles.</p>
             <label className="debug-menu__setting debug-menu__setting--range"><span>Velocidade do foguete <b>{controls.speed} km/h</b></span>
-              <input type="range" min="0" max="320" step="1" value={controls.speed} disabled={!run} onChange={(event) => onSetSpeed(Number(event.currentTarget.value))} />
+              <input type="range" min="0" max="320" step="1" value={controls.speed} disabled={!run || endlessRun} onChange={(event) => onSetSpeed(Number(event.currentTarget.value))} />
             </label>
             <label className="debug-menu__setting"><span>GODMODE</span><input type="checkbox" checked={controls.godmode} disabled={!run} onChange={(event) => onSetGodmode(event.currentTarget.checked)} /></label>
             <label className="debug-menu__field">Duração da fase (segundos)<input type="number" min="0" max="3600" step="1" value={controls.stageDurationMs === null ? 0 : Number.isFinite(controls.stageDurationMs) ? controls.stageDurationMs / 1000 : 0} disabled={!run || run.mode === "endless"}
               onChange={(event) => { const seconds = Number(event.currentTarget.value); if (Number.isFinite(seconds) && seconds >= 0 && seconds <= 3600) onSetDuration(seconds === 0 ? 0 : seconds * 1000); }} /></label>
             <p className="debug-menu__hint">{run?.mode === "endless" ? "O modo infinito não tem limite de tempo." : "Use 0 para deixar a fase infinita."}</p>
-            <label className="debug-menu__field">Powerup<select value={powerUp} onChange={(event) => setPowerUp(event.currentTarget.value)}>{POWER_UPS.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}</select></label>
-            <button type="button" className="debug-menu__button debug-menu__button--primary" disabled={!run} onClick={() => onGrantPowerUp(powerUp)}>Aplicar powerup</button>
+            <label className="debug-menu__field">Powerup<select value={selectedPower} onChange={(event) => setPowerUp(event.currentTarget.value)}>{POWER_UPS.filter(({ id }) => availablePowers.includes(id)).map(({ id, label }) => <option key={id} value={id}>{label}</option>)}</select></label>
+            <button type="button" className="debug-menu__button debug-menu__button--primary" disabled={!run} onClick={() => onGrantPowerUp(selectedPower)}>Aplicar powerup</button>
           </div>}
 
           {activeTab === "screens" && <div className="debug-menu__section">

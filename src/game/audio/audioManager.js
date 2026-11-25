@@ -95,7 +95,7 @@ function stopVictoryLaunchSound() {
 }
 
 export function playVictoryLaunchSound({ chargeMs, ascentMs, tailMs }) {
-  pauseGameAudio();
+  stopVictoryLaunchSound();
   if (preferences.muteAll || !preferences.soundEffects || preferences.soundEffectsVolume <= AUDIO.minVolume) return;
   const context = getContext();
   if (!context) return;

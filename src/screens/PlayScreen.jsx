@@ -10,7 +10,7 @@ export function PlayScreen({ planetId, stageId, mode, controlMode, reducedMotion
   introducing, launching, muted, onToggleMute, onPause, onHudRef, onOutcome, onVictoryLaunchComplete, onEngineRef }) {
   const session = useGameSession(planetId, stageId, mode);
   const [snapshot, setSnapshot] = useState(null);
-  const engineRef = useRef(null);
+  const backdropRef = useRef(null);
   const lowSpeedAlert = showHud && !paused && snapshot?.lowSpeedAlert;
 
   const handleHud = useCallback(
@@ -20,11 +20,6 @@ export function PlayScreen({ planetId, stageId, mode, controlMode, reducedMotion
     },
     [onHudRef],
   );
-  const handleEngine = useCallback((engine) => {
-    engineRef.current = engine;
-    onEngineRef?.(engine);
-  }, [onEngineRef]);
-
   if (session.error) {
     return (
       <section className="screen screen--center">
@@ -36,8 +31,10 @@ export function PlayScreen({ planetId, stageId, mode, controlMode, reducedMotion
 
   return (
     <section className={`play${introducing ? " play--introducing" : ""}`} style={{ "--flight-accent": session.planet.theme.accent }}>
+      <canvas ref={backdropRef} className="play__backdrop" aria-hidden="true" />
       <div className="play__stage">
         <GameCanvas
+          backdropRef={backdropRef}
           session={session}
           controlMode={controlMode}
           reducedMotion={reducedMotion}
@@ -47,7 +44,7 @@ export function PlayScreen({ planetId, stageId, mode, controlMode, reducedMotion
           onPauseRequest={onPause}
           onOutcome={onOutcome}
           onVictoryLaunchComplete={onVictoryLaunchComplete}
-          onEngineRef={handleEngine}
+          onEngineRef={onEngineRef}
         />
       </div>
       {lowSpeedAlert ? (
@@ -59,7 +56,7 @@ export function PlayScreen({ planetId, stageId, mode, controlMode, reducedMotion
           </div>
         </>
       ) : null}
-      {showHud ? <Hud snapshot={snapshot} endlessIcon={mode === "endless" ? session.planet.endlessIcon : null}
+      {showHud ? <Hud snapshot={snapshot} endless={mode === "endless"} endlessIcon={session.planet.endlessIcon}
         muted={muted} onToggleMute={onToggleMute} onPause={onPause} /> : null}
       {introducing ? (
         <div className="flight-intro" role="status">

@@ -30,7 +30,7 @@ function getBackgroundImage(planetId) {
   return backgroundImages.get(planetId);
 }
 
-export function renderPlanetBackground(ctx, view, planet, { offsetX = 0, offsetY = 0 } = {}) {
+export function renderPlanetBackground(ctx, view, planet, { offsetX = 0, offsetY = 0, sideOutset = 0 } = {}) {
   const image = getBackgroundImage(planet.id);
   if (!image?.complete || image.naturalWidth === 0) return false;
 
@@ -45,9 +45,28 @@ export function renderPlanetBackground(ctx, view, planet, { offsetX = 0, offsetY
   const phase = ((offsetY % tileHeight) + tileHeight) % tileHeight;
   const firstY = baseY - phase;
   const tilesToDraw = Math.ceil(view.height / tileHeight) + 2;
-  for (let index = -1; index <= tilesToDraw; index += 1) {
-    const tileY = firstY + index * tileHeight;
-    ctx.drawImage(image, x, tileY, width, tileHeight);
+  const drawColumn = (left) => {
+    for (let index = -1; index <= tilesToDraw; index += 1) {
+      ctx.drawImage(image, left, firstY + index * tileHeight, width, tileHeight);
+    }
+  };
+  drawColumn(x);
+  if (sideOutset > 0) {
+    const firstColumn = Math.floor((-sideOutset - x) / width);
+    const lastColumn = Math.ceil((view.width + sideOutset - x) / width) - 1;
+    for (let column = firstColumn; column <= lastColumn; column += 1) {
+      if (column === 0) continue;
+      const left = x + column * width;
+      if (column % 2 === 0) {
+        drawColumn(left);
+      } else {
+        ctx.save();
+        ctx.translate(left + width, 0);
+        ctx.scale(-1, 1);
+        drawColumn(0);
+        ctx.restore();
+      }
+    }
   }
   return true;
 }

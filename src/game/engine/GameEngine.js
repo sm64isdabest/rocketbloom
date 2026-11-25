@@ -18,7 +18,7 @@ import { createInputController } from "./input.js";
 import { createGameLoop } from "./loop.js";
 import { fitCanvasToContainer } from "./resize.js";
 import { finishGameAudio, pauseGameAudio, playGameSound, playVictoryLaunchSound, startGameAudio } from "../audio/audioManager.js";
-import { activatePowerUp, createPowerUpState, getNextMysteryBoxDelay, getRandomPowerUp, tickPowerUps } from "../systems/powerUps.js";
+import { activatePowerUp, createPowerUpState, getFlightPowerUps, getNextMysteryBoxDelay, getRandomPowerUp, tickPowerUps } from "../systems/powerUps.js";
 import { renderPowerUpIntro } from "../systems/powerUpPresentation.js";
 import { createCollisionImpactState, getCollisionImpactSpeedFactor, tickCollisionImpact, triggerCollisionImpact } from "../systems/collisionImpact.js";
 import { collectCoins } from "../systems/coinManager.js";
@@ -28,14 +28,6 @@ const VICTORY_ASCENT_END_MS = VICTORY_LAUNCH.chargeMs + VICTORY_LAUNCH.ascentMs;
 const VICTORY_LAUNCH_DURATION_MS = VICTORY_ASCENT_END_MS + VICTORY_LAUNCH.tailMs;
 const LOW_SPEED_ALERT_ENTER_KMH = 60;
 const LOW_SPEED_ALERT_EXIT_KMH = 70;
-const POWER_UP_FEEDBACK = {
-  turbo: "TURBO!",
-  bubble: "Bolha ativada",
-  magnet: "Ímã de moedas ativado",
-  doubler: "Moedas valendo em dobro",
-  freeze: "Obstáculos congelados",
-};
-
 const POWER_ART_SCALE = { turbo: 0.84, bubble: 0.86, magnet: 0.88, doubler: 0.82, freeze: 0.87 };
 
 function makeRunId() {
@@ -47,9 +39,12 @@ function clamp(value, min, max) {
 }
 
 export class GameEngine {
-  constructor({ canvas, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, onVictoryLaunchComplete, rng = Math.random, runId = makeRunId(), explosionImage, bubbleImage, initialQuestionDelayMs = 3000 }) {
+  constructor({ canvas, backdrop, session, controlMode = "pointer", reducedMotion = false, showHitboxes = false, onHud, onPauseRequest, onOutcome, onVictoryLaunchComplete, rng = Math.random, runId = makeRunId(), explosionImage, bubbleImage, initialQuestionDelayMs = 3000 }) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
+    this.backdrop = backdrop;
+    this.backdropCtx = backdrop?.getContext("2d");
+    this.backdropOutset = 0;
     this.session = session;
     this.endless = session.mode === "endless";
     this.reducedMotion = reducedMotion;
@@ -74,6 +69,7 @@ export class GameEngine {
     this.powerUpReveal = null;
     this.outcome = null;
     this.victoryLaunchMs = null;
+    this.victoryLaunchSpeed = null;
     this.stars = [];
     this.speedStreaks = [];
     this.leaves = [];
@@ -89,7 +85,8 @@ export class GameEngine {
     this.pendingPowerUp = null;
     this.particles = [];
     this.entitySequence = 0;
-    this.speed = SPEED.start;
+    this.speed = this.endless ? ENDLESS.speed : SPEED.start;
+    this.lives = this.endless ? ENDLESS.lives : null;
     this.lowSpeedAlert = false;
     this.collisionImpact = createCollisionImpactState();
     this.collisionAlertRemainingMs = 0;
@@ -121,16 +118,13 @@ export class GameEngine {
     this.columnFlashColor = null;
     this.columnFlashRemainingMs = 0;
     this.currentRound = null;
-    this.questionFeedback = "";
-    this.feedbackTimerMs = 0;
-
     this.input = createInputController(canvas, controlMode, (x, y) => this.prepareAnswerSelection(x, y));
     this.loop = createGameLoop((dt, frameSeconds) => this.tick(dt, frameSeconds));
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.onVisibilityChange = () => {
       if (document.visibilityState !== "hidden") return;
       if (this.victoryLaunchMs !== null && this.victoryLaunchMs < VICTORY_LAUNCH_DURATION_MS) {
-        this.completeVictoryLaunch(false);
+        this.completeVictoryLaunch();
       } else if (!this.paused && !this.ended) {
         this.pause();
         this.onPauseRequest?.();
@@ -138,6 +132,7 @@ export class GameEngine {
     };
     if (typeof document !== "undefined") document.addEventListener("visibilitychange", this.onVisibilityChange);
     this.resizeObserver.observe(canvas.parentElement ?? canvas);
+    if (backdrop) this.resizeObserver.observe(backdrop);
     this.resize();
     if (this.initialQuestionRemainingMs === 0) this.startNextQuestion();
   }
@@ -171,6 +166,7 @@ export class GameEngine {
 
   resize() {
     this.view = fitCanvasToContainer(this.canvas);
+    this.resizeBackdrop();
     if (!this.rocket.x && !this.rocket.y) {
       this.rocket.place(this.view.width, this.view.height);
     } else {
@@ -194,6 +190,21 @@ export class GameEngine {
       entity.x = clamp(entity.x, 0, this.view.width - entity.width);
     }
     if (!this.disposed) this.render();
+  }
+
+  resizeBackdrop() {
+    if (!this.backdropCtx) return;
+    const { clientWidth, clientHeight } = this.backdrop;
+    const { scale, width, height } = this.view;
+    this.backdropOutset = Math.max(0, (clientWidth / scale - width) / 2);
+    if (!this.backdropOutset) return;
+    // The blurred scenery is rendered at half resolution and shares the stage's camera.
+    this.backdrop.width = Math.ceil(clientWidth / 2);
+    this.backdrop.height = Math.ceil(clientHeight / 2);
+    const backdropScale = scale / 2;
+    this.backdropCtx.setTransform(backdropScale, 0, 0, backdropScale,
+      (this.backdrop.width - width * backdropScale) / 2,
+      (this.backdrop.height - height * backdropScale) / 2);
   }
 
   start() {
@@ -228,7 +239,7 @@ export class GameEngine {
   }
 
   setDebugSpeed(speed) {
-    if (!Number.isFinite(speed)) return;
+    if (this.endless || !Number.isFinite(speed)) return;
     this.speed = clamp(speed, SPEED.min, SPEED.max);
     this.emitHud(true);
   }
@@ -307,8 +318,6 @@ export class GameEngine {
     this.columnFlashLane = -1;
     this.columnFlashColor = null;
     this.columnFlashRemainingMs = 0;
-    this.questionFeedback = "";
-    this.feedbackTimerMs = 0;
   }
 
   tick(dt, presentationSeconds = dt) {
@@ -327,6 +336,12 @@ export class GameEngine {
     }
 
     if (!frameSeconds) return;
+    if (this.pendingOutcome) {
+      this.rocket.updateDamageFeedback(frameSeconds);
+      this.updateParticles(frameSeconds);
+      this.presentPendingOutcome();
+      return;
+    }
     const frameMs = frameSeconds * 1000;
     this.elapsedMs += frameMs;
     this.collisionImpact = tickCollisionImpact(this.collisionImpact, frameMs, true);
@@ -341,16 +356,13 @@ export class GameEngine {
     const turboTarget = this.powerUps.turboMs > 0 ? POWER_UPS.turbo.speedMultiplier : 1;
     this.turboSpeedFactor += (turboTarget - this.turboSpeedFactor) * (1 - Math.exp(-frameSeconds / 0.45));
     if (rouletteWasActive && this.powerUps.rouletteMs <= 0) this.revealPendingPowerUp();
-    if (this.pendingOutcome) {
-      this.rocket.updateDamageFeedback(frameSeconds);
-      this.updateParticles(frameSeconds);
-      this.presentPendingOutcome();
-      return;
-    }
     this.input.apply(this.rocket, this.canvas, frameSeconds, this.view.scale);
     this.rocket.clamp(this.view.width);
     this.rocket.update(frameSeconds);
     this.rocket.updateDamageFeedback(frameSeconds);
+    if (!this.endless && !this.godmode && this.getFlightSpeed() <= SPEED.criticalThreshold) {
+      this.speed = Math.max(SPEED.min, this.speed - SPEED.criticalLossPerSecond * frameSeconds);
+    }
 
     const progressMultiplier = clamp(
       this.getEffectiveSpeed() / SPEED.start,
@@ -358,14 +370,7 @@ export class GameEngine {
       SPEED.maxProgressMultiplier,
     );
     this.progressMs += frameMs * progressMultiplier * this.turboSpeedFactor;
-    const backgroundScrollSpeed = 90 * progressMultiplier * this.turboSpeedFactor;
-    this.backgroundOffsetY -= backgroundScrollSpeed * frameSeconds;
-    updateStarfield(this.stars, frameSeconds, this.view.width, this.view.height,
-      (0.35 + progressMultiplier * 0.58) * this.turboSpeedFactor, this.visualRng);
-    if (!this.reducedMotion) {
-      updateSpeedStreaks(this.speedStreaks, frameSeconds, this.view.width, this.view.height,
-        this.getEffectiveSpeed() * this.turboSpeedFactor, this.visualRng);
-    }
+    this.advanceScenery(frameSeconds, progressMultiplier * this.turboSpeedFactor, this.getFlightSpeed());
 
     this.updateQuestions(frameSeconds, frameMs);
     if (this.ended) return;
@@ -447,8 +452,7 @@ export class GameEngine {
         this.columnFlashLane = this.currentRound.result.lane;
         this.columnFlashColor = "#00FF00";
         this.columnFlashRemainingMs = QUESTION_TIMING.resolutionFeedbackMs;
-        this.speed = clamp(this.speed + SPEED.correctAnswerBonus, SPEED.min, SPEED.max);
-        this.questionFeedback = "Resposta correta!";
+        if (!this.endless) this.speed = clamp(this.speed + SPEED.correctAnswerBonus, SPEED.min, SPEED.max);
         playGameSound("correct");
       }
       return;
@@ -484,7 +488,6 @@ export class GameEngine {
     this.answerLasers = [];
     this.columnFlashRemainingMs = 0;
     this.interQuestionRemainingMs = sampleInterQuestionDelayMs(this.rng);
-    this.questionFeedback = "";
     if (!this.godmode && this.speed <= SPEED.defeatAtOrBelow) this.pendingOutcome = "defeat";
   }
 
@@ -529,23 +532,19 @@ export class GameEngine {
       this.correctAnswers += 1;
       this.score += SCORE.correctAnswer;
       this.answerAnimationElapsedMs = 0;
-      this.questionFeedback = "";
     } else {
       this.incorrectAnswers += 1;
-      const bubbleAbsorbs = this.powerUps.bubble;
-      const protectedByPower = this.protectFromPenalty("question");
+      const protectedByPower = this.protectFromPenalty();
       if (!protectedByPower) {
         this.rocket.triggerDamageFeedback();
         this.score = Math.max(0, this.score + SCORE.incorrectAnswer);
-        this.speed = clamp(this.speed - SPEED.wrongAnswerPenalty * (this.session.stage.speedLossMultiplier ?? 1), SPEED.min, SPEED.max);
+        if (this.endless) this.loseLife();
+        else this.speed = clamp(this.speed - SPEED.wrongAnswerPenalty * (this.session.stage.speedLossMultiplier ?? 1), SPEED.min, SPEED.max);
       }
       this.answerFeedbackRemainingMs = QUESTION_TIMING.resolutionFeedbackMs;
       this.columnFlashLane = result.lane;
       this.columnFlashColor = protectedByPower ? "#83f4ff" : "#FF3030";
       this.columnFlashRemainingMs = QUESTION_TIMING.resolutionFeedbackMs;
-      this.questionFeedback = protectedByPower
-        ? (bubbleAbsorbs ? "Bolha estourou e absorveu a penalidade" : "Protegido pelo poder")
-        : (result.unanswered ? "Alternativas perdidas" : "Resposta incorreta");
       playGameSound(protectedByPower ? "discovery" : "incorrect");
     }
     this.emitHud(true);
@@ -593,22 +592,25 @@ export class GameEngine {
       if (this.powerUps.freezeMs <= 0) obstacle.update(dt);
       if (obstacle.isDamaging && aabbOverlaps(this.rocket, obstacle.collisionBox)) {
         obstacle.alive = false;
-        const protectedByPower = this.protectFromPenalty("obstacle");
+        const protectedByPower = this.protectFromPenalty();
         if (!protectedByPower) {
           this.rocket.triggerDamageFeedback();
-          const obstaclePenalty = SPEED.obstaclePenalty
-            * (this.session.stage.speedLossMultiplier ?? 1)
-            * (this.session.stage.obstaclePenaltyMultiplier ?? 1);
-          const impactFactor = clamp(1 - obstaclePenalty / Math.max(1, this.speed), 0.32, 1);
-          this.collisionImpact = triggerCollisionImpact(impactFactor);
+          if (this.endless) {
+            this.loseLife();
+          } else {
+            const obstaclePenalty = SPEED.obstaclePenalty
+              * (this.session.stage.speedLossMultiplier ?? 1)
+              * (this.session.stage.obstaclePenaltyMultiplier ?? 1);
+            const impactFactor = clamp(1 - obstaclePenalty / Math.max(1, this.speed), 0.32, 1);
+            this.collisionImpact = triggerCollisionImpact(impactFactor);
+          }
           this.collisionAlertRemainingMs = 1500;
           this.collisionAlertSequence += 1;
-          this.questionFeedback = "Impacto! Velocidade reduzida";
-          this.feedbackTimerMs = 900;
           playGameSound("collision");
           this.spawnParticles(this.rocket.x + this.rocket.width / 2, this.rocket.y + this.rocket.height / 2, "#ff653c", 24);
         }
         this.emitHud(true);
+        if (this.pendingOutcome) return;
       }
     }
     for (const collectible of this.collectibles) {
@@ -620,8 +622,6 @@ export class GameEngine {
         const amount = REWARDS.coinValue * (this.powerUps.doublerMs > 0 ? 2 : 1);
         this.coins = collectCoins(this.coins, amount);
         playGameSound("coin");
-        this.questionFeedback = `Moeda coletada +${amount}`;
-        this.feedbackTimerMs = 700;
         this.spawnParticles(collectible.x + collectible.width / 2, collectible.y + collectible.height / 2,
           "#f6ce62", 8);
         this.emitHud(true);
@@ -640,7 +640,7 @@ export class GameEngine {
         this.mysteryBox = null;
         this.spawnParticles(x + width / 2, y + height / 2, "#ffe45e", 22);
         playGameSound("discovery");
-        this.pendingPowerUp = getRandomPowerUp(this.rng);
+        this.pendingPowerUp = getRandomPowerUp(this.rng, getFlightPowerUps(this.endless));
         this.powerUps = { ...this.powerUps, rouletteMs: MYSTERY_BOX.rouletteMs, rouletteElapsedMs: 0 };
         this.emitHud(true);
       }
@@ -650,11 +650,6 @@ export class GameEngine {
     this.collectibles = cullOffscreen(this.collectibles, this.view.height);
     this.obstacles = this.obstacles.filter((obstacle) => obstacle.alive);
     this.updateParticles(dt);
-    if (this.feedbackTimerMs > 0) {
-      this.feedbackTimerMs -= frameMs;
-      if (this.feedbackTimerMs <= 0) this.questionFeedback = "";
-    }
-    if (!this.godmode && this.speed <= SPEED.defeatAtOrBelow && !this.isQuestionResolving()) this.pendingOutcome = "defeat";
   }
 
   getEntitySpeed(baseSpeed) {
@@ -666,8 +661,25 @@ export class GameEngine {
     return this.speed * getCollisionImpactSpeedFactor(this.collisionImpact);
   }
 
+  getFlightSpeed() {
+    return this.getEffectiveSpeed() * this.turboSpeedFactor;
+  }
+
+  loseLife() {
+    this.lives -= 1;
+    if (this.lives === 0) this.pendingOutcome = "defeat";
+  }
+
+  advanceScenery(dt, scroll, streakSpeed) {
+    this.backgroundOffsetY -= 90 * scroll * dt;
+    updateStarfield(this.stars, dt, this.view.width, this.view.height, 0.35 + scroll * 0.58, this.visualRng);
+    if (!this.reducedMotion) {
+      updateSpeedStreaks(this.speedStreaks, dt, this.view.width, this.view.height, streakSpeed, this.visualRng);
+    }
+  }
+
   updateLowSpeedAlert() {
-    const speed = this.getEffectiveSpeed();
+    const speed = this.getFlightSpeed();
     const nextAlert = this.lowSpeedAlert ? speed < LOW_SPEED_ALERT_EXIT_KMH : speed <= LOW_SPEED_ALERT_ENTER_KMH;
     const changed = nextAlert !== this.lowSpeedAlert;
     this.lowSpeedAlert = nextAlert;
@@ -688,13 +700,11 @@ export class GameEngine {
     return true;
   }
 
-  protectFromPenalty(source) {
+  protectFromPenalty() {
     if (this.godmode) return true;
     if (!this.powerUps.bubble) return false;
     this.powerUps = activatePowerUp(this.powerUps, "consume-bubble");
     this.spawnParticles(this.rocket.x + this.rocket.width / 2, this.rocket.y + this.rocket.height / 2, "#8cecff", 20);
-    this.questionFeedback = source === "question" ? "Bolha estourou e absorveu a penalidade" : "Bolha estourou e protegeu a nave";
-    this.feedbackTimerMs = 900;
     playGameSound("discovery");
     this.emitHud(true);
     return true;
@@ -708,10 +718,9 @@ export class GameEngine {
   }
 
   receivePowerUp(power) {
+    if (this.endless && power === "turbo") return;
     this.powerUpReveal = { id: power, elapsedMs: 0 };
     this.powerUps = activatePowerUp(this.powerUps, power);
-    this.questionFeedback = POWER_UP_FEEDBACK[power];
-    this.feedbackTimerMs = 1200;
     playGameSound("discovery");
     this.emitHud(true);
   }
@@ -790,10 +799,11 @@ export class GameEngine {
     const launching = outcome === "victory" && !this.reducedMotion && Boolean(this.onVictoryLaunchComplete);
     if (launching) {
       this.victoryLaunchMs = 0;
+      this.victoryLaunchSpeed = Math.max(SPEED.start, this.getFlightSpeed());
       this.rocket.clearDamageFeedback();
       playVictoryLaunchSound(VICTORY_LAUNCH);
     } else {
-      finishGameAudio(outcome);
+      if (outcome !== "victory") finishGameAudio(outcome);
       this.loop.stop();
     }
     this.answers = [];
@@ -818,14 +828,19 @@ export class GameEngine {
       return;
     }
     this.rocket.rotation *= Math.exp(-12 * dt);
+    const speed = this.getVictoryScenerySpeed();
+    this.advanceScenery(dt, speed / SPEED.start, speed);
     this.render();
   }
 
-  completeVictoryLaunch(playSound = true) {
+  getVictoryScenerySpeed() {
+    const ascent = clamp((this.victoryLaunchMs - VICTORY_LAUNCH.chargeMs) / VICTORY_LAUNCH.ascentMs, 0, 1);
+    return Math.max(this.victoryLaunchSpeed, SPEED.start + (SPEED.max - SPEED.start) * ascent);
+  }
+
+  completeVictoryLaunch() {
     this.victoryLaunchMs = VICTORY_LAUNCH_DURATION_MS;
     this.loop.stop();
-    if (playSound) finishGameAudio("victory");
-    else pauseGameAudio();
     this.onVictoryLaunchComplete();
   }
 
@@ -842,7 +857,7 @@ export class GameEngine {
   getSnapshot() {
     return {
       runId: this.runId,
-      speed: Math.round(this.getEffectiveSpeed()),
+      speed: Math.round(this.getFlightSpeed()),
       lowSpeedAlert: this.lowSpeedAlert,
       collisionAlertRemainingMs: this.collisionAlertRemainingMs,
       collisionAlertSequence: this.collisionAlertSequence,
@@ -859,6 +874,7 @@ export class GameEngine {
       stageId: this.endless ? null : this.session.stage.id,
       ...(this.endless ? {
         mode: "endless",
+        lives: this.lives,
         endlessScore: Math.floor(this.elapsedMs / 1000) * ENDLESS.pointsPerSecond
           + this.correctAnswers * ENDLESS.correctAnswerPoints
           + this.coins * ENDLESS.coinPoints,
@@ -866,7 +882,6 @@ export class GameEngine {
       question: this.currentRound?.status === "waiting-next-question" ? null : this.currentRound?.question ?? null,
       answerState: this.currentRound?.status ?? "preparing",
       selectedLane: this.currentRound?.result?.lane ?? getLaneFromCenter(this.rocket.x + this.rocket.width / 2, this.view.width),
-      feedback: this.questionFeedback,
       paused: this.paused,
       powerUps: [
         ...(this.powerUps.turboMs > 0 ? [{ id: "turbo", label: "Turbo", remainingMs: this.powerUps.turboMs, durationMs: POWER_UPS.turbo.durationMs }] : []),
@@ -888,13 +903,18 @@ export class GameEngine {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, view.width, view.height);
 
-    const horizontalOffset = (view.width / 2 - (this.rocket.x + this.rocket.width / 2)) * 0.22;
-    if (!renderPlanetBackground(ctx, view, session.planet, { offsetX: horizontalOffset, offsetY: this.backgroundOffsetY })) {
+    const offsetX = (view.width / 2 - (this.rocket.x + this.rocket.width / 2)) * 0.22;
+    const offsetY = this.backgroundOffsetY;
+    if (this.backdropOutset) {
+      renderPlanetBackground(this.backdropCtx, view, session.planet, { offsetX, offsetY, sideOutset: this.backdropOutset + 1 });
+    }
+    if (!renderPlanetBackground(ctx, view, session.planet, { offsetX, offsetY })) {
       renderStarfield(ctx, this.stars);
       renderPlanetScenery(ctx, view, session.planet, this.progressMs);
     }
     if (!this.reducedMotion) {
-      renderSpeedStreaks(ctx, this.speedStreaks, session.planet.theme.accent, this.getEffectiveSpeed() * this.turboSpeedFactor);
+      const streakSpeed = this.victoryLaunchMs === null ? this.getFlightSpeed() : this.getVictoryScenerySpeed();
+      renderSpeedStreaks(ctx, this.speedStreaks, session.planet.theme.accent, streakSpeed);
     }
     if (this.victoryLaunchMs !== null) {
       this.renderVictoryLaunch();
@@ -909,7 +929,9 @@ export class GameEngine {
       flashColor: this.columnFlashColor,
       flashAlpha,
     });
-    for (const obstacle of this.obstacles) obstacle.render(ctx);
+    for (const obstacle of this.obstacles) {
+      if (obstacle.alive) obstacle.render(ctx);
+    }
     for (const collectible of this.collectibles) collectible.render(ctx);
     if (this.mysteryBox?.alive) this.mysteryBox.render(ctx);
     if (this.currentRound?.status === "animating-correct") {
@@ -1052,7 +1074,7 @@ export class GameEngine {
     const cardSize = Math.min(96, Math.max(64, view.width * 0.23));
     const centerX = view.width / 2;
     const centerY = view.height * 0.42 + 36;
-    const powerIds = Object.keys(POWER_UPS);
+    const powerIds = getFlightPowerUps(this.endless);
     const powerId = this.powerUpReveal?.id
       ?? powerIds[Math.floor(this.powerUps.rouletteElapsedMs / 150) % powerIds.length];
     const image = this.powerUpImages[powerId];

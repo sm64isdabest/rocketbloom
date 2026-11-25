@@ -20,7 +20,7 @@ import { PlayScreen } from "./screens/PlayScreen.jsx";
 import { PauseOverlay } from "./screens/PauseOverlay.jsx";
 import { VictoryScreen } from "./screens/VictoryScreen.jsx";
 import { DefeatScreen } from "./screens/DefeatScreen.jsx";
-import { configureAudio, pauseMenuAudio, playGameSound, playInterfaceSound, startMenuAudio } from "./game/audio/audioManager.js";
+import { configureAudio, finishGameAudio, pauseMenuAudio, playGameSound, playInterfaceSound, startMenuAudio } from "./game/audio/audioManager.js";
 import { hasLoadedAllImages, preloadImages } from "./utils/preloadImages.js";
 import { canPlayEndless } from "./screens/planetSelectorModel.js";
 import { DebugMenu } from "./screens/DebugMenu.jsx";
@@ -181,13 +181,25 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    if (!progress || [SCREEN.BOOT, SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH, SCREEN.ERROR].includes(screen)) {
+    if (!progress || [SCREEN.BOOT, SCREEN.FLIGHT_INTRO, SCREEN.PLAYING, SCREEN.VICTORY_LAUNCH, SCREEN.VICTORY, SCREEN.ERROR].includes(screen)) {
       pauseMenuAudio();
       return undefined;
     }
     startMenuAudio();
     return pauseMenuAudio;
   }, [screen, Boolean(progress)]);
+
+  const victoryRunId = screen === SCREEN.VICTORY ? outcomeSnapshot?.runId : null;
+  useEffect(() => {
+    if (!victoryRunId) return undefined;
+    const playVictory = () => finishGameAudio("victory");
+    if (document.visibilityState !== "hidden") {
+      playVictory();
+      return undefined;
+    }
+    document.addEventListener("visibilitychange", playVictory, { once: true });
+    return () => document.removeEventListener("visibilitychange", playVictory);
+  }, [victoryRunId]);
 
   useEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");

@@ -17,15 +17,8 @@ test("flight screen fills the viewport and keeps its game canvas centered", () =
   assert.match(ruleFor(".play__stage"), /margin-inline:\s*auto/);
 });
 
-test("flight side panels use illustrated art on both sides", async () => {
-  const left = [...stylesheet.matchAll(/\.play::before\s*\{([^}]*)\}/g)].map((match) => match[1]).join(" ");
-  const right = [...stylesheet.matchAll(/\.play::after\s*\{([^}]*)\}/g)].map((match) => match[1]).join(" ");
-  assert.match(left, /background-image:\s*url\([^)]*flight-side-left\.webp["']?\)/);
-  assert.match(right, /background-image:\s*url\([^)]*flight-side-right\.webp["']?\)/);
-  const [leftImage, rightImage] = await Promise.all(
-    ["left", "right"].map((side) => readFile(new URL(`../assets/flight-side-${side}.webp`, import.meta.url))),
-  );
-  assert.equal(leftImage.toString("ascii", 8, 12), "WEBP");
-  assert.equal(rightImage.toString("ascii", 8, 12), "WEBP");
-  assert.notDeepEqual(leftImage, rightImage);
+test("flight blurs the scenery outside the stage and defines both edges", () => {
+  assert.match(ruleFor(".play__backdrop"), /filter:\s*blur\(/);
+  assert.match(ruleFor(".play__stage::after"), /border-inline:/);
+  assert.doesNotMatch(stylesheet, /flight-side-(left|right)\.webp/);
 });

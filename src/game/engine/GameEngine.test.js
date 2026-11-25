@@ -519,7 +519,11 @@ test("a vitória congela a partida e o foguete sai pelo topo antes de liberar o 
     translations.length = 0;
     strokeRects.length = 0;
     drawnImages.length = 0;
+    const backgroundBeforeLaunch = engine.backgroundOffsetY;
+    const streaksBeforeLaunch = engine.speedStreaks.map(({ y }) => y);
     tickFor(engine, 900);
+    assert.ok(engine.backgroundOffsetY < backgroundBeforeLaunch, "o terreno continua rolando durante a decolagem");
+    assert.notDeepEqual(engine.speedStreaks.map(({ y }) => y), streaksBeforeLaunch, "os rastros também continuam em movimento");
     assert.equal(translations.some(([x, y]) => x === 0 && y < 0), false, "o foguete carrega antes de subir");
     assert.equal(strokeRects.some(({ color }) => color === "#fb7185"), false, "a decolagem não deixa uma hitbox separada no cenário");
     assert.equal(drawnImages.some(({ src }) => src?.includes("/lasers/")), false, "a rota da decolagem fica livre de lasers");
@@ -595,6 +599,98 @@ test("modo infinito ultrapassa o tempo da fase e tem placar de sobrevivência pr
     assert.equal(snapshot.stageId, null);
     assert.equal(snapshot.endlessScore, 285);
     assert.equal(snapshot.stageProgress, 0);
+    engine.stop();
+  });
+});
+
+test("o infinito perde um coração por erro ou impacto e termina quando perde o terceiro", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const session = { ...createSession(), mode: "endless" };
+    const outcomes = [];
+    const engine = new GameEngine(engineOptions(canvas, {
+      onOutcome: (outcome, snapshot) => outcomes.push([outcome, snapshot.lives, snapshot.elapsedMs]),
+    }, { session }));
+    const collide = () => {
+      engine.obstacles.push(new Obstacle({ id: "asteroid", x: engine.rocket.x, y: engine.rocket.y, width: 44, height: 44 }));
+      engine.tick(0.016);
+    };
+    const initialSpeed = engine.getSnapshot().speed;
+    const entitySpeed = engine.getEntitySpeed(100);
+    assert.equal(engine.getSnapshot().lives, 3);
+
+    engine.grantDebugPowerUp("bubble");
+    collide();
+    assert.equal(engine.getSnapshot().lives, 3, "a bolha absorve um impacto");
+
+    const wrong = engine.answers.find((answer) => !answer.correct);
+    assert.equal(engine.resolveCurrentAnswer(wrong), true);
+    assert.equal(engine.resolveCurrentAnswer(wrong), false);
+    assert.equal(engine.getSnapshot().lives, 2);
+    assert.equal(engine.getSnapshot().speed, initialSpeed);
+
+    collide();
+    assert.equal(engine.getSnapshot().lives, 1);
+    assert.equal(engine.getEntitySpeed(100), entitySpeed);
+    collide();
+    assert.equal(engine.getSnapshot().lives, 0);
+    const { elapsedMs } = engine.getSnapshot();
+    tickFor(engine, 1000);
+    assert.deepEqual(outcomes, [["defeat", 0, elapsedMs]], "a animação de derrota não conta como tempo de sobrevivência");
+    engine.stop();
+  });
+});
+
+test("o infinito mantém a velocidade de voo após acerto e tentativa de usar Turbo", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const session = { ...createSession(), mode: "endless" };
+    const engine = new GameEngine(engineOptions(canvas, {}, { session }));
+    const speed = engine.getSnapshot().speed;
+    engine.resolveCurrentAnswer(engine.answers.find((answer) => answer.correct));
+    engine.grantDebugPowerUp("turbo");
+    tickFor(engine, 1500);
+    assert.equal(engine.getSnapshot().speed, speed);
+    assert.equal(engine.getEntitySpeed(100), 100);
+    engine.stop();
+  });
+});
+
+test("na campanha, a velocidade começa a cair ao atingir 50 km/h e pode levar à derrota", () => {
+  withCanvasEnvironment(({ canvas }) => {
+    const outcomes = [];
+    const engine = new GameEngine(engineOptions(canvas, {
+      onOutcome: (outcome) => outcomes.push(outcome),
+    }, { initialQuestionDelayMs: 20_000 }));
+    engine.setDebugSpeed(51);
+    tickFor(engine, 1000);
+    assert.equal(engine.getSnapshot().speed, 51);
+    engine.setDebugSpeed(50);
+    engine.pause();
+    tickFor(engine, 1000);
+    assert.equal(engine.getSnapshot().speed, 50);
+    engine.resume();
+    tickFor(engine, 1000);
+    assert.ok(engine.getSnapshot().speed <= 32);
+    tickFor(engine, 2000);
+    assert.deepEqual(outcomes, ["defeat"]);
+    engine.stop();
+  });
+});
+
+test("rastros acima de 85 km/h ganham camadas à medida que a nave acelera", () => {
+  withCanvasEnvironment(({ canvas, strokeColors }) => {
+    const engine = new GameEngine(engineOptions(canvas));
+    const countStrokes = (speed) => {
+      strokeColors.length = 0;
+      engine.setDebugSpeed(speed);
+      engine.render();
+      return strokeColors.length;
+    };
+    const below = countStrokes(85);
+    const above = countStrokes(100);
+    assert.ok(above > below);
+    assert.ok(countStrokes(300) > above);
+    engine.reducedMotion = true;
+    assert.equal(countStrokes(300), below);
     engine.stop();
   });
 });
@@ -866,7 +962,7 @@ test("redução temporária do impacto preserva movimento e não causa derrota",
     assert.equal(engine.particles.length, 24);
     assert.ok(engine.rocket.damageFeedbackRemainingMs > 0);
 
-    tickFor(engine, 1000);
+    tickFor(engine, 500);
     assert.equal(engine.ended, false);
     assert.deepEqual(outcomes, []);
     engine.stop();
@@ -1044,7 +1140,7 @@ test("turbo acelera o scroll e desacelera suavemente quando termina", () => {
     normal.tick(0.05);
     engine.tick(0.05);
     assert.ok(engine.stars[0].y - turboStarY > normal.stars[0].y - normalStarY, "turbo accelerates the starfield");
-    assert.ok(engine.speedStreaks[0].y - turboStreakY > normal.speedStreaks[0].y - normalStreakY, "turbo accelerates the motion streaks");
+    assert.ok(turboStreakY - engine.speedStreaks[0].y > normalStreakY - normal.speedStreaks[0].y, "turbo accelerates the upward motion streaks");
     assert.ok(engine.progressMs > normal.progressMs, "turbo accelerates stage scroll");
     engine.powerUps.turboMs = 1;
     engine.tick(0.05);

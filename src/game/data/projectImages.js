@@ -62,6 +62,9 @@ export const PROJECT_IMAGES = [
   "/assets/powerups/mystery-box.webp",
   ...["turbo", "bubble", "magnet", "doubler", "freeze"].map((power) => `/assets/powerups/${power}.png`),
   "/assets/ui/coin.webp",
+  "/assets/ui/life-heart.webp",
+  "/assets/ui/victory/astronaut.webp",
+  "/assets/ui/victory/space.webp",
   ...["chest", "check", "effects", "fullscreen-enter", "fullscreen-exit", "keyboard", "mouse", "music", "pause", "sound-off", "sound-on"].map(
     (icon) => `/assets/ui/controls/${icon}.webp`,
   ),
