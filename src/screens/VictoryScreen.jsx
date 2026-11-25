@@ -36,7 +36,7 @@ export function VictoryScreen({ planet, stage, snapshot, bestScore, onContinue, 
           <img className="victory-screen__planet" src={`${APP_BASE}assets/ui/planets/${planet.id}-icon.webp`} alt="" />
         ) : null}
         {planet && stage ? <p className="eyebrow victory-screen__stage">{planet.name} · {stage.name}</p> : null}
-        <h1 id="victory-title" ref={titleRef} tabIndex={-1}>{endless ? "Fim do voo" : "Fase concluída!"}</h1>
+        <h1 id="victory-title" ref={titleRef} tabIndex={-1}>{endless ? "Fim do voo" : "Nível Concluído!"}</h1>
         {stats.length ? (
           <dl className="victory-screen__stats">
             {stats.map(([label, value], index) => (
