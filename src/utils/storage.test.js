@@ -18,7 +18,7 @@ function memoryStorage(seed = {}) {
   };
 }
 
-test("reiniciar a campanha preserva a introdução vista e reativa o tutorial de voo", () => {
+test("reiniciar a campanha reativa a introdução e o tutorial de voo", () => {
   const profile = createDefaultProgress();
   assert.deepEqual(profile.onboarding, { missionSeen: false, earthTutorialSeen: false });
   profile.onboarding.missionSeen = true;
@@ -31,7 +31,7 @@ test("reiniciar a campanha preserva a introdução vista e reativa o tutorial de
 
   const reset = progressStorage.resetSavedProgress(saved, storage);
   assert.ok(reset.ok);
-  assert.deepEqual(loadProgress(storage).progress.onboarding, { missionSeen: true, earthTutorialSeen: false });
+  assert.deepEqual(loadProgress(storage).progress.onboarding, { missionSeen: false, earthTutorialSeen: false });
   assert.equal(reset.progress.settings.controlMode, "keyboard");
 });
 
@@ -45,7 +45,12 @@ test("uma segunda aba não repete uma atualização já feita no perfil", () => 
   assert.equal(first.changed, true);
   assert.equal(second.changed, false);
   assert.equal(second.progress.onboarding.missionSeen, true);
-  assert.equal(progressStorage.resetSavedProgress(openTab, storage).progress.onboarding.missionSeen, true);
+  const reset = progressStorage.resetSavedProgress(openTab, storage);
+  assert.equal(reset.progress.onboarding.missionSeen, false);
+  const firstAfterReset = progressStorage.updateSavedProgress(reset.progress, seeMission, { storage });
+  const secondAfterReset = progressStorage.updateSavedProgress(reset.progress, seeMission, { storage });
+  assert.equal(firstAfterReset.changed, true);
+  assert.equal(secondAfterReset.changed, false);
 });
 
 test("um perfil antigo que já voou não repete a introdução nem o tutorial", () => {

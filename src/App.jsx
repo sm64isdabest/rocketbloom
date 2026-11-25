@@ -53,7 +53,6 @@ export default function App() {
   const [bootError, setBootError] = useState(null);
   const [assetProgress, setAssetProgress] = useState({ total: STARTUP_IMAGES.length, loaded: 0, failed: 0, completed: 0 });
   const [skipBoot, setSkipBoot] = useState(false);
-  const missionPlayedThisLaunch = useRef(false);
   const [run, setRun] = useState(null);
   const [runKey, setRunKey] = useState(0);
   const [outcomeSnapshot, setOutcomeSnapshot] = useState(null);
@@ -228,22 +227,19 @@ export default function App() {
   };
 
   const openCampaign = () => {
-    if (missionPlayedThisLaunch.current) {
+    if (progress.onboarding.missionSeen) {
       setMenuPage(SCREEN.PLANETS);
       return;
     }
     const result = persist((current) => current.onboarding.missionSeen ? current
       : { ...current, onboarding: { ...current.onboarding, missionSeen: true } });
     if (result?.stale) return;
-    missionPlayedThisLaunch.current = true;
-    setMenuPage(SCREEN.MISSION_INTRO);
+    setMenuPage(result?.changed ? SCREEN.MISSION_INTRO : SCREEN.PLANETS);
   };
 
   const completeMissionIntro = () => {
-    if (!progress.onboarding.earthTutorialSeen) {
-      dispatchNavigationContext({ type: "select-stage", planetId: "earth", selectedStageId: null });
-      setSelectionGuide("first-flight");
-    }
+    dispatchNavigationContext({ type: "select-stage", planetId: "earth", selectedStageId: null });
+    setSelectionGuide("first-flight");
     setMenuPage(SCREEN.PLANETS);
   };
 
@@ -529,7 +525,7 @@ export default function App() {
         />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.MISSION_INTRO ? (
-        <MissionIntroScreen onComplete={completeMissionIntro} returningPlayer={progress.onboarding.earthTutorialSeen} />
+        <MissionIntroScreen onComplete={completeMissionIntro} />
       ) : null}
       {screen === SCREEN.MENU && menuPage === SCREEN.STORAGE ? (
         <StorageScreen

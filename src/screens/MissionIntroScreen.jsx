@@ -4,12 +4,11 @@ import "../styles/onboarding.css";
 
 const APP_BASE = import.meta.env.BASE_URL;
 
-export function MissionIntroScreen({ onComplete, returningPlayer = false }) {
+export function MissionIntroScreen({ onComplete }) {
   const [index, setIndex] = useState(0);
   const heading = useRef(null);
   const scene = MISSION_INTRO[index];
   const lastScene = index === MISSION_INTRO.length - 1;
-  const nextLabel = lastScene ? (returningPlayer ? "Ir para as fases" : "Ir para a Terra") : "Continuar";
 
   useEffect(() => { heading.current?.focus(); }, [index]);
 
@@ -24,7 +23,7 @@ export function MissionIntroScreen({ onComplete, returningPlayer = false }) {
           <div className="mission-intro__actions">
             {!lastScene ? <button className="btn btn--ghost" type="button" onClick={onComplete}>Pular introdução</button> : null}
             <button className="btn" type="button" onClick={lastScene ? onComplete : () => setIndex(index + 1)}>
-              {nextLabel}
+              {lastScene ? "Ir para a Terra" : "Continuar"}
             </button>
           </div>
         </section>

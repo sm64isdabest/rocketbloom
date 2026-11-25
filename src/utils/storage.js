@@ -239,11 +239,9 @@ export function updateSavedProgress(current, update, { storage, preferMemory = f
 }
 
 export function resetSavedProgress(current, storage) {
-  const saved = loadProgress(storage);
   const progress = createDefaultProgress();
   progress.resetId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
   progress.settings = { ...progress.settings, ...current.settings };
-  progress.onboarding.missionSeen = current.onboarding?.missionSeen === true || saved.progress.onboarding.missionSeen;
   const result = writeProgress(progress, current.resetId ?? null, storage);
   return result.ok ? { ...result, progress } : result;
 }
